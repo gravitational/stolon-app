@@ -1,0 +1,3 @@
+[submodule "images/stolon/stolon"]
+	path = images/stolon/stolon
+	url = git@github.com:sorintlab/stolon.git
