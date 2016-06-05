@@ -28,7 +28,7 @@ spec:
     spec:
       containers:
       - name: stolon-proxy
-        image: sorintlab/stolon:master
+        image: apiserver:5000/sorintlab/stolon:master
         env:
           - name: PROXY
             value: "true"

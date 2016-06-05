@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Application
+metadata:
+  namespace: default
+  name: stolon-app
+  resourceVersion: 0.0.1
+hooks:
+  install:
+    containerImage: stolon-bootstrap:0.0.1
+  uninstall:
+    containerImage: stolon-uninstall:0.0.1
+installer:
+  servers:
+    node:
+      min_count: 3
+      description: "stolon sentinel server"
+      labels:
+        role: node
+      cpu:
+        min_count: 1
+      ram:
+        min_total_mb: 1000
+      mounts:
+        - source: /var/stolon-data
+          destination: /stolon-data
+          create_if_missing: true
