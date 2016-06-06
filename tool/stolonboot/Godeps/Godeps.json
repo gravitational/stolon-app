@@ -1,0 +1,20 @@
+{
+	"ImportPath": "github.com/gravitational/stolon-app/tool/stolonboot",
+	"GoVersion": "go1.5",
+	"GodepVersion": "v62",
+	"Deps": [
+		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.8.3-3-g07d998d",
+			"Rev": "07d998d174c4e2dc90e2f1989a20724220bca1ff"
+		},
+		{
+			"ImportPath": "github.com/gravitational/trace",
+			"Rev": "6218803b4afb5490afd43d14edcbaa502d568938"
+		},
+		{
+			"ImportPath": "github.com/jonboulle/clockwork",
+			"Rev": "ed104f61ea4877bea08af6f759805674861e968d"
+		}
+	]
+}

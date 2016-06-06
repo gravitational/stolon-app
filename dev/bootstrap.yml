@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: stolon-init
+spec:
+  containers:
+    - name: stolon-init
+      image: apiserver:5000/stolon-bootstrap:0.0.1
+      imagePullPolicy: Always
+  restartPolicy: Never

@@ -1,7 +1,6 @@
 VER := 0.0.1
 PACKAGE := gravitational.io/stolon-app:$(VER)
 
-
 .PHONY: all images dev-push dev-destroy dev-deploy import
 
 all: images
@@ -9,7 +8,7 @@ all: images
 images:
 	cd images && $(MAKE) -f Makefile
 
-dev-push:
+dev-push: images
 	docker tag stolon-bootstrap:$(VER) apiserver:5000/stolon-bootstrap:$(VER)
 	docker push apiserver:5000/stolon-bootstrap:$(VER)
 	docker tag stolon-uninstall:$(VER) apiserver:5000/stolon-uninstall:$(VER)
@@ -20,17 +19,14 @@ dev-push:
 	docker push apiserver:5000/sorintlab/stolon:master
 
 
-create:
-	kubectl create -f etcd.yaml
-	kubectl create -f sentinel.yaml
-	kubectl create -f secret.yaml
-	kubectl create -f proxy.yaml
-	kubectl create -f keeper.yaml
+dev-deploy: dev-push
+	kubectl create -f dev/bootstrap.yml
 
-
-clean:
-	kubectl delete -f keeper.yaml
-	kubectl delete -f proxy.yaml
-	kubectl delete -f secret.yaml
-	kubectl delete -f sentinel.yaml
-	kubectl delete -f etcd.yaml
+dev-clean:
+	-kubectl delete pod/stolon-init
+	-kubectl delete \
+		-f images/bootstrap/resources/keeper.yml \
+		-f images/bootstrap/resources/proxy.yml \
+		-f images/bootstrap/resources/secret.yml \
+		-f images/bootstrap/resources/sentinel.yml \
+		-f images/bootstrap/resources/etcd.yml
