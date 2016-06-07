@@ -55,6 +55,10 @@ func createSentinels(sentinels int) error {
 		return trace.Wrap(err)
 	}
 	log.Infof("cmd output: %s", string(out))
+
+	if err = scaleReplicationController("stolon-sentinel", sentinels, 30); err != nil {
+		return trace.Wrap(err)
+	}
 	return nil
 }
 
@@ -77,6 +81,10 @@ func createKeepers(keepers int) error {
 		return trace.Wrap(err)
 	}
 	log.Infof("cmd output: %s", string(out))
+
+	if err = scaleReplicationController("stolon-keeper", keepers, 30); err != nil {
+		return trace.Wrap(err)
+	}
 	return nil
 }
 
@@ -88,5 +96,9 @@ func createProxies(proxies int) error {
 		return trace.Wrap(err)
 	}
 	log.Infof("cmd output: %s", string(out))
+
+	if err = scaleReplicationController("stolon-proxy", proxies, 60); err != nil {
+		return trace.Wrap(err)
+	}
 	return nil
 }

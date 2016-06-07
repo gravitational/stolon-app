@@ -37,7 +37,7 @@ spec:
           - name: STKEEPER_PG_SU_PASSWORDFILE
             value: "/etc/secrets/stolon/password"
           - name: STKEEPER_DEBUG
-            value: "true"
+            value: "false"
         ports:
           - containerPort: 5431
           - containerPort: 5432
