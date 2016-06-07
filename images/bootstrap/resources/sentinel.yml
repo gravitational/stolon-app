@@ -30,7 +30,7 @@ spec:
             value: "stolon-cluster=kube-stolon,stolon-keeper=true"
             # Enable debugging
           - name: STSENTINEL_DEBUG
-            value: "true"
+            value: "false"
           - name: STSENTINEL_KUBERNETES_NAMESPACE
             value: "default"
         ports:

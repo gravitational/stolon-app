@@ -18,6 +18,7 @@ dev-push: images
 	docker tag sorintlab/stolon:master apiserver:5000/sorintlab/stolon:master
 	docker push apiserver:5000/sorintlab/stolon:master
 
+dev-redeploy: dev-clean dev-deploy
 
 dev-deploy: dev-push
 	kubectl create -f dev/bootstrap.yml
