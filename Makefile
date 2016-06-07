@@ -24,10 +24,9 @@ dev-deploy: dev-push
 	kubectl create -f dev/bootstrap.yml
 
 dev-clean:
-	-kubectl delete pod/stolon-init
+	-kubectl delete pod/stolon-init secret/stolon
 	-kubectl delete \
 		-f images/bootstrap/resources/keeper.yml \
 		-f images/bootstrap/resources/proxy.yml \
-		-f images/bootstrap/resources/secret.yml \
 		-f images/bootstrap/resources/sentinel.yml \
 		-f images/bootstrap/resources/etcd.yml
