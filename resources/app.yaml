@@ -4,6 +4,7 @@ metadata:
   namespace: default
   name: stolon-app
   resourceVersion: 0.0.1
+base: gravitational.io/k8s-aws:1.2.3
 hooks:
   install:
     containerImage: stolon-bootstrap:0.0.1
@@ -12,7 +13,7 @@ hooks:
 installer:
   servers:
     node:
-      min_count: 3
+      min_count: 2
       description: "stolon sentinel server"
       labels:
         role: node

@@ -13,7 +13,7 @@ Once deployed or installed, this app will provide:
 You can import as a gravity app, by running the following:
 
 ```
-gravity app import --vendor --state-dir=/var/lib/gravity .  gravitational.io/stolon-app:0.0.1
+gravity app import --vendor --state-dir=/var/lib/gravity . gravitational.io/stolon-app:0.0.1
 ```
 
 ## Development
