@@ -10,34 +10,6 @@ import (
 	"github.com/gravitational/trace"
 )
 
-type ReplicationController struct {
-	Status ReplicationControllerStatus
-}
-
-type ReplicationControllerStatus struct {
-	Replicas             int
-	FullyLabeledReplicas int
-	ObservedGeneration   int
-}
-
-type PodCondition struct {
-	Type   string
-	Status string
-}
-
-type PodStatus struct {
-	Phase      string
-	Conditions []PodCondition
-}
-
-type Pod struct {
-	Status PodStatus
-}
-
-type PodList struct {
-	Items []Pod
-}
-
 func kubeCommand(args ...string) *exec.Cmd {
 	return exec.Command("/usr/local/bin/kubectl", args...)
 }
@@ -81,7 +53,7 @@ func scaleReplicationController(name string, replicas int, tries int) error {
 	}
 
 	for i := 1; i < replicas; i++ {
-		cmd := exec.Command("/usr/local/bin/kubectl", "scale", fmt.Sprintf("--replicas=%d", i+1), fmt.Sprintf("rc/%s", name))
+		cmd := kubeCommand("scale", fmt.Sprintf("--replicas=%d", i+1), fmt.Sprintf("rc/%s", name))
 		out, err := cmd.Output()
 		if err != nil {
 			return trace.Wrap(err)

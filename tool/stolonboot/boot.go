@@ -1,8 +1,6 @@
 package main
 
 import (
-	"os/exec"
-
 	log "github.com/Sirupsen/logrus"
 	"github.com/gravitational/trace"
 )
@@ -38,7 +36,7 @@ func bootCluster(sentinels int, keepers int, proxies int, password string) error
 
 func createEtcd() error {
 	log.Infof("creating etcd")
-	cmd := exec.Command("/usr/local/bin/kubectl", "create", "-f", "/resources/etcd.yml")
+	cmd := kubeCommand("create", "-f", "/resources/etcd.yml")
 	out, err := cmd.Output()
 	if err != nil {
 		return trace.Wrap(err)
@@ -49,7 +47,7 @@ func createEtcd() error {
 
 func createSentinels(sentinels int) error {
 	log.Infof("creating sentinels")
-	cmd := exec.Command("/usr/local/bin/kubectl", "create", "-f", "/resources/sentinel.yml")
+	cmd := kubeCommand("create", "-f", "/resources/sentinel.yml")
 	out, err := cmd.Output()
 	if err != nil {
 		return trace.Wrap(err)
@@ -64,7 +62,7 @@ func createSentinels(sentinels int) error {
 
 func createSecret(password string) error {
 	log.Infof("creating secret")
-	cmd := exec.Command("/usr/local/bin/kubectl", "create", "-f", "/resources/secret.yml")
+	cmd := kubeCommand("create", "-f", "/resources/secret.yml")
 	out, err := cmd.Output()
 	if err != nil {
 		return trace.Wrap(err)
@@ -75,7 +73,7 @@ func createSecret(password string) error {
 
 func createKeepers(keepers int) error {
 	log.Infof("creating keepers")
-	cmd := exec.Command("/usr/local/bin/kubectl", "create", "-f", "/resources/keeper.yml")
+	cmd := kubeCommand("create", "-f", "/resources/keeper.yml")
 	out, err := cmd.Output()
 	if err != nil {
 		return trace.Wrap(err)
@@ -90,7 +88,7 @@ func createKeepers(keepers int) error {
 
 func createProxies(proxies int) error {
 	log.Infof("creating proxies")
-	cmd := exec.Command("/usr/local/bin/kubectl", "create", "-f", "/resources/proxy.yml")
+	cmd := kubeCommand("create", "-f", "/resources/proxy.yml")
 	out, err := cmd.Output()
 	if err != nil {
 		return trace.Wrap(err)
