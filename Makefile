@@ -1,7 +1,7 @@
 VER := 0.0.1
 PACKAGE := gravitational.io/stolon-app:$(VER)
 
-.PHONY: all images dev-push dev-destroy dev-deploy import
+.PHONY: all images dev-push dev-destroy dev-redeploy dev-deploy import
 
 all: images
 
@@ -30,3 +30,6 @@ dev-clean:
 		-f images/bootstrap/resources/proxy.yml \
 		-f images/bootstrap/resources/sentinel.yml \
 		-f images/bootstrap/resources/etcd.yml
+
+import:
+	gravity app import --vendor --state-dir=/var/lib/gravity . gravitational.io/stolon-app:0.0.1
