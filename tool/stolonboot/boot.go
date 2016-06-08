@@ -25,17 +25,12 @@ func bootCluster(sentinels int, keepers int, proxies int, password string) error
 		return trace.Wrap(err)
 	}
 
-	err = createSeedKeeper()
+	err = createKeepers(keepers)
 	if err != nil {
 		return trace.Wrap(err)
 	}
 
 	err = createProxies(proxies)
-	if err != nil {
-		return trace.Wrap(err)
-	}
-
-	err = scaleUpKeepers(keepers)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -93,6 +88,22 @@ func createSecret(password string) error {
 		return trace.Wrap(err)
 	}
 
+	return nil
+}
+
+func createKeepers(keepers int) error {
+	log.Infof("creating initial keeper")
+	cmd := kubeCommand("create", "-f", "/resources/keeper.yml")
+	out, err := cmd.Output()
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	log.Infof("cmd output: %s", string(out))
+
+	log.Infof("scaling up keepers")
+	if err := scaleReplicationController("stolon-keeper", keepers, 30); err != nil {
+		return trace.Wrap(err)
+	}
 	return nil
 }
 
