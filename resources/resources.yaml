@@ -12,4 +12,4 @@ spec:
     - name: phony-etcd
       image: quay.io/coreos/etcd:v2.3.6
     - name: phony-stolon
-      image: sorintlab/stolon:master
+      image: stolon:0.2.0

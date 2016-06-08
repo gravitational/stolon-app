@@ -15,7 +15,8 @@ spec:
     spec:
       containers:
       - name: stolon-keeper
-        image: apiserver:5000/sorintlab/stolon:master
+        image: apiserver:5000/stolon:0.2.0
+        imagePullPolicy: Always
         env:
           - name: KEEPER
             value: "true"
