@@ -11,6 +11,12 @@ hooks:
   uninstall:
     containerImage: stolon-uninstall:0.0.1
 installer:
+  provisioners:
+    virsh:
+      variables:
+        devices:
+          - device: vdb
+            mb: 4096
   servers:
     node:
       min_count: 2
@@ -21,6 +27,10 @@ installer:
         min_count: 1
       ram:
         min_total_mb: 1000
+      directories:
+        - name: /var/gravity
+          min_total_mb: 4096
+          fs_types: ['btrfs']
       mounts:
         - source: /var/stolon-data
           destination: /stolon-data
