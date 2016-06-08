@@ -9,4 +9,4 @@ RUN curl -O https://storage.googleapis.com/kubernetes-release/release/v1.2.0/bin
 ADD resources /resources
 ADD stolonboot /stolonboot
 
-CMD ["/stolonboot", "-keepers", "3", "-proxies", "2", "-sentinels", "2"]
+CMD ["/stolonboot", "-proxies", "2", "-sentinels", "2"]

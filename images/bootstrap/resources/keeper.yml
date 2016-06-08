@@ -1,11 +1,13 @@
-apiVersion: v1
-kind: ReplicationController
+apiVersion: extensions/v1beta1
+kind: DaemonSet
 metadata:
   name: stolon-keeper
+  labels:
+    stolon-keeper: "true"
 spec:
-  replicas: 1
   selector:
-    name: stolon-keeper
+    matchLabels:
+      stolon-keeper: "true"
   template:
     metadata:
       labels:
@@ -13,6 +15,8 @@ spec:
         stolon-cluster: "kube-stolon"
         stolon-keeper: "true"
     spec:
+      nodeSelector:
+        stolon-keeper: stolon-keeper
       containers:
       - name: stolon-keeper
         image: apiserver:5000/stolon:0.2.0
@@ -21,7 +25,6 @@ spec:
           - name: KEEPER
             value: "true"
           - name: STKEEPER_CLUSTER_NAME
-          # TODO(sgotti) Get cluster name from "stoloncluster" label using a downward volume api instead of duplicating the name here
             value: "kube-stolon"
           - name: STKEEPER_STORE_BACKEND
             value: "etcd" # Or consul
@@ -43,13 +46,19 @@ spec:
           - containerPort: 5431
           - containerPort: 5432
         volumeMounts:
-        - mountPath: /stolon-data
-          name: data
-        - mountPath: /etc/secrets/stolon
-          name: stolon
+          - mountPath: /stolon-data
+            name: data
+          - mountPath: /etc/secrets/stolon
+            name: stolon
+          - mountPath: /var/log
+            name: gravity-log
       volumes:
+        - name: gravity-log
+          hostPath:
+            path: /var/log/gravity
         - name: data
-          emptyDir: {}
+          hostPath:
+            path: /var/lib/data/stolon
         - name: stolon
           secret:
             secretName: stolon

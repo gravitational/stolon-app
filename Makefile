@@ -21,9 +21,11 @@ dev-push: images
 dev-redeploy: dev-clean dev-deploy
 
 dev-deploy: dev-push
+	-kubectl label nodes --all stolon-keeper=stolon-keeper
 	kubectl create -f dev/bootstrap.yml
 
 dev-clean:
+	-kubectl label nodes -l stolon-keeper=stolon-keeper stolon-keeper-
 	-kubectl delete pod/stolon-init secret/stolon
 	-kubectl delete \
 		-f images/bootstrap/resources/keeper.yml \
