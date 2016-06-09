@@ -56,22 +56,22 @@ func bootCluster(sentinels int, proxies int, password string) error {
 func createEtcd() error {
 	log.Infof("creating etcd")
 	cmd := kubeCommand("create", "-f", "/resources/etcd.yml")
-	out, err := cmd.Output()
+	out, err := cmd.CombinedOutput()
+	log.Infof("cmd output: %s", string(out))
 	if err != nil {
 		return trace.Wrap(err)
 	}
-	log.Infof("cmd output: %s", string(out))
 	return nil
 }
 
 func createSentinels(sentinels int) error {
 	log.Infof("creating sentinels")
 	cmd := kubeCommand("create", "-f", "/resources/sentinel.yml")
-	out, err := cmd.Output()
+	out, err := cmd.CombinedOutput()
+	log.Infof("cmd output: %s", string(out))
 	if err != nil {
 		return trace.Wrap(err)
 	}
-	log.Infof("cmd output: %s", string(out))
 
 	if err = scaleReplicationController("stolon-sentinel", sentinels, 30); err != nil {
 		return trace.Wrap(err)
@@ -109,22 +109,22 @@ func createSecret(password string) error {
 func createKeepers() error {
 	log.Infof("creating initial keeper")
 	cmd := kubeCommand("create", "-f", "/resources/keeper.yml")
-	out, err := cmd.Output()
+	out, err := cmd.CombinedOutput()
+	log.Infof("cmd output: %s", string(out))
 	if err != nil {
 		return trace.Wrap(err)
 	}
-	log.Infof("cmd output: %s", string(out))
 	return nil
 }
 
 func createProxies(proxies int) error {
 	log.Infof("creating proxies")
 	cmd := kubeCommand("create", "-f", "/resources/proxy.yml")
-	out, err := cmd.Output()
+	out, err := cmd.CombinedOutput()
+	log.Infof("cmd output: %s", string(out))
 	if err != nil {
 		return trace.Wrap(err)
 	}
-	log.Infof("cmd output: %s", string(out))
 
 	if err = scaleReplicationController("stolon-proxy", proxies, 60); err != nil {
 		return trace.Wrap(err)

@@ -68,11 +68,11 @@ func scaleReplicationController(name string, replicas int, tries int) error {
 
 	for i := 1; i < replicas; i++ {
 		cmd := kubeCommand("scale", fmt.Sprintf("--replicas=%d", i+1), fmt.Sprintf("rc/%s", name))
-		out, err := cmd.Output()
+		out, err := cmd.CombinedOutput()
+		log.Infof("cmd output: %s", string(out))
 		if err != nil {
 			return trace.Wrap(err)
 		}
-		log.Infof("cmd output: %s", string(out))
 
 		err = waitForNPods(name, i+1, time.Second, tries)
 		if err != nil {
