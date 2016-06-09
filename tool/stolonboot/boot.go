@@ -9,7 +9,8 @@ import (
 	"github.com/gravitational/trace"
 )
 
-func bootCluster(sentinels int, keepers int, proxies int, password string) error {
+func bootCluster(sentinels int, proxies int, password string) error {
+
 	err := createEtcd()
 	if err != nil {
 		return trace.Wrap(err)
@@ -25,7 +26,7 @@ func bootCluster(sentinels int, keepers int, proxies int, password string) error
 		return trace.Wrap(err)
 	}
 
-	err = createKeepers(keepers)
+	err = createKeepers()
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -91,7 +92,7 @@ func createSecret(password string) error {
 	return nil
 }
 
-func createKeepers(keepers int) error {
+func createKeepers() error {
 	log.Infof("creating initial keeper")
 	cmd := kubeCommand("create", "-f", "/resources/keeper.yml")
 	out, err := cmd.Output()
@@ -99,30 +100,6 @@ func createKeepers(keepers int) error {
 		return trace.Wrap(err)
 	}
 	log.Infof("cmd output: %s", string(out))
-
-	log.Infof("scaling up keepers")
-	if err := scaleReplicationController("stolon-keeper", keepers, 30); err != nil {
-		return trace.Wrap(err)
-	}
-	return nil
-}
-
-func createSeedKeeper() error {
-	log.Infof("creating initial keeper")
-	cmd := kubeCommand("create", "-f", "/resources/keeper.yml")
-	out, err := cmd.Output()
-	if err != nil {
-		return trace.Wrap(err)
-	}
-	log.Infof("cmd output: %s", string(out))
-	return nil
-}
-
-func scaleUpKeepers(keepers int) error {
-	log.Infof("scaling up keepers")
-	if err := scaleReplicationController("stolon-keeper", keepers, 30); err != nil {
-		return trace.Wrap(err)
-	}
 	return nil
 }
 

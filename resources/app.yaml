@@ -16,22 +16,23 @@ installer:
       variables:
         devices:
           - device: vdb
-            mb: 4096
+            mb: 8000
   servers:
     node:
       min_count: 2
-      description: "stolon sentinel server"
+      description: "stolon server"
       labels:
         role: node
+        stolon-keeper: stolon-keeper
       cpu:
         min_count: 1
       ram:
         min_total_mb: 1000
       directories:
         - name: /var/gravity
-          min_total_mb: 4096
+          min_total_mb: 8000
           fs_types: ['btrfs']
       mounts:
-        - source: /var/stolon-data
-          destination: /stolon-data
+        - source: /var/lib/data/stolon
+          destination: /var/lib/data/stolon
           create_if_missing: true
