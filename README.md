@@ -25,3 +25,6 @@ There are several development Makefile targets to simplify your workflow:
  * `dev-clean` destroy all cluster resources
  * `dev-redeploy` clean and then deploy the cluster
 
+## Based on
+
+[This example](https://github.com/sorintlab/stolon/tree/master/examples/kubernetes) included with [stolon](https://github.com/sorintlab/stolon)
