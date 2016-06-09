@@ -13,6 +13,7 @@ dev-push: images
 	docker push apiserver:5000/stolon-bootstrap:$(VER)
 	docker tag stolon-uninstall:$(VER) apiserver:5000/stolon-uninstall:$(VER)
 	docker push apiserver:5000/stolon-uninstall:$(VER)
+	docker pull quay.io/coreos/etcd:v2.3.6
 	docker tag quay.io/coreos/etcd:v2.3.6 apiserver:5000/quay.io/coreos/etcd:v2.3.6
 	docker push apiserver:5000/quay.io/coreos/etcd:v2.3.6
 	docker tag stolon:0.2.0 apiserver:5000/stolon:0.2.0
