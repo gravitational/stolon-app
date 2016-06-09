@@ -1,8 +1,6 @@
 # stolon-app
 
-Opinionated [stolon](https://github.com/sorintlab/stolon) gravity app.
-
-## Provided resources
+## Provides
 
 Once deployed or installed, this app will provide:
 
