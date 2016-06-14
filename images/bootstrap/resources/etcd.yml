@@ -43,7 +43,7 @@ spec:
     - containerPort: 2380
       name: server
       protocol: TCP
-  restartPolicy: Never
+  restartPolicy: OnFailure
 ---
 apiVersion: v1
 kind: Service
@@ -96,7 +96,7 @@ spec:
     - containerPort: 2380
       name: server
       protocol: TCP
-  restartPolicy: Never
+  restartPolicy: OnFailure
 ---
 apiVersion: v1
 kind: Service
@@ -149,7 +149,7 @@ spec:
     - containerPort: 2380
       name: server
       protocol: TCP
-  restartPolicy: Never
+  restartPolicy: OnFailure
 ---
 apiVersion: v1
 kind: Service

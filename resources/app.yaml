@@ -27,7 +27,7 @@ installer:
       cpu:
         min_count: 1
       ram:
-        min_total_mb: 1000
+        min_total_mb: 2000
       directories:
         - name: /var/gravity
           min_total_mb: 8000
