@@ -1,6 +1,6 @@
 FROM fedora:22
 
-RUN dnf -y install postgresql-server postgresql hostname
+RUN dnf -y install postgresql-server postgresql-contrib postgresql hostname
 
 RUN dnf clean all
 
