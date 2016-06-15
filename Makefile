@@ -1,4 +1,4 @@
-VER := 0.0.1
+VER := 0.0.2
 PACKAGE := gravitational.io/stolon-app:$(VER)
 
 .PHONY: all images dev-push dev-destroy dev-redeploy dev-deploy import
