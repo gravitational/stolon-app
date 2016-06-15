@@ -35,4 +35,4 @@ dev-clean:
 		-f images/bootstrap/resources/etcd.yml
 
 import:
-	gravity app import --vendor --registry-url=apiserver:5000 --state-dir=/var/lib/gravity/opscenter . gravitational.io/stolon-app:0.0.1
+	gravity app import --vendor --registry-url=apiserver:5000 --state-dir=/var/lib/gravity/opscenter . $(PACKAGE)
