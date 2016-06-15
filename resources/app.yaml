@@ -29,8 +29,8 @@ installer:
       ram:
         min_total_mb: 2000
       directories:
-        - name: /var/gravity
-          min_total_mb: 2000
+        - name: /var/lib/gravity
+          min_total_mb: 4000
           fs_types: ['btrfs']
       mounts:
         - source: /var/lib/data/stolon
