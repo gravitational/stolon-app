@@ -12,6 +12,7 @@ stolonboot:
 	cp ../tool/stolonboot/bin/stolonboot bootstrap/stolonboot
 
 stolon:
+	git submodule init && git submodule update
 	cd $(PWD)/stolon/stolon && ./build && cp bin/* ../bin/
 	docker build -t stolon:0.2.0 $(PWD)/stolon
 
