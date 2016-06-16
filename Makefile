@@ -9,10 +9,10 @@ images:
 	cd images && $(MAKE) -f Makefile
 
 dev-push: images
-	docker tag stolon-bootstrap:$(VER) apiserver:5000/stolon-bootstrap:$(VER)
-	docker push apiserver:5000/stolon-bootstrap:$(VER)
-	docker tag stolon-uninstall:$(VER) apiserver:5000/stolon-uninstall:$(VER)
-	docker push apiserver:5000/stolon-uninstall:$(VER)
+	docker tag stolon-bootstrap:0.0.1 apiserver:5000/stolon-bootstrap:0.0.1
+	docker push apiserver:5000/stolon-bootstrap:0.0.1
+	docker tag stolon-uninstall:0.0.1 apiserver:5000/stolon-uninstall:0.0.1
+	docker push apiserver:5000/stolon-uninstall:0.0.1
 	docker pull quay.io/coreos/etcd:v2.3.6
 	docker tag quay.io/coreos/etcd:v2.3.6 apiserver:5000/quay.io/coreos/etcd:v2.3.6
 	docker push apiserver:5000/quay.io/coreos/etcd:v2.3.6
