@@ -35,4 +35,4 @@ dev-clean:
 		-f images/bootstrap/resources/etcd.yml
 
 import:
-	gravity app import --vendor --registry-url=apiserver:5000 --state-dir=/var/lib/gravity/opscenter . $(PACKAGE)
+	gravity app import --debug --vendor --glob=resources/*.yaml --registry-url=apiserver:5000 --state-dir=/var/lib/gravity/opscenter . $(PACKAGE)
