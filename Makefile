@@ -92,6 +92,8 @@ stop-registry:
 .PHONY: clean
 clean:
 	rm -rf $(OUT)
+	cd images && $(MAKE) clean
+
 
 .PHONY: dev-push
 dev-push: images
