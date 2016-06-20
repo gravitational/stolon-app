@@ -34,7 +34,8 @@ stolon: stolon/bin
 	cd stolon && docker build -t stolon:0.2.0 .
 
 stolon/bin:
-	git submodule init && git submodule update
+	-git submodule init
+	-git submodule update
 	docker run $(DOCKERFLAGS) $(BUILDIMAGE) ./build
 	mkdir -p stolon/bin
 	cp stolon/stolon/bin/* stolon/bin/
