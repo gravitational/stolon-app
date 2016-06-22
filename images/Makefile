@@ -2,7 +2,11 @@
 all: images
 
 .PHONY: images
-images: bootstrap uninstall stolon
+images: bootstrap uninstall stolon etcd
+
+.PHONY: etcd
+etcd:
+	docker pull quay.io/coreos/etcd:v2.3.6
 
 STOLONBOOT_BINS:=bootstrap/stolonboot
 
