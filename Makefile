@@ -127,5 +127,5 @@ dev-clean:
 
 .PHONY: vendor-import
 vendor-import:
-	gravity app import --debug --vendor --glob=resources/*.yaml --registry-url=apiserver:5000 --state-dir=$(LOCAL_WORK_DIR) . $(PACKAGE)
+	gravity app import --debug --vendor --registry-url=apiserver:5000 --state-dir=$(LOCAL_WORK_DIR) . $(PACKAGE)
 

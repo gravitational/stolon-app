@@ -28,7 +28,7 @@ spec:
     spec:
       containers:
       - name: stolon-proxy
-        image: apiserver:5000/stolon:0.2.0
+        image: stolon:0.2.0
         imagePullPolicy: Always
         env:
           - name: PROXY
