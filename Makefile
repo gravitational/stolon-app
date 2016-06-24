@@ -113,19 +113,20 @@ dev-redeploy: dev-clean dev-deploy
 .PHONY: dev-deploy
 dev-deploy: dev-push
 	-kubectl label nodes --all stolon-keeper=stolon-keeper
-	kubectl create -f dev/bootstrap.yml
+	kubectl create -f dev/bootstrap.yaml
 
 .PHONY: dev-clean
 dev-clean:
 	-kubectl label nodes -l stolon-keeper=stolon-keeper stolon-keeper-
 	-kubectl delete pod/stolon-init secret/stolon
 	-kubectl delete \
-		-f images/bootstrap/resources/keeper.yml \
-		-f images/bootstrap/resources/proxy.yml \
-		-f images/bootstrap/resources/sentinel.yml \
-		-f images/bootstrap/resources/etcd.yml
+		-f images/bootstrap/resources/keeper.yaml \
+		-f images/bootstrap/resources/proxy.yaml \
+		-f images/bootstrap/resources/sentinel.yaml \
+		-f images/bootstrap/resources/etcd.yaml
 
 .PHONY: vendor-import
 vendor-import:
-	gravity app import --debug --vendor --registry-url=apiserver:5000 --state-dir=$(LOCAL_WORK_DIR) . $(PACKAGE)
+	-gravity app --state-dir=$(LOCAL_WORK_DIR) delete $(PACKAGE) --force
+	gravity app import --debug --vendor --glob=**/*.yaml --registry-url=apiserver:5000 --state-dir=$(LOCAL_WORK_DIR) . $(PACKAGE)
 

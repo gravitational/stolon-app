@@ -55,7 +55,7 @@ func bootCluster(sentinels int, proxies int, password string) error {
 
 func createEtcd() error {
 	log.Infof("creating etcd")
-	cmd := kubeCommand("create", "-f", "/resources/etcd.yml")
+	cmd := kubeCommand("create", "-f", "/resources/etcd.yaml")
 	out, err := cmd.CombinedOutput()
 	log.Infof("cmd output: %s", string(out))
 	if err != nil {
@@ -66,7 +66,7 @@ func createEtcd() error {
 
 func createSentinels(sentinels int) error {
 	log.Infof("creating sentinels")
-	cmd := kubeCommand("create", "-f", "/resources/sentinel.yml")
+	cmd := kubeCommand("create", "-f", "/resources/sentinel.yaml")
 	out, err := cmd.CombinedOutput()
 	log.Infof("cmd output: %s", string(out))
 	if err != nil {
@@ -108,7 +108,7 @@ func createSecret(password string) error {
 
 func createKeepers() error {
 	log.Infof("creating initial keeper")
-	cmd := kubeCommand("create", "-f", "/resources/keeper.yml")
+	cmd := kubeCommand("create", "-f", "/resources/keeper.yaml")
 	out, err := cmd.CombinedOutput()
 	log.Infof("cmd output: %s", string(out))
 	if err != nil {
@@ -119,7 +119,7 @@ func createKeepers() error {
 
 func createProxies(proxies int) error {
 	log.Infof("creating proxies")
-	cmd := kubeCommand("create", "-f", "/resources/proxy.yml")
+	cmd := kubeCommand("create", "-f", "/resources/proxy.yaml")
 	out, err := cmd.CombinedOutput()
 	log.Infof("cmd output: %s", string(out))
 	if err != nil {
