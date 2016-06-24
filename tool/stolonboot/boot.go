@@ -73,7 +73,7 @@ func createSentinels(sentinels int) error {
 		return trace.Wrap(err)
 	}
 
-	if err = scaleReplicationController("stolon-sentinel", sentinels, 30); err != nil {
+	if err = scaleReplicationController("stolon-sentinel", sentinels, 120); err != nil {
 		return trace.Wrap(err)
 	}
 	return nil
