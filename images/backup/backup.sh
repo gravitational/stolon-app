@@ -9,6 +9,7 @@ chmod 0600 ~/.pgpass
 
 # pg_dump database
 
-pg_dump --host $STOLON_POSTGRES_SERVICE_HOST --port $STOLON_POSTGRES_SERVICE_PORT -U stolon -w $STOLON_BACKUP_DB | gzip > /backups/stolon-$STOLON_BACKUP_DB-$(date +%Y%m%dT%H%M%S).sql.gz
+filename=/backups/stolon-$STOLON_BACKUP_DB-$(date +%Y%m%dT%H%M%S).sql.gz
+pg_dump --host $STOLON_POSTGRES_SERVICE_HOST --port $STOLON_POSTGRES_SERVICE_PORT -U stolon -w $STOLON_BACKUP_DB | gzip > $filename
 
-echo "backup done"
+echo "backup done: $filename"

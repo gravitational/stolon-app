@@ -122,11 +122,16 @@ dev-clean:
 		-f images/bootstrap/resources/etcd.yaml
 
 BACKUP_DB?=
-.PHONY:
+.PHONY: dev-backup
 dev-backup:
 	-kubectl delete -f resources/backup.yaml
 	sed 's/{{STOLON_BACKUP_DB}}/$(BACKUP_DB)/' resources/backup.yaml | kubectl create -f -
 
+BACKUP_FILE?=
+.PHONY: dev-restore
+dev-restore:
+	-kubectl delete -f resources/restore.yaml
+	sed 's/{{STOLON_BACKUP_DB}}/$(BACKUP_DB)/g;s/{{STOLON_BACKUP_FILE}}/$(BACKUP_FILE)/g' resources/restore.yaml | kubectl create -f -
 
 .PHONY: vendor-import
 vendor-import:
