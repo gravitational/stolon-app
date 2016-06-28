@@ -21,16 +21,12 @@ installer:
     master:
       ram:
         min_total_mb: 2000
-      cpu:
-        min_count: 2
     node:
       min_count: 2
       description: "stolon server"
       labels:
         role: node
         stolon-keeper: stolon-keeper
-      cpu:
-        min_count: 2
       ram:
         min_total_mb: 2000
       directories:
