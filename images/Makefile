@@ -4,10 +4,11 @@ all: images
 ETCD_TAG:=quay.io/coreos/etcd:v2.3.6
 BOOTSTRAP_TAG:=stolon-bootstrap:0.0.1
 UNINSTALL_TAG:=stolon-uninstall:0.0.1
+BACKUP_TAG:=stolon-backup:0.0.1
 STOLON_TAG:=stolon:0.2.0
 
 .PHONY: images
-images: etcd bootstrap uninstall stolon
+images: etcd bootstrap uninstall stolon backup
 
 .PHONY: etcd
 etcd:
@@ -52,4 +53,9 @@ stolon/bin:
 	docker run $(DOCKERFLAGS) $(BUILDIMAGE) ./build
 	mkdir -p stolon/bin
 	cp stolon/stolon/bin/* stolon/bin/
+
+.PHONY: backup
+backup: stolon
+	docker build -t $(BACKUP_TAG) $(PWD)/backup
+	docker tag $(BACKUP_TAG) apiserver:5000/$(BACKUP_TAG)
 
