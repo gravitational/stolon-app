@@ -1,4 +1,4 @@
-VER:=0.0.2
+VER:=0.0.3
 PACKAGE:=gravitational.io/stolon-app:$(VER)
 CONTAINERS:=stolon-bootstrap:0.0.1 stolon-uninstall:0.0.1 stolon:0.2.0
 OUT:=build/stolon-app.tar.gz
