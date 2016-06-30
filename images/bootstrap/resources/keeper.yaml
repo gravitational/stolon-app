@@ -31,11 +31,11 @@ spec:
           - name: STKEEPER_STORE_ENDPOINTS
             value: "127.0.0.1:2379"
           - name: STKEEPER_STORE_CACERT
-            value: "/var/lib/gravity/secrets/root.cert"
+            value: "/etc/etcd/secrets/root.cert"
           - name: STKEEPER_STORE_CERT
-            value: "/var/lib/gravity/secrets/etcd.cert"
+            value: "/etc/etcd/secrets/etcd.cert"
           - name: STKEEPER_STORE_KEY
-            value: "/var/lib/gravity/secrets/etcd.key"
+            value: "/etc/etcd/secrets/etcd.key"
             # Enable debugging
           - name: STKEEPER_PG_REPL_USERNAME
             value: "repluser"
@@ -58,6 +58,8 @@ spec:
             name: stolon
           - mountPath: /var/log
             name: gravity-log
+          - mountPath: /etc/etcd/secrets
+            name: etcd-secrets
       volumes:
         - name: gravity-log
           hostPath:
@@ -68,3 +70,7 @@ spec:
         - name: stolon
           secret:
             secretName: stolon
+        - name: etcd-secrets
+            hostPath:
+              path: /var/state
+      hostNetwork: true

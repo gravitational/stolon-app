@@ -24,7 +24,7 @@ import (
 )
 
 func bootCluster(sentinels int, proxies int, password string) error {
-	err = createSentinels(sentinels)
+	err := createSentinels(sentinels)
 	if err != nil {
 		return trace.Wrap(err)
 	}

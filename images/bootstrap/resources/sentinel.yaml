@@ -28,11 +28,11 @@ spec:
           - name: STSENTINEL_STORE_ENDPOINTS
             value: "127.0.0.1:2379"
           - name: STSENTINEL_STORE_CACERT
-            value: "/var/lib/gravity/secrets/root.cert"
+            value: "/etc/etcd/secrets/root.cert"
           - name: STSENTINEL_STORE_CERT
-            value: "/var/lib/gravity/secrets/etcd.cert"
+            value: "/etc/etcd/secrets/etcd.cert"
           - name: STSENTINEL_STORE_KEY
-            value: "/var/lib/gravity/secrets/etcd.key"
+            value: "/etc/etcd/secrets/etcd.key"
           - name: STSENTINEL_KEEPER_KUBE_LABEL_SELECTOR
             value: "stolon-cluster=kube-stolon,stolon-keeper=true"
             # Enable debugging
@@ -42,3 +42,11 @@ spec:
             value: "default"
         ports:
           - containerPort: 6431
+        volumeMounts:
+          - mountPath: /etc/etcd/secrets
+            name: etcd-secrets
+      volumes:
+        - name: etcd-secrets
+          hostPath:
+            path: /var/state
+      hostNetwork: true
