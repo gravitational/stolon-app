@@ -47,8 +47,8 @@ DOCKERFLAGS=--rm=true $(NOROOT) -v $(PWD)/stolon/stolon:$(SRCDIR) -w $(SRCDIR) -
 BUILDIMAGE=golang:1.5.4
 
 stolon/bin:
-	-git submodule init
-	-git submodule update
+	-git submodule update --init
+	-git submodule update --remote
 	docker run $(DOCKERFLAGS) $(BUILDIMAGE) ./build
 	mkdir -p stolon/bin
 	cp stolon/stolon/bin/* stolon/bin/
