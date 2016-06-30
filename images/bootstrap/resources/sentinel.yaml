@@ -26,7 +26,13 @@ spec:
           - name: STSENTINEL_STORE_BACKEND
             value: "etcd" # Or consul
           - name: STSENTINEL_STORE_ENDPOINTS
-            value: "stolon-etcd:2379"
+            value: "127.0.0.1:2379"
+          - name: STSENTINEL_STORE_CACERT
+            value: "/var/lib/gravity/secrets/root.cert"
+          - name: STSENTINEL_STORE_CERT
+            value: "/var/lib/gravity/secrets/etcd.cert"
+          - name: STSENTINEL_STORE_KEY
+            value: "/var/lib/gravity/secrets/etcd.key"
           - name: STSENTINEL_KEEPER_KUBE_LABEL_SELECTOR
             value: "stolon-cluster=kube-stolon,stolon-keeper=true"
             # Enable debugging

@@ -38,7 +38,13 @@ spec:
           - name: STPROXY_STORE_BACKEND
             value: "etcd" # Or consul
           - name: STPROXY_STORE_ENDPOINTS
-            value: "stolon-etcd:2379"
+            value: "127.0.0.1:2379"
+          - name: STPROXY_STORE_CACERT
+            value: "/var/lib/gravity/secrets/root.cert"
+          - name: STPROXY_STORE_CERT
+            value: "/var/lib/gravity/secrets/etcd.cert"
+          - name: STPROXY_STORE_KEY
+            value: "/var/lib/gravity/secrets/etcd.key"
             # Enable debugging
           - name: STPROXY_DEBUG
             value: "false"

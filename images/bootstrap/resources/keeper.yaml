@@ -29,7 +29,13 @@ spec:
           - name: STKEEPER_STORE_BACKEND
             value: "etcd" # Or consul
           - name: STKEEPER_STORE_ENDPOINTS
-            value: "stolon-etcd:2379"
+            value: "127.0.0.1:2379"
+          - name: STKEEPER_STORE_CACERT
+            value: "/var/lib/gravity/secrets/root.cert"
+          - name: STKEEPER_STORE_CERT
+            value: "/var/lib/gravity/secrets/etcd.cert"
+          - name: STKEEPER_STORE_KEY
+            value: "/var/lib/gravity/secrets/etcd.key"
             # Enable debugging
           - name: STKEEPER_PG_REPL_USERNAME
             value: "repluser"

@@ -1,18 +1,12 @@
 .PHONY: all
 all: images
 
-ETCD_TAG:=quay.io/coreos/etcd:v2.3.6
 BOOTSTRAP_TAG:=stolon-bootstrap:0.0.1
 UNINSTALL_TAG:=stolon-uninstall:0.0.1
 STOLON_TAG:=stolon:0.2.0
 
 .PHONY: images
-images: etcd bootstrap uninstall stolon
-
-.PHONY: etcd
-etcd:
-	docker pull $(ETCD_TAG)
-	docker tag $(ETCD_TAG) apiserver:5000/$(ETCD_TAG)
+images: bootstrap uninstall stolon
 
 STOLONBOOT_BINS:=bootstrap/stolonboot
 $(STOLONBOOT_BINS):
