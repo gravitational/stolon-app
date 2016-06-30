@@ -1,6 +1,6 @@
 VER:=0.0.2
 PACKAGE:=gravitational.io/stolon-app:$(VER)
-CONTAINERS:=stolon-bootstrap:0.0.1 stolon-uninstall:0.0.1
+CONTAINERS:=stolon-bootstrap:0.0.1 stolon-uninstall:0.0.1 stolon:0.2.0
 OUT:=build/stolon-app.tar.gz
 LOCAL_WORK_DIR:=/var/lib/gravity/opscenter
 
