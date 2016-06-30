@@ -71,6 +71,6 @@ spec:
           secret:
             secretName: stolon
         - name: etcd-secrets
-            hostPath:
-              path: /var/state
+          hostPath:
+            path: /var/state
       hostNetwork: true
