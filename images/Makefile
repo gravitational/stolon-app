@@ -1,19 +1,13 @@
 .PHONY: all
 all: images
 
-ETCD_TAG:=quay.io/coreos/etcd:v2.3.6
 BOOTSTRAP_TAG:=stolon-bootstrap:0.0.1
 UNINSTALL_TAG:=stolon-uninstall:0.0.1
 BACKUP_TAG:=stolon-backup:0.0.1
 STOLON_TAG:=stolon:0.2.0
 
 .PHONY: images
-images: etcd bootstrap uninstall stolon backup
-
-.PHONY: etcd
-etcd:
-	docker pull $(ETCD_TAG)
-	docker tag $(ETCD_TAG) apiserver:5000/$(ETCD_TAG)
+images: bootstrap uninstall stolon backup
 
 STOLONBOOT_BINS:=bootstrap/stolonboot
 $(STOLONBOOT_BINS):
@@ -48,8 +42,8 @@ DOCKERFLAGS=--rm=true $(NOROOT) -v $(PWD)/stolon/stolon:$(SRCDIR) -w $(SRCDIR) -
 BUILDIMAGE=golang:1.5.4
 
 stolon/bin:
-	-git submodule init
-	-git submodule update
+	-git submodule update --init
+	-git submodule update --remote
 	docker run $(DOCKERFLAGS) $(BUILDIMAGE) ./build
 	mkdir -p stolon/bin
 	cp stolon/stolon/bin/* stolon/bin/

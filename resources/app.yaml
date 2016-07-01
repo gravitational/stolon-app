@@ -3,7 +3,7 @@ kind: Application
 metadata:
   namespace: default
   name: stolon-app
-  resourceVersion: 0.0.2
+  resourceVersion: 0.0.3
 base: gravitational.io/k8s-aws:1.2.3-1
 hooks:
   install:

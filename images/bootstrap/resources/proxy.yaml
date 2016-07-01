@@ -38,7 +38,13 @@ spec:
           - name: STPROXY_STORE_BACKEND
             value: "etcd" # Or consul
           - name: STPROXY_STORE_ENDPOINTS
-            value: "stolon-etcd:2379"
+            value: "127.0.0.1:2379"
+          - name: STPROXY_STORE_CACERT
+            value: "/etc/etcd/secrets/root.cert"
+          - name: STPROXY_STORE_CERT
+            value: "/etc/etcd/secrets/etcd.cert"
+          - name: STPROXY_STORE_KEY
+            value: "/etc/etcd/secrets/etcd.key"
             # Enable debugging
           - name: STPROXY_DEBUG
             value: "false"
@@ -49,3 +55,11 @@ spec:
             port: 5432
           initialDelaySeconds: 10
           timeoutSeconds: 5
+        volumeMounts:
+          - mountPath: /etc/etcd/secrets
+            name: etcd-secrets
+      volumes:
+        - name: etcd-secrets
+          hostPath:
+            path: /var/state
+      hostNetwork: true

@@ -1,6 +1,6 @@
-VER:=0.0.2
+VER:=0.0.3
 PACKAGE:=gravitational.io/stolon-app:$(VER)
-CONTAINERS:=stolon-bootstrap:0.0.1 stolon-uninstall:0.0.1 quay.io/coreos/etcd:v2.3.6 stolon:0.2.0 stolon-backup:0.0.1
+CONTAINERS:=stolon-bootstrap:0.0.1 stolon-uninstall:0.0.1 stolon:0.2.0 stolon-backup:0.0.1
 OUT:=build/stolon-app.tar.gz
 LOCAL_WORK_DIR:=/var/lib/gravity/opscenter
 
@@ -100,7 +100,6 @@ dev-push: images
 	docker push apiserver:5000/stolon-bootstrap:0.0.1
 	docker push apiserver:5000/stolon-uninstall:0.0.1
 	docker push apiserver:5000/stolon-backup:0.0.1
-	docker push apiserver:5000/quay.io/coreos/etcd:v2.3.6
 	docker push apiserver:5000/stolon:0.2.0
 
 .PHONY: dev-redeploy
@@ -118,8 +117,7 @@ dev-clean:
 	-kubectl delete \
 		-f images/bootstrap/resources/keeper.yaml \
 		-f images/bootstrap/resources/proxy.yaml \
-		-f images/bootstrap/resources/sentinel.yaml \
-		-f images/bootstrap/resources/etcd.yaml
+		-f images/bootstrap/resources/sentinel.yaml
 
 BACKUP_DB?=
 .PHONY: dev-backup

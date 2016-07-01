@@ -1,3 +1,4 @@
 [submodule "images/stolon/stolon"]
 	path = images/stolon/stolon
-	url = git@github.com:sorintlab/stolon.git
+	url = git@github.com:gravitational/stolon.git
+	branch = master

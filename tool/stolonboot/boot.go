@@ -24,13 +24,7 @@ import (
 )
 
 func bootCluster(sentinels int, proxies int, password string) error {
-
-	err := createEtcd()
-	if err != nil {
-		return trace.Wrap(err)
-	}
-
-	err = createSentinels(sentinels)
+	err := createSentinels(sentinels)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -50,17 +44,6 @@ func bootCluster(sentinels int, proxies int, password string) error {
 		return trace.Wrap(err)
 	}
 
-	return nil
-}
-
-func createEtcd() error {
-	log.Infof("creating etcd")
-	cmd := kubeCommand("create", "-f", "/resources/etcd.yaml")
-	out, err := cmd.CombinedOutput()
-	log.Infof("cmd output: %s", string(out))
-	if err != nil {
-		return trace.Wrap(err)
-	}
 	return nil
 }
 
