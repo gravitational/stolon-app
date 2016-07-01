@@ -18,14 +18,15 @@ installer:
           - device: vdb
             mb: 8000
   servers:
+    master:
+      ram:
+        min_total_mb: 2000
     node:
       min_count: 2
       description: "stolon server"
       labels:
         role: node
         stolon-keeper: stolon-keeper
-      cpu:
-        min_count: 1
       ram:
         min_total_mb: 2000
       directories:

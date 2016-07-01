@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: stolon-backup
+spec:
+  template:
+    metadata:
+      name: stolon-backup
+    spec:
+      containers:
+      - name: backup
+        imagePullPolicy: Always
+        image: apiserver:5000/stolon-backup:0.0.1
+        command: ["/backup.sh"]
+        env:
+          - name: STOLON_BACKUP_DB
+            value: "{{STOLON_BACKUP_DB}}"
+        volumeMounts:
+          - mountPath: /backups
+            name: backups
+          - mountPath: /etc/secrets/stolon
+            name: stolon
+      volumes:
+        - name: backups
+          hostPath:
+            path: /var/backups
+        - name: stolon
+          secret:
+            secretName: stolon
+      restartPolicy: OnFailure
