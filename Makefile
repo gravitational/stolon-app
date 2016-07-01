@@ -1,4 +1,4 @@
-VER:=0.0.3
+VER:=0.0.4
 PACKAGE:=gravitational.io/stolon-app:$(VER)
 CONTAINERS:=stolon-bootstrap:0.0.1 stolon-uninstall:0.0.1 stolon:0.2.0
 OUT:=build/stolon-app.tar.gz
@@ -29,7 +29,7 @@ $(OUT): $(shell find resources -type f)
 #
 reimport: $(OUT)
 	-gravity app --state-dir=$(LOCAL_WORK_DIR) delete $(PACKAGE) --force
-	gravity app --state-dir=$(LOCAL_WORK_DIR) import $(OUT) $(PACKAGE)
+	gravity app --state-dir=$(LOCAL_WORK_DIR) import $(OUT)
 
 #
 # starts the temporary docker registry
@@ -124,5 +124,5 @@ dev-clean:
 .PHONY: vendor-import
 vendor-import:
 	-gravity app --state-dir=$(LOCAL_WORK_DIR) delete $(PACKAGE) --force
-	gravity app import --debug --vendor --glob=**/*.yaml --ignore=examples --registry-url=apiserver:5000 --state-dir=$(LOCAL_WORK_DIR) . $(PACKAGE)
+	gravity app import --debug --vendor --glob=**/*.yaml --ignore=examples --registry-url=apiserver:5000 --state-dir=$(LOCAL_WORK_DIR) .
 
