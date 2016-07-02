@@ -22,8 +22,6 @@ installer:
     node:
       min_count: 2
       description: "stolon server"
-      service_label:
-        stolon-postgres: stolon-postgres
       labels:
         role: node
         stolon-keeper: stolon-keeper
@@ -50,11 +48,11 @@ hooks:
         template:
           metadata:
             name: stolon-app-install
-        spec:
-          restartPolicy: OnFailure
-          containers:
-            - name: bootstrap
-              image: stolon-bootstrap:0.0.1
+          spec:
+            restartPolicy: OnFailure
+            containers:
+              - name: bootstrap
+                image: stolon-bootstrap:0.0.1
   uninstall:
     spec:
       apiVersion: batch/v1
@@ -65,8 +63,8 @@ hooks:
         template:
           metadata:
             name: stolon-app-uninstall
-        spec:
-          restartPolicy: OnFailure
-          containers:
-            - name: bootstrap
-              image: stolon-uninstall:0.0.1
+          spec:
+            restartPolicy: OnFailure
+            containers:
+              - name: bootstrap
+                image: stolon-uninstall:0.0.1
