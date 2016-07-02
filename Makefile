@@ -117,9 +117,9 @@ dev-clean:
 	-kubectl label nodes -l stolon-keeper=stolon-keeper stolon-keeper-
 	-kubectl delete pod/stolon-init secret/stolon
 	-kubectl delete \
-		-f images/bootstrap/resources/keeper.yaml \
-		-f images/bootstrap/resources/proxy.yaml \
-		-f images/bootstrap/resources/sentinel.yaml
+		-f resources/keeper.yaml \
+		-f resources/proxy.yaml \
+		-f resources/sentinel.yaml
 
 .PHONY: vendor-import
 vendor-import:
