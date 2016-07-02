@@ -1,0 +1,43 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: stolon-hatest
+spec:
+  template:
+    metadata:
+      name: stolon-hatest
+    spec:
+      containers:
+      - name: hatest
+        imagePullPolicy: Always
+        image: apiserver:5000/stolon-hatest:0.0.1
+        env:
+          - name: STOLONCTL_CLUSTER_NAME
+            value: "kube-stolon"
+          - name: STOLONCTL_STORE_BACKEND
+            value: "etcd"
+          - name: STOLONCTL_STORE_ENDPOINTS
+            value: "127.0.0.1:2379"
+          - name: STOLONCTL_STORE_CACERT
+            value: "/etc/etcd/secrets/root.cert"
+          - name: STOLONCTL_STORE_CERT
+            value: "/etc/etcd/secrets/etcd.cert"
+          - name: STOLONCTL_STORE_KEY
+            value: "/etc/etcd/secrets/etcd.key"
+          - name: LOG_LEVEL
+            value: info
+          - name: DB_USERNAME
+            value: stolon
+          - name: DB_PASSWORD
+            value: password1
+          - name: DB_NAME
+            value: postgres
+        volumeMounts:
+          - name: etcd-secrets
+            mountPath: /etc/etcd/secrets
+      volumes:
+        - name: etcd-secrets
+          hostPath:
+            path: /var/state
+      hostNetwork: true
+      restartPolicy: OnFailure
