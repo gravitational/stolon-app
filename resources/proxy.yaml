@@ -63,4 +63,3 @@ spec:
           hostPath:
             path: /var/state
       hostNetwork: true
-
