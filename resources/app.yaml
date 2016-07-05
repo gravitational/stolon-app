@@ -22,7 +22,8 @@ installer:
       ram:
         min_total_mb: 2000
     node:
-      min_count: 2
+      cpu:
+        min_count: 2
       description: "stolon server"
       labels:
         role: node
