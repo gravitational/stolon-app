@@ -5,7 +5,9 @@ metadata:
   name: stolon-app
   resourceVersion: "0.0.4"
   namespace: default
-base: gravitational.io/k8s-aws:1.2.3-2
+service_labels:
+  stolon-postgres: stolon-postgres
+base: gravitational.io/k8s-aws:1.3.0
 installer:
   provisioners:
     virsh:
@@ -24,8 +26,6 @@ installer:
         min_count: 1
       min_count: 2
       description: "stolon server"
-      service_label:
-        role: stolon-postgres
       labels:
         role: node
         stolon-keeper: stolon-keeper

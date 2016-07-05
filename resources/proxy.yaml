@@ -3,7 +3,7 @@ kind: Service
 metadata:
   name: stolon-postgres
   labels:
-    role: stolon-postgres
+    stolon-postgres: stolon-postgres
 spec:
   type: NodePort
   ports:
