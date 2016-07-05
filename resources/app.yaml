@@ -24,6 +24,8 @@ installer:
         min_count: 1
       min_count: 2
       description: "stolon server"
+      service_label:
+        role: stolon-postgres
       labels:
         role: node
         stolon-keeper: stolon-keeper
