@@ -3,10 +3,11 @@ all: images
 
 BOOTSTRAP_TAG:=stolon-bootstrap:0.0.1
 UNINSTALL_TAG:=stolon-uninstall:0.0.1
+BACKUP_TAG:=stolon-backup:0.0.1
 STOLON_TAG:=stolon:0.2.0
 
 .PHONY: images
-images: bootstrap uninstall stolon
+images: bootstrap uninstall stolon backup
 
 STOLONBOOT_BINS:=bootstrap/stolonboot
 $(STOLONBOOT_BINS):
@@ -46,4 +47,9 @@ stolon/bin:
 	docker run $(DOCKERFLAGS) $(BUILDIMAGE) ./build
 	mkdir -p stolon/bin
 	cp stolon/stolon/bin/* stolon/bin/
+
+.PHONY: backup
+backup: stolon
+	docker build -t $(BACKUP_TAG) $(PWD)/backup
+	docker tag $(BACKUP_TAG) apiserver:5000/$(BACKUP_TAG)
 

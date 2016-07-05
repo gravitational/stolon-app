@@ -1,6 +1,6 @@
 VER:=0.0.4
 PACKAGE:=gravitational.io/stolon-app:$(VER)
-CONTAINERS:=stolon-bootstrap:0.0.1 stolon-uninstall:0.0.1 stolon:0.2.0
+CONTAINERS:=stolon-bootstrap:0.0.1 stolon-uninstall:0.0.1 stolon:0.2.0 stolon-backup:0.0.1
 OUT:=build/stolon-app.tar.gz
 LOCAL_WORK_DIR:=/var/lib/gravity/opscenter
 
@@ -97,11 +97,9 @@ clean:
 
 .PHONY: dev-push
 dev-push: images
-	docker tag stolon-bootstrap:0.0.1 apiserver:5000/stolon-bootstrap:0.0.1
 	docker push apiserver:5000/stolon-bootstrap:0.0.1
-	docker tag stolon-uninstall:0.0.1 apiserver:5000/stolon-uninstall:0.0.1
 	docker push apiserver:5000/stolon-uninstall:0.0.1
-	docker tag stolon:0.2.0 apiserver:5000/stolon:0.2.0
+	docker push apiserver:5000/stolon-backup:0.0.1
 	docker push apiserver:5000/stolon:0.2.0
 
 .PHONY: dev-redeploy
@@ -120,6 +118,18 @@ dev-clean:
 		-f resources/keeper.yaml \
 		-f resources/proxy.yaml \
 		-f resources/sentinel.yaml
+
+BACKUP_DB?=
+.PHONY: dev-backup
+dev-backup:
+	-kubectl delete -f resources/backup.yaml
+	sed 's/{{STOLON_BACKUP_DB}}/$(BACKUP_DB)/' resources/backup.yaml | kubectl create -f -
+
+BACKUP_FILE?=
+.PHONY: dev-restore
+dev-restore:
+	-kubectl delete -f resources/restore.yaml
+	sed 's/{{STOLON_BACKUP_DB}}/$(BACKUP_DB)/g;s/{{STOLON_BACKUP_FILE}}/$(BACKUP_FILE)/g' resources/restore.yaml | kubectl create -f -
 
 .PHONY: vendor-import
 vendor-import:
