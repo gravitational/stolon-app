@@ -107,7 +107,7 @@ dev-redeploy: dev-clean dev-deploy
 
 .PHONY: dev-deploy
 dev-deploy: dev-push
-	-kubectl label nodes -l role=test stolon-keeper=stolon-keeper
+	-kubectl label nodes -l role=node stolon-keeper=stolon-keeper
 	kubectl create -f dev/bootstrap.yaml
 
 .PHONY: dev-clean
