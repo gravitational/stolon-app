@@ -49,7 +49,7 @@ func bootCluster(sentinels int, proxies int, password string) error {
 
 func createSentinels(sentinels int) error {
 	log.Infof("creating sentinels")
-	cmd := kubeCommand("create", "-f", "/resources/sentinel.yaml")
+	cmd := kubeCommand("create", "-f", "/var/lib/gravity/resources/sentinel.yaml")
 	out, err := cmd.CombinedOutput()
 	log.Infof("cmd output: %s", string(out))
 	if err != nil {
@@ -91,7 +91,7 @@ func createSecret(password string) error {
 
 func createKeepers() error {
 	log.Infof("creating initial keeper")
-	cmd := kubeCommand("create", "-f", "/resources/keeper.yaml")
+	cmd := kubeCommand("create", "-f", "/var/lib/gravity/resources/keeper.yaml")
 	out, err := cmd.CombinedOutput()
 	log.Infof("cmd output: %s", string(out))
 	if err != nil {
@@ -102,7 +102,7 @@ func createKeepers() error {
 
 func createProxies(proxies int) error {
 	log.Infof("creating proxies")
-	cmd := kubeCommand("create", "-f", "/resources/proxy.yaml")
+	cmd := kubeCommand("create", "-f", "/var/lib/gravity/resources/proxy.yaml")
 	out, err := cmd.CombinedOutput()
 	log.Infof("cmd output: %s", string(out))
 	if err != nil {
