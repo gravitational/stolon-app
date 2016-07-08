@@ -1,13 +1,20 @@
-VER:=0.0.4
-PACKAGE:=gravitational.io/stolon-app:$(VER)
-CONTAINERS:=stolon-bootstrap:0.0.1 stolon-uninstall:0.0.1 stolon:0.2.0 stolon-backup:0.0.1
-OUT:=build/stolon-app.tar.gz
-LOCAL_WORK_DIR:=/var/lib/gravity/opscenter
+VER := 0.0.4
+PACKAGE := gravitational.io/stolon-app:$(VER)
+CONTAINERS := stolon-bootstrap:0.0.1 stolon-uninstall:0.0.1 stolon:0.2.0 stolon-backup:0.0.1
 
-REGISTRYIMAGE:=registry:2.1.1
-REGISTRYPORT:=5056
-RUNNINGREG:=$$(docker ps -q --filter=ancestor=$(REGISTRYIMAGE))
-REGADDRESS=127.0.0.1:$(REGISTRYPORT)
+OUT := build/stolon-app.tar.gz
+LOCAL_WORK_DIR :=/var/lib/gravity/opscenter
+
+REGISTRYIMAGE := registry:2.1.1
+REGISTRYPORT := 5056
+RUNNINGREG := $$(docker ps -q --filter=ancestor=$(REGISTRYIMAGE))
+REGADDRESS := 127.0.0.1:$(REGISTRYPORT)
+
+LOCAL_OPSCENTER_HOST := opscenter.localhost.localdomain
+APISERVER_HOST := apiserver
+
+IMPORT_OPTS := --registry-url=$(APISERVER_HOST):5000 --ops-url=https://$(LOCAL_OPSCENTER_HOST):33009 --vendor --insecure
+DELETE_OPTS := --ops-url=https://$(LOCAL_OPSCENTER_HOST):33009 --insecure --force
 
 .PHONY: all
 all: $(OUT)
@@ -28,8 +35,8 @@ $(OUT): $(shell find resources -type f)
 # reimports (delete+import) the application into the locally running portal, for development
 #
 reimport: $(OUT)
-	-gravity app --state-dir=$(LOCAL_WORK_DIR) delete $(PACKAGE) --force
-	gravity app --state-dir=$(LOCAL_WORK_DIR) import $(OUT)
+	-gravity app delete $(PACKAGE) $(DELETE_OPTS)
+	gravity app import $(OUT) $(IMPORT_OPTS)
 
 #
 # starts the temporary docker registry
@@ -94,6 +101,10 @@ clean:
 	rm -rf $(OUT)
 	cd images && $(MAKE) clean
 
+.PHONY: dev-site-recreate
+dev-site-recreate:
+	-gravity site delete --force --insecure --debug
+	gravity site create --insecure --debug --app="$(PACKAGE)"
 
 .PHONY: dev-push
 dev-push: images
@@ -130,9 +141,3 @@ BACKUP_FILE?=
 dev-restore:
 	-kubectl delete -f resources/restore.yaml
 	sed 's/{{STOLON_BACKUP_DB}}/$(BACKUP_DB)/g;s/{{STOLON_BACKUP_FILE}}/$(BACKUP_FILE)/g' resources/restore.yaml | kubectl create -f -
-
-.PHONY: vendor-import
-vendor-import:
-	-gravity app --state-dir=$(LOCAL_WORK_DIR) delete $(PACKAGE) --force
-	gravity app import --debug --vendor --glob=**/*.yaml --ignore=examples --registry-url=apiserver:5000 --state-dir=$(LOCAL_WORK_DIR) .
-
