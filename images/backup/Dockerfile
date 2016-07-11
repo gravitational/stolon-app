@@ -1,6 +1,7 @@
 FROM stolon:0.2.0
 
-ADD backup.sh /backup.sh
-ADD restore.sh /restore.sh
+ADD /backup.sh /backup
+ADD /restore.sh /restore
+RUN chmod +x /backup /restore
 
-ENTRYPOINT /backup.sh
+ENTRYPOINT ["/backup"]
