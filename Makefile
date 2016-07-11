@@ -1,20 +1,15 @@
 VER := 0.0.4
 PACKAGE := gravitational.io/stolon-app:$(VER)
-CONTAINERS := stolon-bootstrap:0.0.1 stolon-uninstall:0.0.1 stolon:0.2.0 stolon-backup:0.0.1
+CONTAINERS := stolon-bootstrap:0.0.1 \
+			  stolon-uninstall:0.0.1 \
+			  stolon:0.2.0 \
+			  stolon-backup:0.0.1
 
 OUT := build/stolon-app.tar.gz
-LOCAL_WORK_DIR :=/var/lib/gravity/opscenter
 
-REGISTRYIMAGE := registry:2.1.1
-REGISTRYPORT := 5056
-RUNNINGREG := $$(docker ps -q --filter=ancestor=$(REGISTRYIMAGE))
-REGADDRESS := 127.0.0.1:$(REGISTRYPORT)
+OPSCENTER_WORK_DIR := /var/lib/gravity/opscenter
 
-LOCAL_OPSCENTER_HOST := opscenter.localhost.localdomain
 APISERVER_HOST := apiserver
-
-IMPORT_OPTS := --registry-url=$(APISERVER_HOST):5000 --ops-url=https://$(LOCAL_OPSCENTER_HOST):33009 --vendor --insecure
-DELETE_OPTS := --ops-url=https://$(LOCAL_OPSCENTER_HOST):33009 --insecure --force
 
 .PHONY: all
 all: $(OUT)
@@ -25,86 +20,22 @@ images:
 
 $(OUT): $(shell find resources -type f)
 	$(MAKE) images
-	$(MAKE) start-registry
-	$(MAKE) push-layers-to-registry
-	$(MAKE) export-layers-from-registry
-	$(MAKE) make-tarball
-	$(MAKE) stop-registry
 
-#
-# reimports (delete+import) the application into the locally running portal, for development
-#
-reimport: $(OUT)
-	-gravity app delete $(PACKAGE) $(DELETE_OPTS)
-	gravity app import $(OUT) $(IMPORT_OPTS)
+.PHONY: delete
+delete:
+	-gravity app delete $(PACKAGE) --state-dir=$(OPSCENTER_WORK_DIR) --force
 
-#
-# starts the temporary docker registry
-#
-.PHONY: start-registry
-start-registry:
-	$(MAKE) stop-registry
-	@if [ -z "$(RUNNINGREG)" ]; then \
-		docker run -d -p $(REGISTRYPORT):5000 $(REGISTRYIMAGE) ;\
-		echo "Started temporary Docker registry on port $(REGISTRYPORT)\n" ;\
-		sleep 2 ;\
-	else \
-		echo "Temporary Docker registry is already listening on port $(REGISTRYPORT)\n" ;\
-	fi
+.PHONY: import
+import:
+	gravity app import  --state-dir=$(OPSCENTER_WORK_DIR) --registry-url=$(APISERVER_HOST):5000 --glob=**/*.yaml --ignore=examples --vendor .
 
-#
-# pushes images from local Docker to temporary registry. THIS TAKES A LOT OF TIME.
-#
-.PHONY: push-layers-to-registry
-push-layers-to-registry:
-	for container in $(CONTAINERS); do \
-		echo "docker tag $$container $(REGADDRESS)/$$container" ;\
-		docker tag $$container $(REGADDRESS)/$$container ;\
-		docker push $(REGADDRESS)/$$container ;\
-		docker rmi $(REGADDRESS)/$$container ;\
-		echo "\n" ;\
-	done
-
-#
-# exports /var/lib/registry from temporary registry container into 'registry' folder
-#
-.PHONY: export-layers-from-registry
-export-layers-from-registry:
-	@echo "Copying layers from temporary registry into registry folder..."
-	@rm -rf registry
-	@docker cp $(RUNNINGREG):/var/lib/registry registry
-
-#
-# builds app tarball
-#
-.PHONY: make-tarball
-make-tarball:
-	@echo "Making a tarball..."
-	mkdir -p build
-	tar -cvzf $(OUT) resources registry
-	@echo "done ---> $(OUT)"
-
-#
-# stops the temporary docker registry
-#
-.PHONY: stop-registry
-stop-registry:
-	@if [ ! -z "$(RUNNINGREG)" ]; then \
-		container=$(RUNNINGREG) ;\
-		docker stop $$container >/dev/null && docker rm -v $$container >/dev/null ;\
-	else \
-		echo registry is not running ;\
-	fi
+.PHONY: reimport
+reimport: delete import
 
 .PHONY: clean
 clean:
 	rm -rf $(OUT)
 	cd images && $(MAKE) clean
-
-.PHONY: dev-site-recreate
-dev-site-recreate:
-	-gravity site delete --force --insecure --debug
-	gravity site create --insecure --debug --app="$(PACKAGE)"
 
 .PHONY: dev-push
 dev-push: images
@@ -130,13 +61,13 @@ dev-clean:
 		-f resources/proxy.yaml \
 		-f resources/sentinel.yaml
 
-BACKUP_DB?=
+BACKUP_DB ?=
 .PHONY: dev-backup
 dev-backup:
 	-kubectl delete -f resources/backup.yaml
 	sed 's/{{STOLON_BACKUP_DB}}/$(BACKUP_DB)/' resources/backup.yaml | kubectl create -f -
 
-BACKUP_FILE?=
+BACKUP_FILE ?=
 .PHONY: dev-restore
 dev-restore:
 	-kubectl delete -f resources/restore.yaml
