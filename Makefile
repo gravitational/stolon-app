@@ -50,12 +50,12 @@ dev-redeploy: dev-clean dev-deploy
 
 .PHONY: dev-deploy
 dev-deploy: dev-push
-	-kubectl label nodes -l role=node stolon-keeper=stolon-keeper
+	-kubectl label nodes -l role=node stolon-keeper=yes
 	kubectl create -f dev/bootstrap.yaml
 
 .PHONY: dev-clean
 dev-clean:
-	-kubectl label nodes -l stolon-keeper=stolon-keeper stolon-keeper-
+	-kubectl label nodes -l stolon-keeper=yes stolon-keeper-
 	-kubectl delete pod/stolon-init secret/stolon
 	-kubectl delete \
 		-f resources/keeper.yaml \
