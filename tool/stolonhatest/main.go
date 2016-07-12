@@ -194,14 +194,14 @@ func main() {
 		trace.Wrap(err)
 	}
 
-	log.Infof("Remove label %v from node %v", c.KeeperLabelSelector, kIP)
-	selectorParts := strings.Split(c.KeeperLabelSelector, "=")
-	if err = Label("node", kIP, selectorParts[0]+"-"); err != nil {
+	log.Infof("Killing pod: %v", podName)
+	if err = DeletePod(podName, true); err != nil {
 		trace.Wrap(err)
 	}
 
-	log.Infof("Killing pod: %v", podName)
-	if err = DeletePod(podName, true); err != nil {
+	log.Infof("Remove label %v from node %v", c.KeeperLabelSelector, kIP)
+	selectorParts := strings.Split(c.KeeperLabelSelector, "=")
+	if err = Label("node", kIP, selectorParts[0]+"-"); err != nil {
 		trace.Wrap(err)
 	}
 
@@ -227,5 +227,11 @@ func main() {
 		log.Errorf("Fail to execute statement: %v\n, error: %v", drop, err)
 		trace.Wrap(err)
 	}
+
+	log.Infof("Put label %v to node %v back", c.KeeperLabelSelector, kIP)
+	if err = Label("node", kIP, c.KeeperLabelSelector); err != nil {
+		trace.Wrap(err)
+	}
+
 	log.Info("Done")
 }
