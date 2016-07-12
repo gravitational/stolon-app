@@ -3,20 +3,20 @@ kind: DaemonSet
 metadata:
   name: stolon-keeper
   labels:
-    stolon-keeper: "true"
+    stolon-keeper: "yes"
 spec:
   selector:
     matchLabels:
-      stolon-keeper: "true"
+      stolon-keeper: "yes"
   template:
     metadata:
       labels:
         name: stolon-keeper
         stolon-cluster: "kube-stolon"
-        stolon-keeper: "true"
+        stolon-keeper: "yes"
     spec:
       nodeSelector:
-        stolon-keeper: stolon-keeper
+        stolon-keeper: "yes"
       containers:
       - name: stolon-keeper
         image: apiserver:5000/stolon:0.2.0
@@ -27,7 +27,7 @@ spec:
           - name: STKEEPER_CLUSTER_NAME
             value: "kube-stolon"
           - name: STKEEPER_STORE_BACKEND
-            value: "etcd" # Or consul
+            value: "etcd"
           - name: STKEEPER_STORE_ENDPOINTS
             value: "127.0.0.1:2379"
           - name: STKEEPER_STORE_CACERT
@@ -36,10 +36,8 @@ spec:
             value: "/etc/etcd/secrets/etcd.cert"
           - name: STKEEPER_STORE_KEY
             value: "/etc/etcd/secrets/etcd.key"
-            # Enable debugging
           - name: STKEEPER_PG_REPL_USERNAME
             value: "repluser"
-            # Or use a password file like in the below supersuser password
           - name: STKEEPER_PG_REPL_PASSWORD
             value: "replpassword"
           - name: STKEEPER_PG_SU_USERNAME
@@ -48,6 +46,8 @@ spec:
             value: "/etc/secrets/stolon/password"
           - name: STKEEPER_DEBUG
             value: "false"
+          - name: STKEEPER_PG_BIN_PATH
+            value: /usr/lib/postgresql/9.4/bin
         ports:
           - containerPort: 5431
           - containerPort: 5432

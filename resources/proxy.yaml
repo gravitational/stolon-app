@@ -3,14 +3,14 @@ kind: Service
 metadata:
   name: stolon-postgres
   labels:
-    stolon-postgres: stolon-postgres
+    stolon-postgres: "yes"
 spec:
   type: NodePort
   ports:
     - port: 5432
       targetPort: 5432
   selector:
-    stolon-proxy: "true"
+    stolon-proxy: "yes"
     stolon-cluster: "kube-stolon"
 ---
 apiVersion: v1
@@ -26,7 +26,7 @@ spec:
       labels:
         name: stolon-proxy
         stolon-cluster: "kube-stolon"
-        stolon-proxy: "true"
+        stolon-proxy: "yes"
     spec:
       containers:
       - name: stolon-proxy
@@ -38,7 +38,7 @@ spec:
           - name: STPROXY_CLUSTER_NAME
             value: "kube-stolon"
           - name: STPROXY_STORE_BACKEND
-            value: "etcd" # Or consul
+            value: "etcd"
           - name: STPROXY_STORE_ENDPOINTS
             value: "127.0.0.1:2379"
           - name: STPROXY_STORE_CACERT
@@ -47,7 +47,6 @@ spec:
             value: "/etc/etcd/secrets/etcd.cert"
           - name: STPROXY_STORE_KEY
             value: "/etc/etcd/secrets/etcd.key"
-            # Enable debugging
           - name: STPROXY_DEBUG
             value: "false"
         ports:

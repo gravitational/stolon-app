@@ -25,19 +25,29 @@ spec:
           - name: STOLONCTL_STORE_KEY
             value: "/etc/etcd/secrets/etcd.key"
           - name: LOG_LEVEL
-            value: info
+            value: debug
           - name: DB_USERNAME
             value: stolon
-          - name: DB_PASSWORD
-            value: password1
           - name: DB_NAME
             value: postgres
+          - name: DB_PASSWORD
+            value: password1
+          - name: STOLON_KEEPER_LABEL_SELECTOR
+            value: "stolon-keeper=yes"
         volumeMounts:
           - name: etcd-secrets
             mountPath: /etc/etcd/secrets
+          #TODO: drop this mount if it will be hook
+          - name: kubectl
+            mountPath: /usr/local/bin/kubectl
       volumes:
         - name: etcd-secrets
           hostPath:
             path: /var/state
+        - name: kubectl
+          hostPath:
+            path: /usr/bin/kubectl
       hostNetwork: true
-      restartPolicy: OnFailure
+      restartPolicy: Never
+      nodeSelector:
+        role: master
