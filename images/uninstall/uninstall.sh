@@ -1,3 +1,4 @@
 #!/bin/sh
 
-exit
+echo "Do nothing"
+exit 0

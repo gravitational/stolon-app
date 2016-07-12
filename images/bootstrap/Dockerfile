@@ -1,5 +1,5 @@
-FROM ubuntu:14.04
+FROM quay.io/gravitational/debian-tall:0.0.1
 
-ADD stolonboot /stolonboot
+ADD bin/stolonboot /stolonboot
 
 CMD ["/stolonboot", "-proxies", "1", "-sentinels", "2"]

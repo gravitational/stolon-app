@@ -42,6 +42,7 @@ dev-push: images
 	docker push apiserver:5000/stolon-bootstrap:0.0.1
 	docker push apiserver:5000/stolon-uninstall:0.0.1
 	docker push apiserver:5000/stolon-backup:0.0.1
+	docker push apiserver:5000/stolon-hatest:0.0.1
 	docker push apiserver:5000/stolon:0.2.0
 
 .PHONY: dev-redeploy
@@ -49,12 +50,12 @@ dev-redeploy: dev-clean dev-deploy
 
 .PHONY: dev-deploy
 dev-deploy: dev-push
-	-kubectl label nodes -l role=node stolon-keeper=stolon-keeper
+	-kubectl label nodes -l role=node stolon-keeper=yes
 	kubectl create -f dev/bootstrap.yaml
 
 .PHONY: dev-clean
 dev-clean:
-	-kubectl label nodes -l stolon-keeper=stolon-keeper stolon-keeper-
+	-kubectl label nodes -l stolon-keeper=yes stolon-keeper-
 	-kubectl delete pod/stolon-init secret/stolon
 	-kubectl delete \
 		-f resources/keeper.yaml \
@@ -72,3 +73,8 @@ BACKUP_FILE ?=
 dev-restore:
 	-kubectl delete -f resources/restore.yaml
 	sed 's/{{STOLON_BACKUP_DB}}/$(BACKUP_DB)/g;s/{{STOLON_BACKUP_FILE}}/$(BACKUP_FILE)/g' resources/restore.yaml | kubectl create -f -
+
+.PHONY: dev-hatest
+dev-hatest:
+	-kubectl delete -f resources/hatest.yaml
+	kubectl create -f resources/hatest.yaml

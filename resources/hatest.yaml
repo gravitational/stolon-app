@@ -1,0 +1,53 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: stolon-hatest
+spec:
+  template:
+    metadata:
+      name: stolon-hatest
+    spec:
+      containers:
+      - name: hatest
+        imagePullPolicy: Always
+        image: apiserver:5000/stolon-hatest:0.0.1
+        env:
+          - name: STOLONCTL_CLUSTER_NAME
+            value: "kube-stolon"
+          - name: STOLONCTL_STORE_BACKEND
+            value: "etcd"
+          - name: STOLONCTL_STORE_ENDPOINTS
+            value: "127.0.0.1:2379"
+          - name: STOLONCTL_STORE_CACERT
+            value: "/etc/etcd/secrets/root.cert"
+          - name: STOLONCTL_STORE_CERT
+            value: "/etc/etcd/secrets/etcd.cert"
+          - name: STOLONCTL_STORE_KEY
+            value: "/etc/etcd/secrets/etcd.key"
+          - name: LOG_LEVEL
+            value: debug
+          - name: DB_USERNAME
+            value: stolon
+          - name: DB_NAME
+            value: postgres
+          - name: DB_PASSWORD
+            value: password1
+          - name: STOLON_KEEPER_LABEL_SELECTOR
+            value: "stolon-keeper=yes"
+        volumeMounts:
+          - name: etcd-secrets
+            mountPath: /etc/etcd/secrets
+          #TODO: drop this mount if it will be hook
+          - name: kubectl
+            mountPath: /usr/local/bin/kubectl
+      volumes:
+        - name: etcd-secrets
+          hostPath:
+            path: /var/state
+        - name: kubectl
+          hostPath:
+            path: /usr/bin/kubectl
+      hostNetwork: true
+      restartPolicy: Never
+      nodeSelector:
+        role: master
