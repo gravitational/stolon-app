@@ -69,6 +69,7 @@ stolonctl: stolon/bin
 
 STOLONHATEST_BINS := hatest/bin
 $(STOLONHATEST_BINS):
+	$(MAKE) -C ../tool/stolonhatest clean
 	$(MAKE) -C ../tool/stolonhatest
 	mkdir $(STOLONHATEST_BINS)
 	cp ../tool/stolonhatest/bin/stolonhatest $(STOLONHATEST_BINS)/

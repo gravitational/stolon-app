@@ -1,4 +1,4 @@
-FROM ubuntu:14.04
+FROM quay.io/gravitational/debian-tall:0.0.1
 
 ADD bin/stolonboot /stolonboot
 

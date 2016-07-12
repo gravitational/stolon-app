@@ -1,4 +1,4 @@
-FROM alpine:3.4
+FROM quay.io/gravitational/debian-tall:0.0.1
 
 ADD bin/stolonctl /usr/local/bin/stolonctl
 ADD loop.sh /loop
