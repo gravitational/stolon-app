@@ -54,7 +54,7 @@ func kubeCommand(args ...string) *exec.Cmd {
 
 func GetPodList(selector string) (*PodList, error) {
 	cmd := kubeCommand("get", "pods", "--selector", selector, "--output", "json")
-	out, err := cmd.Output()
+	out, err := cmd.CombinedOutput()
 	log.Debugf("cmd output: %s", string(out))
 	if err != nil {
 		return nil, trace.Wrap(err)
@@ -69,8 +69,8 @@ func GetPodList(selector string) (*PodList, error) {
 	return &pods, nil
 }
 
-func GetPodNameByIP(ip string) (string, error) {
-	pods, err := GetPodList("stolon-keeper=true")
+func GetPodName(selector, ip string) (string, error) {
+	pods, err := GetPodList(selector)
 	if err != nil {
 		return "", trace.Wrap(err)
 	}
@@ -93,9 +93,23 @@ func GetPodNameByIP(ip string) (string, error) {
 	return podName, nil
 }
 
-func DeletePodByName(name string) error {
-	cmd := kubeCommand("delete", "pod", name, "--now=true")
-	out, err := cmd.Output()
+func DeletePod(name string, force bool) error {
+	cmd := kubeCommand("delete", "pod", name)
+	if force {
+		cmd = kubeCommand("delete", "pod", name, "--now=true")
+	}
+	out, err := cmd.CombinedOutput()
+	log.Debugf("cmd output: %s", string(out))
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	return nil
+}
+
+func Label(rType, rName, label string) error {
+	cmd := kubeCommand("label", rType, rName, label)
+	out, err := cmd.CombinedOutput()
 	log.Debugf("cmd output: %s", string(out))
 	if err != nil {
 		return trace.Wrap(err)

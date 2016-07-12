@@ -38,12 +38,13 @@ var (
 )
 
 type Config struct {
-	LogLevel   string `envconfig:"LOG_LEVEL"`
-	DBUsername string `envconfig:"DB_USERNAME"`
-	DBPassword string `envconfig:"DB_PASSWORD"`
-	DBHost     string `envconfig:"STOLON_POSTGRES_SERVICE_HOST"`
-	DBPort     string `envconfig:"STOLON_POSTGRES_SERVICE_PORT"`
-	DBName     string `envconfig:"DB_NAME"`
+	LogLevel            string `envconfig:"LOG_LEVEL"`
+	DBUsername          string `envconfig:"DB_USERNAME"`
+	DBPassword          string `envconfig:"DB_PASSWORD"`
+	DBHost              string `envconfig:"STOLON_POSTGRES_SERVICE_HOST"`
+	DBPort              string `envconfig:"STOLON_POSTGRES_SERVICE_PORT"`
+	DBName              string `envconfig:"DB_NAME"`
+	KeeperLabelSelector string `envconfig:"STOLON_KEEPER_LABEL_SELECTOR"`
 }
 
 func GetConfig() (*Config, error) {
@@ -187,13 +188,22 @@ func main() {
 	}
 	log.Debugf("Master keeper is listening on: %v", kIP)
 
-	log.Debug("Finding k8s pod ...")
-	podName, err := GetPodNameByIP(kIP)
+	log.Debugf("Finding pod with IP %v from pods with %v label ...", kIP, c.KeeperLabelSelector)
+	podName, err := GetPodName(c.KeeperLabelSelector, kIP)
 	if err != nil {
 		trace.Wrap(err)
 	}
+
+	log.Infof("Remove label %v from node %v", c.KeeperLabelSelector, kIP)
+	selectorParts := strings.Split(c.KeeperLabelSelector, "=")
+	if err = Label("node", kIP, selectorParts[0]+"-"); err != nil {
+		trace.Wrap(err)
+	}
+
 	log.Infof("Killing pod: %v", podName)
-	DeletePodByName(podName)
+	if err = DeletePod(podName, true); err != nil {
+		trace.Wrap(err)
+	}
 
 	log.Info("Consistency test ...")
 	log.Debugf("Execute query: %v", query)
@@ -218,6 +228,4 @@ func main() {
 		trace.Wrap(err)
 	}
 	log.Info("Done")
-
-	db.Close()
 }

@@ -37,7 +37,7 @@ func stolonCommand(args ...string) *exec.Cmd {
 
 func GetMasterKeeperState() (*KeeperState, error) {
 	cmd := stolonCommand("master-status", "--output", "json")
-	out, err := cmd.Output()
+	out, err := cmd.CombinedOutput()
 	log.Debugf("cmd output: %s", string(out))
 	if err != nil {
 		return nil, trace.Wrap(err)
