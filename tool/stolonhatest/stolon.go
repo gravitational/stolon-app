@@ -35,8 +35,8 @@ func stolonCommand(args ...string) *exec.Cmd {
 	return exec.Command("stolonctl", args...)
 }
 
-func GetMasterKeeperState() (*KeeperState, error) {
-	cmd := stolonCommand("master-status", "--output", "json")
+func GetMasterKeeperState(clusterName string) (*KeeperState, error) {
+	cmd := stolonCommand("custer", "status", clusterName, "--master", "--json")
 	out, err := cmd.CombinedOutput()
 	log.Debugf("cmd output: %s", string(out))
 	if err != nil {
@@ -52,8 +52,8 @@ func GetMasterKeeperState() (*KeeperState, error) {
 	return &ks, nil
 }
 
-func GetMasterKeeperIP() (string, error) {
-	ks, err := GetMasterKeeperState()
+func GetMasterKeeperIP(clusterName string) (string, error) {
+	ks, err := GetMasterKeeperState(clusterName)
 	if err != nil {
 		return "", trace.Wrap(err)
 	}

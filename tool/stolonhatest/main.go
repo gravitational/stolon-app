@@ -45,6 +45,7 @@ type Config struct {
 	DBPort              string `envconfig:"STOLON_POSTGRES_SERVICE_PORT"`
 	DBName              string `envconfig:"DB_NAME"`
 	KeeperLabelSelector string `envconfig:"STOLON_KEEPER_LABEL_SELECTOR"`
+	ClusterName         string `envconfig:"STOLON_CLUSTER_NAME"`
 }
 
 func GetConfig() (*Config, error) {
@@ -181,8 +182,8 @@ func main() {
 	log.Infof("Expected value: %v", expectedTestString)
 
 	log.Infof("Killing PG master ...")
-	log.Debug("Finding master keeper IP ...")
-	kIP, err := GetMasterKeeperIP()
+	log.Debugf("Finding master keeper IP in stolon cluster %v ...", c.ClusterName)
+	kIP, err := GetMasterKeeperIP(c.ClusterName)
 	if err != nil {
 		trace.Wrap(err)
 	}

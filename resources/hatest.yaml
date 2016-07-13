@@ -34,6 +34,8 @@ spec:
             value: password1
           - name: STOLON_KEEPER_LABEL_SELECTOR
             value: "stolon-keeper=yes"
+          - name: STOLON_CLUSTER_NAME
+            value: "kube-stolon"
         volumeMounts:
           - name: etcd-secrets
             mountPath: /etc/etcd/secrets
