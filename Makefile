@@ -1,36 +1,46 @@
 VER := 0.0.4
-PACKAGE := gravitational.io/stolon-app:$(VER)
-CONTAINERS := stolon-bootstrap:0.0.1 \
-			  stolon-uninstall:0.0.1 \
-			  stolon:0.2.0 \
-			  stolon-backup:0.0.1
+REPOSITORY := gravitational.io
+NAME := stolon-app
+
+OPS_URL ?= https://opscenter.localhost.localdomain:33009
+
+CONTAINERS := stolon-bootstrap:$(VER) \
+			  stolon-uninstall:$(VER) \
+			  stolon:$(VER) \
+			  stolon-backup:$(VER) \
+			  stolon-hatest:$(VER)
+
+IMPORT_IMAGE_FLAGS := --set-image=pithos-bootstrap:$(VER) \
+	--set-image=pithos-uninstall:$(VER) \
+	--set-image=cassandra:$(VER) \
+	--set-image=pithos:$(VER)
+
+IMPORT_OPTIONS := --vendor \
+		--ops-url=$(OPS_URL) \
+		--insecure \
+		--repository=$(REPOSITORY) \
+		--name=$(NAME) \
+		--version=$(VER) \
+		--glob=**/*.yaml \
+		--ignore=dev \
+		--registry-url=apiserver:5000 \
+		$(IMPORT_IMAGE_FLAGS)
 
 OUT := build/stolon-app.tar.gz
-
-OPSCENTER_WORK_DIR := /var/lib/gravity/opscenter
-
-APISERVER_HOST := apiserver
-
 .PHONY: all
 all: $(OUT)
-
-.PHONY: images
-images:
-	cd images && $(MAKE) -f Makefile
 
 $(OUT): $(shell find resources -type f)
 	$(MAKE) images
 
-.PHONY: delete
-delete:
-	-gravity app delete $(PACKAGE) --state-dir=$(OPSCENTER_WORK_DIR) --force
+.PHONY: images
+images:
+	cd images && $(MAKE) -f Makefile VERSION=$(VER)
 
 .PHONY: import
-import:
-	gravity app import  --state-dir=$(OPSCENTER_WORK_DIR) --registry-url=$(APISERVER_HOST):5000 --glob=**/*.yaml --ignore=examples --vendor .
-
-.PHONY: reimport
-reimport: delete import
+import: images
+	-gravity app delete --ops-url=$(OPS_URL) $(REPOSITORY)/$(NAME):$(VER) --force --insecure
+	gravity app import $(IMPORT_OPTIONS) .
 
 .PHONY: clean
 clean:
@@ -39,11 +49,10 @@ clean:
 
 .PHONY: dev-push
 dev-push: images
-	docker push apiserver:5000/stolon-bootstrap:0.0.1
-	docker push apiserver:5000/stolon-uninstall:0.0.1
-	docker push apiserver:5000/stolon-backup:0.0.1
-	docker push apiserver:5000/stolon-hatest:0.0.1
-	docker push apiserver:5000/stolon:0.2.0
+	for container in $(CONTAINERS); do \
+		docker tag $$container apiserver:5000/$$container ;\
+		docker push apiserver:5000/$$container ;\
+	done
 
 .PHONY: dev-redeploy
 dev-redeploy: dev-clean dev-deploy
