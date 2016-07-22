@@ -10,10 +10,11 @@ CONTAINERS := stolon-bootstrap:$(VER) \
 			  stolon-backup:$(VER) \
 			  stolon-hatest:$(VER)
 
-IMPORT_IMAGE_FLAGS := --set-image=pithos-bootstrap:$(VER) \
-	--set-image=pithos-uninstall:$(VER) \
-	--set-image=cassandra:$(VER) \
-	--set-image=pithos:$(VER)
+IMPORT_IMAGE_FLAGS := --set-image=stolon-bootstrap:$(VER) \
+	--set-image=stolon-uninstall:$(VER) \
+	--set-image=stolon:$(VER) \
+	--set-image=stolon-hatest:$(VER) \
+	--set-image=stolon-backup:$(VER)
 
 IMPORT_OPTIONS := --vendor \
 		--ops-url=$(OPS_URL) \
