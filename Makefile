@@ -7,14 +7,14 @@ OPS_URL ?= https://opscenter.localhost.localdomain:33009
 CONTAINERS := stolon-bootstrap:$(VER) \
 			  stolon-uninstall:$(VER) \
 			  stolon:$(VER) \
-			  stolon-backup:$(VER) \
+			  stolonctl:$(VER) \
 			  stolon-hatest:$(VER)
 
 IMPORT_IMAGE_FLAGS := --set-image=stolon-bootstrap:$(VER) \
 	--set-image=stolon-uninstall:$(VER) \
 	--set-image=stolon:$(VER) \
-	--set-image=stolon-hatest:$(VER) \
-	--set-image=stolon-backup:$(VER)
+	--set-image=stolonctl:$(VER) \
+	--set-image=stolon-hatest:$(VER)
 
 IMPORT_OPTIONS := --vendor \
 		--ops-url=$(OPS_URL) \
