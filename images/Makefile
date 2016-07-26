@@ -43,9 +43,8 @@ stolon: $(STOLON_BINS)
 	docker build -t $(STOLON_TAG) $(PWD)/stolon
 
 $(STOLON_BINS):
-	#TODO: uncomment
-	#-git submodule update --init
-	#-git submodule update --remote
+	-git submodule update --init
+	-git submodule update --remote
 	docker run $(BUILDER_DOCKER_FLAGS) $(BUILDER_IMAGE) ./build
 	mkdir -p $(STOLON_BINS)
 	cp stolon/stolon/bin/* $(STOLON_BINS)/
