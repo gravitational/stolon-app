@@ -9,12 +9,12 @@ function setup_stolonctl_cluster() {
 	echo "$STOLON_POSTGRES_SERVICE_HOST:$STOLON_POSTGRES_SERVICE_PORT:*:$STOLONCTL_DB_USERNAME:$(cat /etc/secrets/stolon/password)" > ~/.pgpass
 	chmod 0600 ~/.pgpass
 
-	cat > ~/stolonctl-cluster <<'EOF'
+	cat > /usr/local/bin/stolonctl-cluster <<'EOF'
 	export STOLONCTL_DB_HOST=$STOLON_POSTGRES_SERVICE_HOST
 	export STOLONCTL_DB_PORT=$STOLON_POSTGRES_SERVICE_PORT
 	stolonctl "$@"
 EOF
-	chmod +x ~/stolonctl-cluster
+	chmod +x /usr/local/bin/stolonctl-cluster
 }
 
 function check_data() {
@@ -43,7 +43,7 @@ function launch_proxy() {
 }
 
 function launch_ctl() {
-	~/stolonctl-cluster "$@"
+	/usr/local/bin/stolonctl-cluster "$@"
 }
 
 function main() {
