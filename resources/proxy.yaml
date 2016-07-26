@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
       - name: stolon-proxy
-        image: apiserver:5000/stolon:0.0.5
+        image: apiserver:5000/stolon:latest
         imagePullPolicy: Always
         env:
           - name: PROXY

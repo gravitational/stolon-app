@@ -54,7 +54,7 @@ hooks:
             restartPolicy: OnFailure
             containers:
               - name: bootstrap
-                image: stolon-bootstrap:0.0.5
+                image: stolon-bootstrap:latest
   uninstall:
     spec:
       apiVersion: batch/v1
@@ -69,4 +69,4 @@ hooks:
             restartPolicy: OnFailure
             containers:
               - name: bootstrap
-                image: stolon-uninstall:0.0.5
+                image: stolon-uninstall:latest

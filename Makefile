@@ -1,4 +1,4 @@
-VER := 0.0.5
+VER ?= 0.0.5
 REPOSITORY := gravitational.io
 NAME := stolon-app
 
@@ -7,13 +7,11 @@ OPS_URL ?= https://opscenter.localhost.localdomain:33009
 CONTAINERS := stolon-bootstrap:$(VER) \
 			  stolon-uninstall:$(VER) \
 			  stolon:$(VER) \
-			  stolonctl:$(VER) \
 			  stolon-hatest:$(VER)
 
 IMPORT_IMAGE_FLAGS := --set-image=stolon-bootstrap:$(VER) \
 	--set-image=stolon-uninstall:$(VER) \
 	--set-image=stolon:$(VER) \
-	--set-image=stolonctl:$(VER) \
 	--set-image=stolon-hatest:$(VER)
 
 IMPORT_OPTIONS := --vendor \
@@ -72,7 +70,7 @@ dev-clean:
 		-f resources/proxy.yaml \
 		-f resources/sentinel.yaml
 
-BACKUP_DB ?=
+BACKUP_DB ?= postgres
 .PHONY: dev-backup
 dev-backup:
 	-kubectl delete -f resources/backup.yaml

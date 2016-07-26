@@ -1,4 +1,4 @@
-FROM stolonctl:0.2.0
+FROM stolon:latest
 
 ADD bin/stolonhatest /stolonhatest
 

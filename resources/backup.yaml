@@ -10,8 +10,13 @@ spec:
       containers:
       - name: backup
         imagePullPolicy: Always
-        image: apiserver:5000/stolonctl:0.0.5
-        command: ["stolonctl", "db", "backup", "postgres", "/backups", "--host", "$STOLON_POSTGRES_SERVICE_HOST" , "--port" , "$STOLON_POSTGRES_SERVICE_PORT", "--username", "stolon"]
+        image: apiserver:5000/stolon:latest
+        args: ["db", "backup", "{{STOLON_BACKUP_DB}}", "/backups"]
+        env:
+          - name: STOLONCTL_DB_USERNAME
+            value: "stolon"
+          - name: CTL
+            value: "true"
         volumeMounts:
           - mountPath: /backups
             name: backups
