@@ -80,7 +80,7 @@ BACKUP_FILE ?=
 .PHONY: dev-restore
 dev-restore:
 	-kubectl delete -f resources/restore.yaml
-	sed 's/{{STOLON_BACKUP_DB}}/$(BACKUP_DB)/g;s/{{STOLON_BACKUP_FILE}}/$(BACKUP_FILE)/g' resources/restore.yaml | kubectl create -f -
+	sed 's/{{STOLON_BACKUP_FILE}}/\backups\/$(BACKUP_FILE)/' resources/restore.yaml | kubectl create -f -
 
 .PHONY: dev-hatest
 dev-hatest:

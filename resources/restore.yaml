@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: stolon-restore
+spec:
+  template:
+    metadata:
+      name: stolon-restore
+    spec:
+      containers:
+      - name: restore
+        imagePullPolicy: Always
+        image: apiserver:5000/stolon:latest
+        args: ["db", "restore", "{{STOLON_BACKUP_FILE}}"]
+        env:
+          - name: STOLONCTL_DB_USERNAME
+            value: "stolon"
+          - name: CTL
+            value: "true"
+        volumeMounts:
+          - mountPath: /backups
+            name: backups
+          - mountPath: /etc/secrets/stolon
+            name: stolon
+      volumes:
+        - name: backups
+          hostPath:
+            path: /var/backups
+        - name: stolon
+          secret:
+            secretName: stolon
+      restartPolicy: OnFailure
