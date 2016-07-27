@@ -5,7 +5,7 @@ metadata:
 spec:
   containers:
     - name: stolon-init
-      image: apiserver:5000/stolon-bootstrap:0.0.1
+      image: apiserver:5000/stolon-bootstrap:latest
       imagePullPolicy: Always
       volumeMounts:
         - mountPath: /var/lib/gravity/resources
@@ -16,7 +16,7 @@ spec:
           name: kubectl
   volumes:
   - hostPath:
-      path: /var/lib/gravity/local/packages/unpacked/gravitational.io/stolon-app/0.0.4/resources
+      path: /var/lib/gravity/local/packages/unpacked/gravitational.io/stolon-app/0.0.5/resources
     name: resources
   - hostPath:
       path: /etc/ssl/certs

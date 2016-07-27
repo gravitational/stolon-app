@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: stolon-sentinel
-        image: apiserver:5000/stolon:0.2.0
+        image: apiserver:5000/stolon:latest
         imagePullPolicy: Always
         env:
           - name: SENTINEL

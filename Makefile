@@ -1,4 +1,4 @@
-VER := 0.0.5
+VER ?= 0.0.5
 REPOSITORY := gravitational.io
 NAME := stolon-app
 
@@ -7,14 +7,12 @@ OPS_URL ?= https://opscenter.localhost.localdomain:33009
 CONTAINERS := stolon-bootstrap:$(VER) \
 			  stolon-uninstall:$(VER) \
 			  stolon:$(VER) \
-			  stolon-backup:$(VER) \
 			  stolon-hatest:$(VER)
 
 IMPORT_IMAGE_FLAGS := --set-image=stolon-bootstrap:$(VER) \
 	--set-image=stolon-uninstall:$(VER) \
 	--set-image=stolon:$(VER) \
-	--set-image=stolon-hatest:$(VER) \
-	--set-image=stolon-backup:$(VER)
+	--set-image=stolon-hatest:$(VER)
 
 IMPORT_OPTIONS := --vendor \
 		--ops-url=$(OPS_URL) \
@@ -72,7 +70,7 @@ dev-clean:
 		-f resources/proxy.yaml \
 		-f resources/sentinel.yaml
 
-BACKUP_DB ?=
+BACKUP_DB ?= postgres
 .PHONY: dev-backup
 dev-backup:
 	-kubectl delete -f resources/backup.yaml
@@ -82,7 +80,7 @@ BACKUP_FILE ?=
 .PHONY: dev-restore
 dev-restore:
 	-kubectl delete -f resources/restore.yaml
-	sed 's/{{STOLON_BACKUP_DB}}/$(BACKUP_DB)/g;s/{{STOLON_BACKUP_FILE}}/$(BACKUP_FILE)/g' resources/restore.yaml | kubectl create -f -
+	sed 's/{{STOLON_BACKUP_FILE}}/\backups\/$(BACKUP_FILE)/' resources/restore.yaml | kubectl create -f -
 
 .PHONY: dev-hatest
 dev-hatest:

@@ -3,23 +3,18 @@ all: images
 
 BOOTSTRAP_TAG := stolon-bootstrap:$(VERSION)
 UNINSTALL_TAG := stolon-uninstall:$(VERSION)
-BACKUP_TAG := stolon-backup:$(VERSION)
 HATEST_TAG := stolon-hatest:$(VERSION)
 STOLON_TAG := stolon:$(VERSION)
-STOLONCTL_TAG := stolonctl:$(VERSION)
 
 .PHONY: images
 images: bootstrap \
 		uninstall \
 		stolon \
-		backup \
 		hatest
 	docker tag $(BOOTSTRAP_TAG) stolon-bootstrap:latest
 	docker tag $(UNINSTALL_TAG) stolon-uninstall:latest
-	docker tag $(BACKUP_TAG) stolon-backup:latest
-	docker tag $(HATEST_TAG) stolon-hatest:latest
 	docker tag $(STOLON_TAG) stolon:latest
-	docker tag $(STOLONCTL_TAG) stolonctl:latest
+	docker tag $(HATEST_TAG) stolon-hatest:latest
 
 STOLONBOOT_BINS := bootstrap/bin
 $(STOLONBOOT_BINS):
@@ -35,12 +30,7 @@ bootstrap: $(STOLONBOOT_BINS)
 uninstall:
 	docker build -t $(UNINSTALL_TAG) $(PWD)/uninstall
 
-.PHONY: backup
-backup: stolon
-	docker build -t $(BACKUP_TAG) $(PWD)/backup
-
 STOLON_BINS := stolon/bin
-STOLONCTL_BINS := stolonctl/bin
 BUILDER_DOCKER_FLAGS := --rm=true \
 						-u $$(id -u):$$(id -g) \
 						-v $(PWD)/stolon/stolon:/go/src/github.com/sorintlab/stolon \
@@ -52,18 +42,12 @@ BUILDER_IMAGE := golang:1.5.4
 stolon: $(STOLON_BINS)
 	docker build -t $(STOLON_TAG) $(PWD)/stolon
 
-stolon/bin:
+$(STOLON_BINS):
 	-git submodule update --init
 	-git submodule update --remote
 	docker run $(BUILDER_DOCKER_FLAGS) $(BUILDER_IMAGE) ./build
 	mkdir -p $(STOLON_BINS)
 	cp stolon/stolon/bin/* $(STOLON_BINS)/
-	mkdir -p $(STOLONCTL_BINS)
-	mv stolon/bin/stolonctl $(STOLONCTL_BINS)/
-
-.PHONY: stolonctl
-stolonctl: stolon/bin
-	docker build -t $(STOLONCTL_TAG) $(PWD)/stolonctl
 
 STOLONHATEST_BINS := hatest/bin
 $(STOLONHATEST_BINS):
@@ -73,7 +57,7 @@ $(STOLONHATEST_BINS):
 	cp ../tool/stolonhatest/bin/stolonhatest $(STOLONHATEST_BINS)/
 
 .PHONY: hatest
-hatest: stolonctl $(STOLONHATEST_BINS)
+hatest: $(STOLON_BINS) $(STOLONHATEST_BINS)
 	docker build -t $(HATEST_TAG) $(PWD)/hatest
 
 .PHONY: clean

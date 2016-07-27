@@ -10,7 +10,7 @@ spec:
       containers:
       - name: hatest
         imagePullPolicy: Always
-        image: apiserver:5000/stolon-hatest:0.0.1
+        image: apiserver:5000/stolon-hatest:latest
         env:
           - name: STOLONCTL_CLUSTER_NAME
             value: "kube-stolon"

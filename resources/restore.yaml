@@ -8,25 +8,25 @@ spec:
       name: stolon-restore
     spec:
       containers:
-      - name: backup
+      - name: restore
         imagePullPolicy: Always
-        image: apiserver:5000/stolon-backup:0.0.1
-        command: ["/restore.sh"]
+        image: apiserver:5000/stolon:latest
+        args: ["db", "restore", "{{STOLON_BACKUP_FILE}}"]
         env:
-          - name: STOLON_BACKUP_DB
-            value: "{{STOLON_BACKUP_DB}}"
-          - name: STOLON_BACKUP_FILE
-            value: "{{STOLON_BACKUP_FILE}}"
+          - name: CTL
+            value: "true"
+          - name: STOLONCTL_DB_USERNAME
+            value: "stolon"
+          - name: STOLONCTL_DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: stolon
+                key: password
         volumeMounts:
           - mountPath: /backups
             name: backups
-          - mountPath: /etc/secrets/stolon
-            name: stolon
       volumes:
         - name: backups
           hostPath:
             path: /var/backups
-        - name: stolon
-          secret:
-            secretName: stolon
       restartPolicy: OnFailure
