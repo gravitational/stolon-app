@@ -6,7 +6,7 @@ function setup() {
 }
 
 function setup_stolonctl_cluster() {
-	echo "$STOLON_POSTGRES_SERVICE_HOST:$STOLON_POSTGRES_SERVICE_PORT:*:$STOLONCTL_DB_USERNAME:$(cat /etc/secrets/stolon/password)" > ~/.pgpass
+	echo "$STOLON_POSTGRES_SERVICE_HOST:$STOLON_POSTGRES_SERVICE_PORT:*:$STOLONCTL_DB_USERNAME:$STOLONCTL_DB_PASSWORD" > ~/.pgpass
 	chmod 0600 ~/.pgpass
 
 	cat > /usr/local/bin/stolonctl-cluster <<'EOF'

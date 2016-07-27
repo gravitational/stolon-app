@@ -13,20 +13,20 @@ spec:
         image: apiserver:5000/stolon:latest
         args: ["db", "backup", "{{STOLON_BACKUP_DB}}", "/backups"]
         env:
-          - name: STOLONCTL_DB_USERNAME
-            value: "stolon"
           - name: CTL
             value: "true"
+          - name: STOLONCTL_DB_USERNAME
+            value: "stolon"
+          - name: STOLONCTL_DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: stolon
+                key: password
         volumeMounts:
           - mountPath: /backups
             name: backups
-          - mountPath: /etc/secrets/stolon
-            name: stolon
       volumes:
         - name: backups
           hostPath:
             path: /var/backups
-        - name: stolon
-          secret:
-            secretName: stolon
       restartPolicy: OnFailure
