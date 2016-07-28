@@ -20,8 +20,7 @@ IMPORT_OPTIONS := --vendor \
 		--repository=$(REPOSITORY) \
 		--name=$(NAME) \
 		--version=$(VER) \
-		--glob=**/*.yaml \
-		--ignore=dev \
+		--glob=resources/*.yaml \
 		--registry-url=apiserver:5000 \
 		$(IMPORT_IMAGE_FLAGS)
 
