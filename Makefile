@@ -25,12 +25,8 @@ IMPORT_OPTIONS := --vendor \
 		--registry-url=apiserver:5000 \
 		$(IMPORT_IMAGE_FLAGS)
 
-OUT := build/stolon-app.tar.gz
 .PHONY: all
-all: $(OUT)
-
-$(OUT): $(shell find resources -type f)
-	$(MAKE) images
+all: clean images
 
 .PHONY: images
 images:
@@ -43,7 +39,6 @@ import: images
 
 .PHONY: clean
 clean:
-	rm -rf $(OUT)
 	cd images && $(MAKE) clean
 
 .PHONY: dev-push
