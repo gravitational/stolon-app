@@ -41,6 +41,7 @@ BUILDER_IMAGE := golang:1.5.4
 .PHONY: stolon
 stolon: $(STOLON_BINS)
 	docker build -t $(STOLON_TAG) $(PWD)/stolon
+	docker tag $(STOLON_TAG) stolon:latest
 
 $(STOLON_BINS):
 	-git submodule update --init
