@@ -23,6 +23,7 @@ IMPORT_OPTIONS := --vendor \
 		--version=$(VER) \
 		--glob=**/*.yaml \
 		--ignore=dev \
+		--ignore=images \
 		--registry-url=apiserver:5000 \
 		$(IMPORT_IMAGE_FLAGS)
 
