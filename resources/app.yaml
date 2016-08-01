@@ -3,11 +3,11 @@ kind: Application
 metadata:
   repository: gravitational.io
   name: stolon-app
-  resourceVersion: "0.0.5"
+  resourceVersion: 0.0.1
   namespace: default
 service_labels:
   stolon-postgres: "yes"
-base: gravitational.io/k8s-aws:1.3.0-5
+base: gravitational.io/k8s-onprem:0.0.1
 installer:
   provisioners:
     virsh:
