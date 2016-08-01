@@ -1,4 +1,4 @@
-VER ?= 0.0.6
+VER := 0.0.6
 REPOSITORY := gravitational.io
 NAME := stolon-app
 
@@ -12,7 +12,8 @@ CONTAINERS := stolon-bootstrap:$(VER) \
 IMPORT_IMAGE_DEP_FLAGS := --set-image=stolon-bootstrap:$(VER) \
 	--set-image=stolon-uninstall:$(VER) \
 	--set-image=stolon:$(VER) \
-	--set-image=stolon-hatest:$(VER)
+	--set-image=stolon-hatest:$(VER) \
+	--set-dep=gravitational.io/k8s-onprem:$$(gravity app list --ops-url=$(OPS_URL) --insecure | grep -m 1 k8s-onprem | awk '{print $$3}' | cut -d: -f2 | cut -d, -f1)
 
 IMPORT_OPTIONS := --vendor \
 		--ops-url=$(OPS_URL) \
@@ -20,7 +21,9 @@ IMPORT_OPTIONS := --vendor \
 		--repository=$(REPOSITORY) \
 		--name=$(NAME) \
 		--version=$(VER) \
-		--glob=resources/*.yaml \
+		--glob=**/*.yaml \
+		--ignore=dev \
+		--ignore=images \
 		--registry-url=apiserver:5000 \
 		$(IMPORT_IMAGE_DEP_FLAGS)
 
