@@ -9,7 +9,7 @@ CONTAINERS := stolon-bootstrap:$(VER) \
 			  stolon:$(VER) \
 			  stolon-hatest:$(VER)
 
-IMPORT_IMAGE_DEP_FLAGS := --set-image=stolon-bootstrap:$(VER) \
+IMPORT_IMAGE_OPTIONS := --set-image=stolon-bootstrap:$(VER) \
 	--set-image=stolon-uninstall:$(VER) \
 	--set-image=stolon:$(VER) \
 	--set-image=stolon-hatest:$(VER)
@@ -24,7 +24,7 @@ IMPORT_OPTIONS := --vendor \
 		--ignore=dev \
 		--ignore=images \
 		--registry-url=apiserver:5000 \
-		$(IMPORT_IMAGE_DEP_FLAGS)
+		$(IMPORT_IMAGE_OPTIONS)
 
 .PHONY: all
 all: clean images
