@@ -34,7 +34,6 @@ installer:
       directories:
         - name: /var/lib/gravity
           min_total_mb: 4000
-          fs_types: ["xfs", "btrfs"]
       mounts:
         - source: /var/lib/data/stolon
           destination: /var/lib/data/stolon
