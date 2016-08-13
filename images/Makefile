@@ -22,6 +22,12 @@ $(STOLONBOOT_BINS):
 	mkdir $(STOLONBOOT_BINS)
 	cp ../tool/stolonboot/bin/stolonboot $(STOLONBOOT_BINS)/stolonboot
 
+STOLONHATEST_BINS := hatest/bin
+$(STOLONHATEST_BINS):
+	cd ../tool/stolonhatest && make clean build
+	mkdir $(STOLONHATEST_BINS)
+	cp ../tool/stolonhatest/bin/stolonhatest $(STOLONHATEST_BINS)/stolonhatest
+
 .PHONY: bootstrap
 bootstrap: $(STOLONBOOT_BINS)
 	docker build -t $(BOOTSTRAP_TAG) $(PWD)/bootstrap
@@ -49,13 +55,6 @@ $(STOLON_BINS):
 	docker run $(BUILDER_DOCKER_FLAGS) $(BUILDER_IMAGE) ./build
 	mkdir -p $(STOLON_BINS)
 	cp stolon/stolon/bin/* $(STOLON_BINS)/
-
-STOLONHATEST_BINS := hatest/bin
-$(STOLONHATEST_BINS):
-	$(MAKE) -C ../tool/stolonhatest clean
-	$(MAKE) -C ../tool/stolonhatest
-	mkdir $(STOLONHATEST_BINS)
-	cp ../tool/stolonhatest/bin/stolonhatest $(STOLONHATEST_BINS)/
 
 .PHONY: hatest
 hatest: $(STOLON_BINS) $(STOLONHATEST_BINS)

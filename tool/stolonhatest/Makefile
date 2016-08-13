@@ -1,11 +1,19 @@
-APPLICATION ?= $$(basename $(CURDIR))
-BUILD_DIR ?= bin
+all: bin/stolonhatest
 
-$(BUILD_DIR):
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -o $(BUILD_DIR)/$(APPLICATION) .
+NOROOT=-u $$(id -u):$$(id -g)
+SRCDIR=/go/src/github.com/gravitational/stolon-app
+DOCKERFLAGS=--rm=true $(NOROOT) -v $(PWD):$(SRCDIR) -w $(SRCDIR) -e GO15VENDOREXPERIMENT=1
+BUILDIMAGE=golang:1.5.4
+
+.PHONY: build
+build:
+	docker run $(DOCKERFLAGS) $(BUILDIMAGE) make clean all
+
+bin/stolonhatest: *.go
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -o $@ .
 
 .PHONY: start
-start: $(BUILD_DIR)
+start: bin/stolonhatest
 	goreman start
 
 .PHONY: test
@@ -14,7 +22,7 @@ test:
 
 .PHONY: clean
 clean:
-	-rm -r $(BUILD_DIR)
+	rm -rf bin
 
 .PHONY: install-tools
 install-tools:
