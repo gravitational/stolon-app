@@ -54,3 +54,19 @@ There are several development `Makefile` targets to simplify your workflow:
  * `dev-deploy` deploy the bootstrap with `kubectl`
  * `dev-clean` destroy all cluster resources
  * `dev-redeploy` clean and then deploy the cluster
+ * `dev-hatest` run integration test.
+
+#### HA test
+
+App contains optional integrational test, which described as [k8s resource](./resources/hatest.yaml).
+Generally it's a k8s job, which starts container with go binary.
+
+Logic is straightforward:
+* Connect to DB using stolon-proxy IP and port
+* Create DB schema
+* Write test data
+* Find and kill pod with stolon's keeper in master state
+* Drop label for preventing rescheduling of container on the same node
+* Execute test query and compare results
+
+If some data were returned, replication works.
