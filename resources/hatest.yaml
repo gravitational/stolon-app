@@ -51,5 +51,3 @@ spec:
             path: /usr/bin/kubectl
       hostNetwork: true
       restartPolicy: Never
-      nodeSelector:
-        role: master

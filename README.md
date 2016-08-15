@@ -54,3 +54,4 @@ There are several development `Makefile` targets to simplify your workflow:
  * `dev-deploy` deploy the bootstrap with `kubectl`
  * `dev-clean` destroy all cluster resources
  * `dev-redeploy` clean and then deploy the cluster
+ * `dev-hatest` run integration test.
