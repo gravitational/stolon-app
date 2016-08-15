@@ -113,6 +113,15 @@ func setupLogging(level string) error {
 	return nil
 }
 
+// Integration test for stolon in k8s.
+// Logic is straightforward:
+//	* Connect to DB using stolon-proxy IP and port
+//	* Create DB schema
+//	* Write test data
+//	* Find and kill pod with stolon's keeper in master state
+//	* Drop stolon's labels to prevent rescheduling of container on the same node again
+//	* Execute test query and compare with test data
+// If the test data were returned, replication works.
 func main() {
 	c, err := GetConfig()
 	if err != nil {
