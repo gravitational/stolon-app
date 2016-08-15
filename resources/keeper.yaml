@@ -73,4 +73,3 @@ spec:
         - name: etcd-secrets
           hostPath:
             path: /var/state
-      hostNetwork: true
