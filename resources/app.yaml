@@ -5,7 +5,7 @@ metadata:
   name: stolon-app
   resourceVersion: 0.0.1
   namespace: default
-base: gravitational.io/k8s-onprem:0.0.0+latest
+base: gravitational.io/k8s-aws:0.0.0+latest
 service_labels:
   stolon-postgres: "yes"
 installer:
