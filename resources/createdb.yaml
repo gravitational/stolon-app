@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: stolon-createdb
+spec:
+  template:
+    metadata:
+      name: stolon-createdb
+    spec:
+      containers:
+      - name: createdb
+        imagePullPolicy: Always
+        image: apiserver:5000/stolon:latest
+        args: ["db", "create", "{{STOLON_CREATE_DB}}"]
+        env:
+          - name: CTL
+            value: "true"
+          - name: STOLONCTL_DB_USERNAME
+            value: "stolon"
+          - name: STOLONCTL_DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: stolon
+                key: password
+      restartPolicy: OnFailure
