@@ -8,7 +8,7 @@ spec:
   type: NodePort
   ports:
     - port: 5432
-      targetPort: 5434
+      targetPort: 5432
   selector:
     stolon-proxy: "yes"
     stolon-cluster: "kube-stolon"
@@ -49,13 +49,11 @@ spec:
             value: "/etc/etcd/secrets/etcd.key"
           - name: STPROXY_DEBUG
             value: "false"
-          - name: STPROXY_PORT
-            value: "5434"
         ports:
-          - containerPort: 5434
+          - containerPort: 5432
         readinessProbe:
           tcpSocket:
-            port: 5434
+            port: 5432
           initialDelaySeconds: 10
           timeoutSeconds: 5
         volumeMounts:
