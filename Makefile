@@ -1,4 +1,4 @@
-VER ?= 0.0.9
+VER ?= 0.1.0
 REPOSITORY := gravitational.io
 NAME := stolon-app
 
@@ -78,11 +78,22 @@ dev-clean:
 		-f resources/proxy.yaml \
 		-f resources/sentinel.yaml
 
-BACKUP_DB ?= postgres
+DB_NAME ?= postgres
+.PHONY: dev-createdb
+dev-createdb:
+	-kubectl delete -f resources/createdb.yaml
+	sed 's/{{STOLON_CREATE_DB}}/$(DB_NAME)/' resources/createdb.yaml | kubectl create -f -
+
+.PHONY: dev-deletedb
+dev-deletedb:
+	-kubectl delete -f resources/deletedb.yaml
+	sed 's/{{STOLON_DELETE_DB}}/$(DB_NAME)/' resources/deletedb.yaml | kubectl create -f -
+
+
 .PHONY: dev-backup
 dev-backup:
 	-kubectl delete -f resources/backup.yaml
-	sed 's/{{STOLON_BACKUP_DB}}/$(BACKUP_DB)/' resources/backup.yaml | kubectl create -f -
+	sed 's/{{STOLON_BACKUP_DB}}/$(DB_NAME)/' resources/backup.yaml | kubectl create -f -
 
 BACKUP_FILE ?=
 .PHONY: dev-restore
