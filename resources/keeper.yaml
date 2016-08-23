@@ -48,6 +48,8 @@ spec:
             value: "false"
           - name: STKEEPER_PG_BIN_PATH
             value: /usr/lib/postgresql/9.4/bin
+          - name: STKEEPER_PORT
+            value: "5433"
         ports:
           - containerPort: 5431
           - containerPort: 5432
