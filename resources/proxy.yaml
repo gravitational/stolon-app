@@ -9,6 +9,7 @@ spec:
   ports:
     - port: 5432
       targetPort: 5434
+      nodePort: 31901
   selector:
     stolon-proxy: "yes"
     stolon-cluster: "kube-stolon"
