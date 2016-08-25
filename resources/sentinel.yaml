@@ -36,6 +36,10 @@ spec:
             value: "false"
           - name: STSENTINEL_KUBERNETES_NAMESPACE
             value: "default"
+          - name: STSENTINEL_PORT
+            value: "6431"
+          - name: STSENTINEL_KEEPER_PORT
+            value: "5431"
         ports:
           - containerPort: 6431
         volumeMounts:
