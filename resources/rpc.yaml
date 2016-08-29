@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: stolon-rpc
+  labels:
+    stolon-rpc: "yes"
+spec:
+  type: NodePort
+  ports:
+    - port: 5000
+      targetPort: 5000
+      nodePort: 35000
+  selector:
+    stolon-rpc: "yes"
+    stolon-cluster: "kube-stolon"
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: stolon-rpc
+spec:
+  replicas: 1
+  selector:
+    name: stolon-rpc
+  template:
+    metadata:
+      labels:
+        name: stolon-rpc
+        stolon-cluster: "kube-stolon"
+        stolon-rpc: "yes"
+    spec:
+      containers:
+      - name: stolon-rpc
+        image: apiserver:5000/stolon:latest
+        imagePullPolicy: Always
+        env:
+          - name: RPC
+            value: "true"
+          - name: STOLONRPC_LOG_LEVEL
+            value: "debug"
+          - name: STOLONRPC_PORT
+            value: "5000"
+          - name: STOLONRPC_DB_USERNAME
+            value: "stolon"
+        ports:
+          - containerPort: 5000
+        readinessProbe:
+          tcpSocket:
+            port: 5000
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+      hostNetwork: true

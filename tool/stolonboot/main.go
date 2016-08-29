@@ -24,12 +24,13 @@ import (
 func main() {
 	sentinels := flag.Int("sentinels", 2, "number of sentinels")
 	proxies := flag.Int("proxies", 2, "number of proxies")
+	rpc := flag.Int("rpc", 1, "number of RPC")
 	password := flag.String("password", "password1", "initial database user password")
 
 	flag.Parse()
 
 	log.Infof("starting stolonboot")
-	err := bootCluster(*sentinels, *proxies, *password)
+	err := bootCluster(*sentinels, *proxies, *rpc, *password)
 	if err != nil {
 		log.Error(err.Error())
 		os.Exit(1)

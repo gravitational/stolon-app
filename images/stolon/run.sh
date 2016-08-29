@@ -3,9 +3,8 @@
 function setup() {
 	# use hostname command to get our pod's ip until downward api are less racy (sometimes the podIP from downward api is empty)
 	export POD_IP=$(hostname -i)
-}
 
-function setup_stolonctl_cluster() {
+	# map env vars from k8s service to wrappers around stolon bins
 	echo "$STOLON_POSTGRES_SERVICE_HOST:$STOLON_POSTGRES_SERVICE_PORT:*:$STOLONCTL_DB_USERNAME:$STOLONCTL_DB_PASSWORD" > ~/.pgpass
 	chmod 0600 ~/.pgpass
 
@@ -15,18 +14,22 @@ function setup_stolonctl_cluster() {
 	stolonctl "$@"
 EOF
 	chmod +x /usr/local/bin/stolonctl-cluster
+
+	cat > /usr/local/bin/stolonrpc-cluster <<'EOF'
+	export STOLONRPC_DB_HOST=$STOLON_POSTGRES_SERVICE_HOST
+	export STOLONRPC_DB_PORT=$STOLON_POSTGRES_SERVICE_PORT
+	stolonrpc "$@"
+EOF
+	chmod +x /usr/local/bin/stolonrpc-cluster
 }
 
-function check_data() {
+function launch_keeper() {
 	if [[ ! -e /stolon-data ]]; then
 		echo "stolon data doesn't exist, data won't be persistent!"
 		mkdir /stolon-data
 	fi
 	chown stolon:stolon /stolon-data
-}
 
-function launch_keeper() {
-	check_data
 	export STKEEPER_LISTEN_ADDRESS=$POD_IP
 	export STKEEPER_PG_LISTEN_ADDRESS=$POD_IP
 	su stolon -c "stolon-keeper --data-dir /stolon-data"
@@ -43,13 +46,16 @@ function launch_proxy() {
 }
 
 function launch_ctl() {
-	/usr/local/bin/stolonctl-cluster "$@"
+	stolonctl-cluster "$@"
+}
+
+function launch_rpc() {
+	stolonrpc-cluster
 }
 
 function main() {
 	echo "start"
 	setup
-	setup_stolonctl_cluster
 	env
 
 	if [[ "${KEEPER}" == "true" ]]; then
@@ -69,6 +75,11 @@ function main() {
 
 	if [[ "${CTL}" == "true" ]]; then
 		launch_ctl "$@"
+		exit 0
+	fi
+
+	if [[ "${RPC}" == "true" ]]; then
+		launch_rpc
 		exit 0
 	fi
 
