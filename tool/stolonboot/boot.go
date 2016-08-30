@@ -22,7 +22,7 @@ import (
 	"github.com/gravitational/trace"
 )
 
-func bootCluster(sentinels, proxies, rpc int, password string) error {
+func bootCluster(sentinels int, proxies int, rpc int, password string) error {
 	err := createSentinels(sentinels)
 	if err != nil {
 		return trace.Wrap(err)
