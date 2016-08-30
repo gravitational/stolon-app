@@ -7,9 +7,9 @@ metadata:
 spec:
   type: NodePort
   ports:
-    - port: 5000
-      targetPort: 5000
-      nodePort: 35000
+    - port: 5973
+      targetPort: 5973
+      nodePort: 30973
   selector:
     stolon-rpc: "yes"
     stolon-cluster: "kube-stolon"
@@ -39,14 +39,14 @@ spec:
           - name: STOLONRPC_LOG_LEVEL
             value: "debug"
           - name: STOLONRPC_PORT
-            value: "5000"
+            value: "5973"
           - name: STOLONRPC_DB_USERNAME
             value: "stolon"
         ports:
-          - containerPort: 5000
+          - containerPort: 5973
         readinessProbe:
           tcpSocket:
-            port: 5000
+            port: 5973
           initialDelaySeconds: 10
           timeoutSeconds: 5
       hostNetwork: true
