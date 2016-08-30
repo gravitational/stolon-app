@@ -1,4 +1,4 @@
-VER ?= 0.1.2
+VER ?= 0.1.3
 REPOSITORY := gravitational.io
 NAME := stolon-app
 

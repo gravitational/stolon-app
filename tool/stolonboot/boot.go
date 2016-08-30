@@ -16,14 +16,13 @@ package main
 
 import (
 	"encoding/base64"
-	"io"
-	"os"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/gravitational/rigging"
 	"github.com/gravitational/trace"
 )
 
-func bootCluster(sentinels int, proxies int, password string) error {
+func bootCluster(sentinels int, proxies int, rpc int, password string) error {
 	err := createSentinels(sentinels)
 	if err != nil {
 		return trace.Wrap(err)
@@ -44,19 +43,23 @@ func bootCluster(sentinels int, proxies int, password string) error {
 		return trace.Wrap(err)
 	}
 
+	err = createRPC(rpc)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
 	return nil
 }
 
 func createSentinels(sentinels int) error {
 	log.Infof("creating sentinels")
-	cmd := kubeCommand("create", "-f", "/var/lib/gravity/resources/sentinel.yaml")
-	out, err := cmd.CombinedOutput()
+	out, err := rigging.FromFile(rigging.ActionCreate, "/var/lib/gravity/resources/sentinel.yaml")
 	log.Infof("cmd output: %s", string(out))
 	if err != nil {
 		return trace.Wrap(err)
 	}
 
-	if err = scaleReplicationController("stolon-sentinel", sentinels, 120); err != nil {
+	if err = rigging.ScaleReplicationController("stolon-sentinel", sentinels, 120); err != nil {
 		return trace.Wrap(err)
 	}
 	return nil
@@ -64,25 +67,8 @@ func createSentinels(sentinels int) error {
 
 func createSecret(password string) error {
 	log.Infof("creating secret")
-	cmd := kubeCommand("create", "-f", "-")
-
-	stdin, err := cmd.StdinPipe()
+	err := rigging.FromStdIn(rigging.ActionCreate, generateSecret(password))
 	if err != nil {
-		return trace.Wrap(err)
-	}
-
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	if err := cmd.Start(); err != nil {
-		return trace.Wrap(err)
-	}
-
-	io.WriteString(stdin, generateSecret(password))
-	stdin.Close()
-
-	if err := cmd.Wait(); err != nil {
-		log.Errorf("%v", err)
 		return trace.Wrap(err)
 	}
 
@@ -91,27 +77,42 @@ func createSecret(password string) error {
 
 func createKeepers() error {
 	log.Infof("creating initial keeper")
-	cmd := kubeCommand("create", "-f", "/var/lib/gravity/resources/keeper.yaml")
-	out, err := cmd.CombinedOutput()
+	out, err := rigging.FromFile(rigging.ActionCreate, "/var/lib/gravity/resources/keeper.yaml")
 	log.Infof("cmd output: %s", string(out))
 	if err != nil {
 		return trace.Wrap(err)
 	}
+
 	return nil
 }
 
 func createProxies(proxies int) error {
 	log.Infof("creating proxies")
-	cmd := kubeCommand("create", "-f", "/var/lib/gravity/resources/proxy.yaml")
-	out, err := cmd.CombinedOutput()
+	out, err := rigging.FromFile(rigging.ActionCreate, "/var/lib/gravity/resources/proxy.yaml")
 	log.Infof("cmd output: %s", string(out))
 	if err != nil {
 		return trace.Wrap(err)
 	}
 
-	if err = scaleReplicationController("stolon-proxy", proxies, 60); err != nil {
+	if err = rigging.ScaleReplicationController("stolon-proxy", proxies, 60); err != nil {
 		return trace.Wrap(err)
 	}
+
+	return nil
+}
+
+func createRPC(rpc int) error {
+	log.Infof("creating proxies")
+	out, err := rigging.FromFile(rigging.ActionCreate, "/var/lib/gravity/resources/rpc.yaml")
+	log.Infof("cmd output: %s", string(out))
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	if err = rigging.ScaleReplicationController("stolon-rpc", rpc, 60); err != nil {
+		return trace.Wrap(err)
+	}
+
 	return nil
 }
 

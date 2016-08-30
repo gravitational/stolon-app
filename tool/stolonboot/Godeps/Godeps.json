@@ -1,20 +1,36 @@
 {
 	"ImportPath": "github.com/gravitational/stolon-app/tool/stolonboot",
 	"GoVersion": "go1.5",
-	"GodepVersion": "v62",
+	"GodepVersion": "v74",
+	"Packages": [
+		"./..."
+	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
-			"Comment": "v0.8.3-3-g07d998d",
-			"Rev": "07d998d174c4e2dc90e2f1989a20724220bca1ff"
+			"Comment": "v0.10.0-28-ga283a10",
+			"Rev": "a283a10442df8dc09befd873fab202bf8a253d6a"
+		},
+		{
+			"ImportPath": "github.com/gravitational/rigging",
+			"Rev": "ae30ef3f22ee181b15341290ce4c4254048a2f0f"
 		},
 		{
 			"ImportPath": "github.com/gravitational/trace",
-			"Rev": "6218803b4afb5490afd43d14edcbaa502d568938"
+			"Rev": "3a57d2a585a6d721265df44bae173af5ff71628e"
 		},
 		{
 			"ImportPath": "github.com/jonboulle/clockwork",
-			"Rev": "ed104f61ea4877bea08af6f759805674861e968d"
+			"Comment": "v0.1.0-2-ge3653ac",
+			"Rev": "e3653ace2d63753697e0e5b07b9393971c0bba9d"
+		},
+		{
+			"ImportPath": "golang.org/x/net/context",
+			"Rev": "075e191f18186a8ff2becaf64478e30f4545cdad"
+		},
+		{
+			"ImportPath": "golang.org/x/sys/unix",
+			"Rev": "442cd600860ce722f6615730eb008a37a87b13ee"
 		}
 	]
 }

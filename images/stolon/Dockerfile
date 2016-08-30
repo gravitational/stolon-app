@@ -14,15 +14,12 @@ ADD run.sh \
     bin/stolon-sentinel \
     bin/stolon-proxy \
     bin/stolonctl \
+    bin/stolonrpc \
         /usr/local/bin/
 
-ADD cluster-config.json /etc/stolon/cluster-config.json
+RUN chmod +x /usr/local/bin/run.sh
 
-RUN chmod +x \
-        /usr/local/bin/stolon-keeper \
-        /usr/local/bin/stolon-sentinel \
-        /usr/local/bin/stolon-proxy \
-        /usr/local/bin/run.sh
+ADD cluster-config.json /etc/stolon/cluster-config.json
 
 RUN useradd -ms /bin/bash stolon
 
