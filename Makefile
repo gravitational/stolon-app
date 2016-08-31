@@ -1,4 +1,4 @@
-VER ?= 0.1.3
+VER ?= $(shell git describe --tags)
 REPOSITORY := gravitational.io
 NAME := stolon-app
 
