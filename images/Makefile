@@ -35,7 +35,6 @@ $(STOLON_BINS):
 	-git submodule update --init
 	-git submodule update --remote
 	cd stolon/stolon && make
-	cd -
 	mkdir -p $(STOLON_BINS)
 	cp stolon/stolon/bin/* $(STOLON_BINS)/
 
