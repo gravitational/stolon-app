@@ -25,4 +25,6 @@ RUN useradd -ms /bin/bash stolon
 
 EXPOSE 5431 5432 6431
 
-ENTRYPOINT ["/usr/local/bin/run.sh"]
+RUN test -f /cleanup.sh && sh /cleanup.sh
+
+ENTRYPOINT ["/usr/bin/dumb-init" "/usr/local/bin/run.sh"]
