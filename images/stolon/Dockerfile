@@ -27,4 +27,4 @@ EXPOSE 5431 5432 6431
 
 RUN test -f /cleanup.sh && sh /cleanup.sh
 
-ENTRYPOINT ["/usr/bin/dumb-init" "/usr/local/bin/run.sh"]
+ENTRYPOINT ["/usr/bin/dumb-init", "/usr/local/bin/run.sh"]
