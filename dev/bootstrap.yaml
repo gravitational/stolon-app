@@ -25,5 +25,3 @@ spec:
       path: /usr/bin/kubectl
     name: kubectl
   restartPolicy: Never
-  nodeSelector:
-    role: master
