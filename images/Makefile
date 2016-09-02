@@ -41,7 +41,7 @@ $(STOLON_BINS):
 .PHONY: stolon
 stolon: $(STOLON_BINS)
 	docker build -t $(STOLON_TAG) $(PWD)/stolon
-	docker tag $(STOLON_TAG) stolon:latests
+	docker tag $(STOLON_TAG) stolon:latest
 
 STOLONHATEST_BINS := hatest/bin
 $(STOLONHATEST_BINS):

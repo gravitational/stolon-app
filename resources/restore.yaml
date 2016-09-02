@@ -17,7 +17,7 @@ spec:
             value: "true"
           - name: STOLONCTL_DB_USERNAME
             value: "stolon"
-          - name: STOLONCTL_DB_PASSWORD
+          - name: STOLON_DB_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: stolon

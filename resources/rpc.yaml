@@ -42,6 +42,11 @@ spec:
             value: "5973"
           - name: STOLONRPC_DB_USERNAME
             value: "stolon"
+          - name: STOLON_DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: stolon
+                key: password
         ports:
           - containerPort: 5973
         readinessProbe:

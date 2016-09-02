@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-function setup() {
-	# use hostname command to get our pod's ip until downward api are less racy (sometimes the podIP from downward api is empty)
-	export POD_IP=$(hostname -i)
-
-	# map env vars from k8s service to wrappers around stolon bins
-	echo "$STOLON_POSTGRES_SERVICE_HOST:$STOLON_POSTGRES_SERVICE_PORT:*:$STOLONCTL_DB_USERNAME:$STOLONCTL_DB_PASSWORD" > ~/.pgpass
-	chmod 0600 ~/.pgpass
+# TODO: find how to map ENV vars which is populated by k8s services for discovery to vars, which utilities uses
+function setup_stolonctl() {
+	create_pg_pass "$STOLON_POSTGRES_SERVICE_HOST" \
+				   "$STOLON_POSTGRES_SERVICE_PORT" \
+				   "*" \
+				   "$STOLONCTL_DB_USERNAME" \
+				   "$STOLON_DB_PASSWORD"
 
 	cat > /usr/local/bin/stolonctl-cluster <<'EOF'
 	export STOLONCTL_DB_HOST=$STOLON_POSTGRES_SERVICE_HOST
@@ -14,6 +14,14 @@ function setup() {
 	stolonctl "$@"
 EOF
 	chmod +x /usr/local/bin/stolonctl-cluster
+}
+
+function setup_stolonrpc() {
+	create_pg_pass "$STOLON_POSTGRES_SERVICE_HOST" \
+				   "$STOLON_POSTGRES_SERVICE_PORT" \
+				   "*" \
+				   "$STOLONRPC_DB_USERNAME" \
+				   "$STOLON_DB_PASSWORD"
 
 	cat > /usr/local/bin/stolonrpc-cluster <<'EOF'
 	export STOLONRPC_DB_HOST=$STOLON_POSTGRES_SERVICE_HOST
@@ -21,6 +29,17 @@ EOF
 	stolonrpc "$@"
 EOF
 	chmod +x /usr/local/bin/stolonrpc-cluster
+}
+
+function create_pg_pass() {
+	local host=${1:-$STOLON_POSTGRES_SERVICE_HOST}
+	local port=${2:-$STOLON_POSTGRES_SERVICE_PORT}
+	local database=${3:-"postgres"}
+	local username=${4:-"stolon"}
+	local password=${5}
+
+	echo "$host:$port:$database:$username:$password" > ~/.pgpass
+	chmod 0600 ~/.pgpass
 }
 
 function launch_keeper() {
@@ -55,7 +74,8 @@ function launch_rpc() {
 
 function main() {
 	echo "start"
-	setup
+	# use hostname command to get our pod's ip until downward api are less racy (sometimes the podIP from downward api is empty)
+	export POD_IP=$(hostname -i)
 	env
 
 	if [[ "${KEEPER}" == "true" ]]; then
@@ -74,11 +94,13 @@ function main() {
 	fi
 
 	if [[ "${CTL}" == "true" ]]; then
+		setup_stolonctl
 		launch_ctl "$@"
 		exit 0
 	fi
 
 	if [[ "${RPC}" == "true" ]]; then
+		setup_stolonrpc
 		launch_rpc
 		exit 0
 	fi
