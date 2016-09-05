@@ -1,4 +1,4 @@
-VER ?= $(shell git describe --tags)
+VER ?= $(shell git describe --always --tags|awk -F'[.-]' '{if ($$3==""){print $$1 "." $$2 "." 0}else{print $$1 "." $$2 "." $$3}}')
 REPOSITORY := gravitational.io
 NAME := stolon-app
 
