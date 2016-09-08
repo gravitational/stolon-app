@@ -13,7 +13,7 @@
 		},
 		{
 			"ImportPath": "github.com/gravitational/rigging",
-			"Rev": "ae30ef3f22ee181b15341290ce4c4254048a2f0f"
+			"Rev": "4460632ab3e02604a34c18aad1eb4c55af313262"
 		},
 		{
 			"ImportPath": "github.com/gravitational/trace",

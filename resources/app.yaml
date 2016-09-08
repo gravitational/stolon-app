@@ -19,7 +19,7 @@ installer:
     node:
       cpu:
         min_count: 2
-      min_count: 1
+      min_count: 3
       description: "stolon server"
       labels:
         role: "node"

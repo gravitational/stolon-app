@@ -16,6 +16,7 @@ package main
 
 import (
 	"encoding/base64"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/gravitational/rigging"
@@ -43,9 +44,11 @@ func bootCluster(sentinels int, proxies int, rpc int, password string) error {
 		return trace.Wrap(err)
 	}
 
-	err = createRPC(rpc)
-	if err != nil {
-		return trace.Wrap(err)
+	if rpc > 0 {
+		err = createRPC(rpc)
+		if err != nil {
+			return trace.Wrap(err)
+		}
 	}
 
 	return nil
@@ -55,7 +58,7 @@ func createSentinels(sentinels int) error {
 	log.Infof("creating sentinels")
 	out, err := rigging.FromFile(rigging.ActionCreate, "/var/lib/gravity/resources/sentinel.yaml")
 	log.Infof("cmd output: %s", string(out))
-	if err != nil {
+	if err != nil && !strings.Contains(string(out), "already exists") {
 		return trace.Wrap(err)
 	}
 
@@ -67,8 +70,8 @@ func createSentinels(sentinels int) error {
 
 func createSecret(password string) error {
 	log.Infof("creating secret")
-	err := rigging.FromStdIn(rigging.ActionCreate, generateSecret(password))
-	if err != nil {
+	out, err := rigging.FromStdIn(rigging.ActionCreate, generateSecret(password))
+	if err != nil && !strings.Contains(string(out), "already exists") {
 		return trace.Wrap(err)
 	}
 
@@ -79,7 +82,7 @@ func createKeepers() error {
 	log.Infof("creating initial keeper")
 	out, err := rigging.FromFile(rigging.ActionCreate, "/var/lib/gravity/resources/keeper.yaml")
 	log.Infof("cmd output: %s", string(out))
-	if err != nil {
+	if err != nil && !strings.Contains(string(out), "already exists") {
 		return trace.Wrap(err)
 	}
 
@@ -90,7 +93,7 @@ func createProxies(proxies int) error {
 	log.Infof("creating proxies")
 	out, err := rigging.FromFile(rigging.ActionCreate, "/var/lib/gravity/resources/proxy.yaml")
 	log.Infof("cmd output: %s", string(out))
-	if err != nil {
+	if err != nil && !strings.Contains(string(out), "already exists") {
 		return trace.Wrap(err)
 	}
 
@@ -105,7 +108,7 @@ func createRPC(rpc int) error {
 	log.Infof("creating proxies")
 	out, err := rigging.FromFile(rigging.ActionCreate, "/var/lib/gravity/resources/rpc.yaml")
 	log.Infof("cmd output: %s", string(out))
-	if err != nil {
+	if err != nil && !strings.Contains(string(out), "already exists") {
 		return trace.Wrap(err)
 	}
 
