@@ -49,6 +49,21 @@ hooks:
             containers:
               - name: bootstrap
                 image: stolon-bootstrap:latest
+  update:
+    spec:
+      apiVersion: batch/v1
+      kind: Job
+      metadata:
+        name: stolon-app-update
+      spec:
+        template:
+          metadata:
+            name: stolon-app-update
+          spec:
+            restartPolicy: OnFailure
+            containers:
+              - name: update
+                image: stolon-update:latest
   uninstall:
     spec:
       apiVersion: batch/v1
