@@ -11,6 +11,7 @@ STOLON_TAG := stolon:$(VERSION)
 images: bootstrap \
 		uninstall \
 		stolon \
+		update \
 		hatest
 	docker tag $(BOOTSTRAP_TAG) stolon-bootstrap:latest
 	docker tag $(UNINSTALL_TAG) stolon-uninstall:latest
