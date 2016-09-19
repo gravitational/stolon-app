@@ -19,7 +19,6 @@ installer:
     node:
       cpu:
         min_count: 2
-      min_count: 3
       description: "stolon server"
       labels:
         role: "node"
@@ -33,6 +32,33 @@ installer:
         - source: /var/lib/data/stolon
           destination: /var/lib/data/stolon
           create_if_missing: true
+      instance_types:
+        aws_terraform:
+          - m3.large
+          - m3.xlarge
+          - c3.large
+          - c3.xlarge
+          - c3.2xlarge
+          - c3.4xlarge
+          - i2.xlarge
+          - i2.2xlarge
+  flavors:
+    title: "Select a flavor"
+    items:
+      - name: "single"
+        description: "1 node"
+        threshold:
+          value: 1
+          label: "1"
+        profiles:
+          node: 1
+      - name: "triple"
+        description: "3 nodes"
+        threshold:
+          value: 3
+          label: "3"
+        profiles:
+          node: 3
 hooks:
   install:
     spec:
