@@ -24,6 +24,13 @@ IMPORT_OPTIONS := --vendor \
 		--version=$(VER) \
 		--glob=**/*.yaml \
 		--ignore=dev \
+		--exclude="dev" \
+		--exclude="build" \
+        --exclude=".git" \
+        --exclude="tool" \
+        --exclude="Makefile" \
+        --exclude="images" \
+        --exclude="gravity.log" \
 		--ignore=images \
 		--registry-url=apiserver:5000 \
 		$(IMPORT_IMAGE_OPTIONS)
