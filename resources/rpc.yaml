@@ -33,6 +33,9 @@ spec:
       - name: stolon-rpc
         image: apiserver:5000/stolon:latest
         imagePullPolicy: Always
+        volumeMounts:
+          - mountPath: /usr/local/bin/kubectl
+            name: kubectl
         env:
           - name: RPC
             value: "true"
@@ -55,3 +58,8 @@ spec:
           initialDelaySeconds: 10
           timeoutSeconds: 5
       hostNetwork: true
+      volumes:
+        - hostPath:
+            path: /usr/bin/kubectl
+          name: kubectl
+

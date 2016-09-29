@@ -1,5 +1,17 @@
 #!/usr/bin/env bash
 
+function setup_pithos_ca() {
+	if [ -f /usr/bin/kubectl ]; then
+		mkdir -p /usr/share/ca-certificates/extra
+		kubectl get secret pithos-ca
+		if [ $? -eq 0 ]; then
+			kubectl get secret pithos-ca -o yaml|grep ca.pem|awk '{print $2}' > /usr/share/ca-certificates/extra/pithos.pem
+			update-ca-certificates
+		fi
+	fi
+}
+
+
 # TODO: find how to map ENV vars which is populated by k8s services for discovery to vars, which utilities uses
 function setup_stolonctl() {
 	create_pg_pass "$STOLON_POSTGRES_SERVICE_HOST" \
@@ -76,6 +88,9 @@ function main() {
 	echo "start"
 	# use hostname command to get our pod's ip until downward api are less racy (sometimes the podIP from downward api is empty)
 	export POD_IP=$(hostname -i)
+
+	setup_pithos_ca
+
 	env
 
 	if [[ "${KEEPER}" == "true" ]]; then
