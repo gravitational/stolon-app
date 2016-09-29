@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 function setup_pithos_ca() {
-	if [ -f /usr/bin/kubectl ]; then
+	if [ -f /usr/local/bin/kubectl ]; then
 		mkdir -p /usr/share/ca-certificates/extra
 		kubectl get secret pithos-ca
 		if [ $? -eq 0 ]; then
-			kubectl get secret pithos-ca -o yaml|grep ca.pem|awk '{print $2}' > /usr/share/ca-certificates/extra/pithos.pem
+			kubectl get secret pithos-ca -o yaml|grep ca.pem|awk '{print $2}'|base64 -d > /usr/local/share/ca-certificates/pithos.crt
 			update-ca-certificates
 		fi
 	fi
