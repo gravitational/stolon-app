@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-function setup_pithos_ca() {
+function setup_cluster_ca() {
 	if [ -f /usr/local/bin/kubectl ]; then
 		mkdir -p /usr/share/ca-certificates/extra
-		kubectl get secret pithos-ca
+		kubectl get secret cluster-ca
 		if [ $? -eq 0 ]; then
-			kubectl get secret pithos-ca -o yaml|grep ca.pem|awk '{print $2}'|base64 -d > /usr/local/share/ca-certificates/pithos.crt
+			kubectl get secret cluster-ca -o yaml|grep ca.pem|awk '{print $2}'|base64 -d > /usr/local/share/ca-certificates/cluster.crt
 			update-ca-certificates
 		fi
 	fi
@@ -89,7 +89,7 @@ function main() {
 	# use hostname command to get our pod's ip until downward api are less racy (sometimes the podIP from downward api is empty)
 	export POD_IP=$(hostname -i)
 
-	setup_pithos_ca
+	setup_cluster_ca
 
 	env
 
