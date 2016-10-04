@@ -1,6 +1,21 @@
 #!/usr/bin/env bash
 
+set -e
+
+function die() {
+    echo "ERROR: $*" >&2
+    exit 1
+}
+
+function announce_step() {
+    echo
+    echo "===> $*"
+    echo
+}
+
 function setup_cluster_ca() {
+	announce_step 'Setup cluster CA'
+
 	if [ -f /usr/local/bin/kubectl ]; then
 		mkdir -p /usr/share/ca-certificates/extra
 		kubectl get secret cluster-ca
@@ -14,7 +29,9 @@ function setup_cluster_ca() {
 
 # TODO: find how to map ENV vars which is populated by k8s services for discovery to vars, which utilities uses
 function setup_stolonctl() {
-	create_pg_pass "$STOLON_POSTGRES_SERVICE_HOST" \
+	announce_step 'Setup stolon CLI'
+
+	_create_pg_pass "$STOLON_POSTGRES_SERVICE_HOST" \
 				   "$STOLON_POSTGRES_SERVICE_PORT" \
 				   "*" \
 				   "$STOLONCTL_DB_USERNAME" \
@@ -29,7 +46,9 @@ EOF
 }
 
 function setup_stolonrpc() {
-	create_pg_pass "$STOLON_POSTGRES_SERVICE_HOST" \
+	announce_step 'Setup stolon RPC'
+
+	_create_pg_pass "$STOLON_POSTGRES_SERVICE_HOST" \
 				   "$STOLON_POSTGRES_SERVICE_PORT" \
 				   "*" \
 				   "$STOLONRPC_DB_USERNAME" \
@@ -43,7 +62,7 @@ EOF
 	chmod +x /usr/local/bin/stolonrpc-cluster
 }
 
-function create_pg_pass() {
+function _create_pg_pass() {
 	local host=${1:-$STOLON_POSTGRES_SERVICE_HOST}
 	local port=${2:-$STOLON_POSTGRES_SERVICE_PORT}
 	local database=${3:-"postgres"}
@@ -55,6 +74,8 @@ function create_pg_pass() {
 }
 
 function launch_keeper() {
+	announce_step 'Launching stolon keeper'
+
 	if [[ ! -e /stolon-data ]]; then
 		echo "stolon data doesn't exist, data won't be persistent!"
 		mkdir /stolon-data
@@ -67,32 +88,47 @@ function launch_keeper() {
 }
 
 function launch_sentinel() {
+	announce_step 'Launching stolon sentinel'
+
 	export STSENTINEL_LISTEN_ADDRESS=$POD_IP
 	stolon-sentinel
 }
 
 function launch_proxy() {
+	announce_step 'Launching stolon proxy'
+
 	export STPROXY_LISTEN_ADDRESS=$POD_IP
 	stolon-proxy
 }
 
 function launch_ctl() {
+	announce_step 'Launching stolon CLI'
+
 	stolonctl-cluster "$@"
 }
 
 function launch_rpc() {
+	announce_step 'Launching stolon RPC'
+
 	stolonrpc-cluster
 }
 
-function main() {
-	echo "start"
+function get_pod_ip() {
 	# use hostname command to get our pod's ip until downward api are less racy (sometimes the podIP from downward api is empty)
 	export POD_IP=$(hostname -i)
+}
+
+function main() {
+	announce_step 'Start'
+
+	get_pod_ip
+
+	announce_step 'Dump environment variables'
+	env
 
 	setup_cluster_ca
 
-	env
-
+	announce_step 'Select which component to start'
 	if [[ "${KEEPER}" == "true" ]]; then
 		launch_keeper
 		exit 0
@@ -120,7 +156,7 @@ function main() {
 		exit 0
 	fi
 
-	exit 1
+	die 'Nothing is selected.'
 }
 
 main "$@"
