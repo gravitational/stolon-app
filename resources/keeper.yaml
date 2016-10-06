@@ -70,7 +70,7 @@ spec:
             path: /var/log/gravity
         - name: data
           hostPath:
-            path: /var/lib/data/stolon
+            path: /var/lib/stolon-data
         - name: stolon
           secret:
             secretName: stolon

@@ -29,8 +29,10 @@ installer:
         - name: /var/lib/gravity
           min_total_mb: 4000
       mounts:
-        - source: /var/lib/data/stolon
-          destination: /var/lib/data/stolon
+        - source: /var/lib/stolon-data
+          destination: /var/lib/stolon-data
+          min_total_mb: 4000
+          ifs_types: ["ext4"]
           create_if_missing: true
       instance_types:
         aws_terraform:
