@@ -29,7 +29,8 @@ installer:
         - name: /var/lib/gravity
           min_total_mb: 4000
       mounts:
-        - source: /var/lib/stolon-data
+        - name: stolon-data
+          source: /var/lib/stolon-data
           destination: /var/lib/stolon-data
           min_total_mb: 4000
           ifs_types: ["ext4"]
