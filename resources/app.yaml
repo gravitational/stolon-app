@@ -30,8 +30,8 @@ installer:
           min_total_mb: 4000
       mounts:
         - name: stolon-data
-          source: /var/lib/stolon-data
-          destination: /var/lib/stolon-data
+          source: /var/lib/data/stolon
+          destination: /var/lib/data/stolon
           min_total_mb: 4000
           fs_types: ["ext4"]
           create_if_missing: true
