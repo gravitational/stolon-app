@@ -32,7 +32,6 @@ spec:
       containers:
       - name: stolon-rpc
         image: apiserver:5000/stolon:latest
-        imagePullPolicy: Always
         volumeMounts:
           - mountPath: /usr/local/bin/kubectl
             name: kubectl

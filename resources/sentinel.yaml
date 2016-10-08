@@ -14,7 +14,6 @@ spec:
       containers:
       - name: stolon-sentinel
         image: apiserver:5000/stolon:latest
-        imagePullPolicy: Always
         env:
           - name: SENTINEL
             value: "true"

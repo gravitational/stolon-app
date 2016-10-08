@@ -9,7 +9,6 @@ spec:
     spec:
       containers:
       - name: deletedb
-        imagePullPolicy: Always
         image: apiserver:5000/stolon:latest
         args: ["db", "delete", "{{STOLON_DELETE_DB}}"]
         env:

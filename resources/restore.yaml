@@ -9,7 +9,6 @@ spec:
     spec:
       containers:
       - name: restore
-        imagePullPolicy: Always
         image: apiserver:5000/stolon:latest
         args: ["db", "restore", "{{STOLON_BACKUP_FILE}}"]
         env:
