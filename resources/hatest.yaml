@@ -9,7 +9,6 @@ spec:
     spec:
       containers:
       - name: hatest
-        imagePullPolicy: Always
         image: apiserver:5000/stolon-hatest:latest
         env:
           - name: STOLONCTL_CLUSTER_NAME
