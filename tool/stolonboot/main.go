@@ -15,26 +15,51 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"flag"
 	"os"
 
 	log "github.com/Sirupsen/logrus"
 )
 
+const RandomlyGeneratedDefault = "<randomly generated>"
+const DefaultPasswordLength = 20
+
 func main() {
 	sentinels := flag.Int("sentinels", 2, "number of sentinels")
 	proxies := flag.Int("proxies", 2, "number of proxies")
 	rpc := flag.Int("rpc", 1, "number of RPC")
-	password := flag.String("password", "password1", "initial database user password")
+	password := flag.String("password", RandomlyGeneratedDefault, "initial database user password")
 
 	flag.Parse()
 
 	log.Infof("starting stolonboot")
-	err := bootCluster(*sentinels, *proxies, *rpc, *password)
+
+	var err error
+	if *password == RandomlyGeneratedDefault {
+		*password, err = randomPassword(DefaultPasswordLength)
+		if err != nil {
+			log.Error(err.Error())
+			os.Exit(1)
+		}
+	}
+
+	err = bootCluster(*sentinels, *proxies, *rpc, *password)
 	if err != nil {
 		log.Error(err.Error())
 		os.Exit(1)
 	}
 
 	os.Exit(0)
+}
+
+func randomPassword(length int) (string, error) {
+	data := make([]byte, length)
+	_, err := rand.Read(data)
+	if err != nil {
+		return "", err
+	}
+
+	return base64.StdEncoding.EncodeToString(data)[:length], nil
 }
