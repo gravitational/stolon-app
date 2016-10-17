@@ -43,4 +43,4 @@ else
 		--from-file=default-server.csr=default-server.csr
 fi
 
-/stolonboot -proxies 1 -sentinels 1 -rpc 1
+/usr/local/bin/stolonboot -proxies 1 -sentinels 1 -rpc 1

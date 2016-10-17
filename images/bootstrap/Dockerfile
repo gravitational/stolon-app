@@ -11,5 +11,6 @@ RUN chmod a+x /usr/local/bin/cfssl*
 
 ADD bootstrap.sh /bootstrap.sh
 RUN chmod a+x /bootstrap.sh
+
 CMD ["/bootstrap.sh"]
 
