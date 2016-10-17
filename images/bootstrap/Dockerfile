@@ -1,5 +1,12 @@
 FROM quay.io/gravitational/debian-tall:0.0.1
 
-ADD bin/stolonboot /stolonboot
+ADD bin/cfssl \
+    bin/cfssljson \
+    bin/stolonboot \
+        /usr/local/bin/
+RUN chmod a+x /usr/local/bin/cfssl*
 
-CMD ["/stolonboot", "-proxies", "1", "-sentinels", "1", "-rpc", "1"]
+ADD bootstrap.sh /bootstrap.sh
+RUN chmod a+x /bootstrap.sh
+CMD ["/bootstrap.sh"]
+
