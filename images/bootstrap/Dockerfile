@@ -1,5 +1,8 @@
 FROM quay.io/gravitational/debian-tall:0.0.1
 
+RUN mkdir -p /root/cfssl
+ADD *.json /root/cfssl/
+
 ADD bin/cfssl \
     bin/cfssljson \
     bin/stolonboot \
