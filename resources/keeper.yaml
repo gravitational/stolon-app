@@ -60,7 +60,7 @@ spec:
           - name: STKEEPER_PG_SSL_CA_FILE
             value: /etc/ssl/cluster-ca/ca.pem
           - name: STKEEPER_PG_SSL_CIPHERS
-            value: "TLSv1.2:!aNULL:!eNULL"
+            value: "ECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA256:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA384:EDH+aRSA+AESGCM:EDH+aRSA+SHA256:EDH+aRSA:EECDH:!aNULL:!eNULL:!MEDIUM:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!SEED"
         ports:
           - containerPort: 5431
           - containerPort: 5432
