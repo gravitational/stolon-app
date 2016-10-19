@@ -51,6 +51,14 @@ spec:
             value: "5431"
           - name: STKEEPER_PG_PORT
             value: "5432"
+          - name: STKEEPER_PG_SSL_REPLICATION
+            value: "true"
+          - name: STKEEPER_PG_SSL_CERT_FILE
+            value: /etc/ssl/cluster-default-postgres/default-server.pem
+          - name: STKEEPER_PG_SSL_KEY_FILE
+            value: /etc/ssl/cluster-default-postgres/default-server-key.pem
+          - name: STKEEPER_PG_SSL_CA_FILE
+            value: /etc/ssl/cluster-ca/ca.pem
         ports:
           - containerPort: 5431
           - containerPort: 5432
@@ -63,6 +71,10 @@ spec:
             name: gravity-log
           - mountPath: /etc/etcd/secrets
             name: etcd-secrets
+          - name: cluster-ca
+            mountPath: /etc/ssl/cluster-ca
+          - name: cluster-default-ssl
+            mountPath: /etc/ssl/cluster-default
       volumes:
         - name: gravity-log
           hostPath:
@@ -76,4 +88,10 @@ spec:
         - name: etcd-secrets
           hostPath:
             path: /var/state
+        - name: cluster-ca
+          secret:
+            secretName: cluster-ca
+        - name: cluster-default-ssl
+          secret:
+            secretName: cluster-default-ssl
       hostNetwork: true

@@ -26,6 +26,12 @@ function setup_cluster_ca() {
 	fi
 }
 
+function chmod_keys() {
+	cp -R /etc/ssl/cluster-default /etc/ssl/cluster-default-postgres
+	chown -R stolon /etc/ssl/cluster-default-postgres
+	chmod 0600 /etc/ssl/cluster-default-postgres/default-server-key.pem
+}
+
 
 # TODO: find how to map ENV vars which is populated by k8s services for discovery to vars, which utilities uses
 function setup_stolonctl() {
@@ -130,6 +136,7 @@ function main() {
 
 	announce_step 'Select which component to start'
 	if [[ "${KEEPER}" == "true" ]]; then
+		chmod_keys
 		launch_keeper
 		exit 0
 	fi
@@ -140,6 +147,7 @@ function main() {
 	fi
 
 	if [[ "${PROXY}" == "true" ]]; then
+		chmod_keys
 		launch_proxy
 		exit 0
 	fi
