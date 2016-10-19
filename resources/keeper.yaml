@@ -59,6 +59,8 @@ spec:
             value: /etc/ssl/cluster-default-postgres/default-server-key.pem
           - name: STKEEPER_PG_SSL_CA_FILE
             value: /etc/ssl/cluster-ca/ca.pem
+          - name: STKEEPER_PG_SSL_CIPHERS
+            value: "TLSv1.2:!aNULL:!eNULL"
         ports:
           - containerPort: 5431
           - containerPort: 5432
