@@ -1,0 +1,19 @@
+{
+    "CN": "cluster.local",
+    "hosts": [
+        "cluster.local"
+    ],
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    },
+    "names": [
+        {
+            "C": "US",
+            "ST": "CA",
+            "L": "San Francisco",
+            "O": "Gravitational Inc."
+        }
+    ]
+}
+
