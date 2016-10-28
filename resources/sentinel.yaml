@@ -39,6 +39,8 @@ spec:
             value: "6431"
           - name: STSENTINEL_KEEPER_PORT
             value: "5431"
+          - name: STSENTINEL_INITIAL_CLUSTER_CONFIG
+            value: "/etc/stolon/cluster-config.json"
         ports:
           - containerPort: 6431
         volumeMounts:

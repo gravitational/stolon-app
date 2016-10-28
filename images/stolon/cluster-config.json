@@ -1,1 +1,1 @@
-{"init_with_multiple_keepers" : true}
+{"init_with_multiple_keepers" : true, "max_standbys_per_sender" : 15}
