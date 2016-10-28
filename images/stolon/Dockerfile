@@ -1,7 +1,5 @@
 FROM quay.io/gravitational/debian-grande:0.0.1
 
-ENV STSENTINEL_INITIAL_CLUSTER_CONFIG=/etc/stolon/cluster-config.json
-
 RUN apt-get update && \
     apt-get install --yes --no-install-recommends \
         postgresql \

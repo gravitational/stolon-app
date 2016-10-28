@@ -71,6 +71,13 @@ installer:
           label: "3"
         profiles:
           node: 3
+      - name: "quintuple"
+        description: "5 nodes"
+        threshold:
+          value: 5
+          label: "5"
+        profiles:
+          node: 5
 hooks:
   install:
     spec:
