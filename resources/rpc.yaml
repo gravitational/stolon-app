@@ -14,14 +14,12 @@ spec:
     stolon-rpc: "yes"
     stolon-cluster: "kube-stolon"
 ---
-apiVersion: v1
-kind: ReplicationController
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
   name: stolon-rpc
 spec:
   replicas: 1
-  selector:
-    name: stolon-rpc
   template:
     metadata:
       labels:
