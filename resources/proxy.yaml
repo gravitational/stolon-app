@@ -14,14 +14,12 @@ spec:
     stolon-proxy: "yes"
     stolon-cluster: "kube-stolon"
 ---
-apiVersion: v1
-kind: ReplicationController
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
   name: stolon-proxy
 spec:
   replicas: 1
-  selector:
-    name: stolon-proxy
   template:
     metadata:
       labels:
@@ -29,6 +27,8 @@ spec:
         stolon-cluster: "kube-stolon"
         stolon-proxy: "yes"
     spec:
+      nodeSelector:
+        stolon-keeper: "yes"
       containers:
       - name: stolon-proxy
         image: apiserver:5000/stolon:latest
