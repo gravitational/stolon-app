@@ -1,8 +1,9 @@
 VER ?= $(shell git describe --long --tags --always|awk -F'[.-]' '{print $$1 "." $$2 "." $$4}')
 REPOSITORY := gravitational.io
 NAME := stolon-app
-
 OPS_URL ?= https://opscenter.localhost.localdomain:33009
+
+EXTRA_GRAVITY_OPTIONS ?=
 
 CONTAINERS := stolon-bootstrap:$(VER) \
 			  stolon-uninstall:$(VER) \
@@ -51,8 +52,8 @@ images:
 
 .PHONY: import
 import: images
-	-gravity app delete --ops-url=$(OPS_URL) $(REPOSITORY)/$(NAME):$(VER) --force --insecure
-	gravity app import $(IMPORT_OPTIONS) .
+	-gravity app delete --ops-url=$(OPS_URL) $(REPOSITORY)/$(NAME):$(VER) --force --insecure $(EXTRA_GRAVITY_OPTIONS)
+	gravity app import $(IMPORT_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) .
 
 .PHONY: export
 export: $(TARBALL)
@@ -61,7 +62,7 @@ $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 $(TARBALL): import $(BUILD_DIR)
-	gravity package export $(REPOSITORY)/$(NAME):$(VER) $(TARBALL)
+	gravity package export $(REPOSITORY)/$(NAME):$(VER) $(TARBALL) $(EXTRA_GRAVITY_OPTIONS)
 
 .PHONY: clean
 clean:
