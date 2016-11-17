@@ -1,12 +1,30 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: stolon-postgres
+  labels:
+    stolon-postgres: "yes"
+spec:
+  type: NodePort
+  ports:
+    - port: 5432
+      targetPort: 5434
+      nodePort: 31901
+  selector:
+    stolon-proxy: "yes"
+    stolon-cluster: "kube-stolon"
+---
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
   name: stolon-keeper
   labels:
+    stolon-proxy: "yes"
     stolon-keeper: "yes"
 spec:
   selector:
     matchLabels:
+      stolon-proxy: "yes"
       stolon-keeper: "yes"
   template:
     metadata:
@@ -14,69 +32,113 @@ spec:
         name: stolon-keeper
         stolon-cluster: "kube-stolon"
         stolon-keeper: "yes"
+        stolon-proxy: "yes"
     spec:
       nodeSelector:
         stolon-keeper: "yes"
       containers:
-      - name: stolon-keeper
-        image: apiserver:5000/stolon:latest
-        env:
-          - name: KEEPER
-            value: "true"
-          - name: STKEEPER_CLUSTER_NAME
-            value: "kube-stolon"
-          - name: STKEEPER_STORE_BACKEND
-            value: "etcd"
-          - name: STKEEPER_STORE_ENDPOINTS
-            value: "127.0.0.1:2379"
-          - name: STKEEPER_STORE_CACERT
-            value: "/etc/etcd/secrets/root.cert"
-          - name: STKEEPER_STORE_CERT
-            value: "/etc/etcd/secrets/etcd.cert"
-          - name: STKEEPER_STORE_KEY
-            value: "/etc/etcd/secrets/etcd.key"
-          - name: STKEEPER_PG_REPL_USERNAME
-            value: "repluser"
-          - name: STKEEPER_PG_REPL_PASSWORD
-            value: "replpassword"
-          - name: STKEEPER_PG_SU_USERNAME
-            value: "stolon"
-          - name: STKEEPER_PG_SU_PASSWORDFILE
-            value: "/etc/secrets/stolon/password"
-          - name: STKEEPER_DEBUG
-            value: "false"
-          - name: STKEEPER_PG_BIN_PATH
-            value: /usr/lib/postgresql/9.4/bin
-          - name: STKEEPER_PORT
-            value: "5431"
-          - name: STKEEPER_PG_PORT
-            value: "5432"
-          - name: STKEEPER_PG_SSL_REPLICATION
-            value: "true"
-          - name: STKEEPER_PG_SSL_CERT_FILE
-            value: /etc/ssl/cluster-default-postgres/default-server.pem
-          - name: STKEEPER_PG_SSL_KEY_FILE
-            value: /etc/ssl/cluster-default-postgres/default-server-key.pem
-          - name: STKEEPER_PG_SSL_CA_FILE
-            value: /etc/ssl/cluster-ca/ca.pem
-          - name: STKEEPER_PG_SSL_CIPHERS
-            value: "ECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA256:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA384:EDH+aRSA+AESGCM:EDH+aRSA+SHA256:EDH+aRSA:EECDH:!aNULL:!eNULL:!MEDIUM:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!SEED"
-        ports:
-          - containerPort: 5431
-          - containerPort: 5432
-        volumeMounts:
-          - mountPath: /stolon-data
-            name: data
-          - mountPath: /etc/secrets/stolon
-            name: stolon
-          - mountPath: /var/log
-            name: gravity-log
-          - mountPath: /etc/etcd/secrets
-            name: etcd-secrets
-          - name: cluster-ca
-            mountPath: /etc/ssl/cluster-ca
-          - name: cluster-default-ssl
-            mountPath: /etc/ssl/cluster-default
+        - name: stolon-proxy
+          image: apiserver:5000/stolon:latest
+          ports:
+            - containerPort: 5434
+          readinessProbe:
+            tcpSocket:
+              port: 5434
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+          volumeMounts:
+            - name: etcd-secrets
+              mountPath: /etc/etcd/secrets
+            - name: cluster-ca
+              mountPath: /etc/ssl/cluster-ca
+            - name: cluster-default-ssl
+              mountPath: /etc/ssl/cluster-default
+          env:
+            - name: PROXY
+              value: "true"
+            - name: STPROXY_CLUSTER_NAME
+              value: "kube-stolon"
+            - name: STPROXY_STORE_BACKEND
+              value: "etcd"
+            - name: STPROXY_STORE_ENDPOINTS
+              value: "127.0.0.1:2379"
+            - name: STPROXY_STORE_CACERT
+              value: "/etc/etcd/secrets/root.cert"
+            - name: STPROXY_STORE_CERT
+              value: "/etc/etcd/secrets/etcd.cert"
+            - name: STPROXY_STORE_KEY
+              value: "/etc/etcd/secrets/etcd.key"
+            - name: STPROXY_DEBUG
+              value: "false"
+            - name: STPROXY_PORT
+              value: "5434"
+            - name: STPROXY_PG_SSL_REPLICATION
+              value: "true"
+            - name: STPROXY_PG_SSL_CERT_FILE
+              value: /etc/ssl/cluster-default-postgres/default-server.pem
+            - name: STPROXY_PG_SSL_KEY_FILE
+              value: /etc/ssl/cluster-default-postgres/default-server-key.pem
+            - name: STPROXY_PG_SSL_CA_FILE
+              value: /etc/ssl/cluster-ca/ca.pem
+        - name: stolon-keeper
+          image: apiserver:5000/stolon:latest
+          ports:
+            - containerPort: 5431
+            - containerPort: 5432
+          volumeMounts:
+            - name: data
+              mountPath: /stolon-data
+            - name: stolon
+              mountPath: /etc/secrets/stolon
+            - name: gravity-log
+              mountPath: /var/log
+            - name: etcd-secrets
+              mountPath: /etc/etcd/secrets
+            - name: cluster-ca
+              mountPath: /etc/ssl/cluster-ca
+            - name: cluster-default-ssl
+              mountPath: /etc/ssl/cluster-default
+          env:
+            - name: KEEPER
+              value: "true"
+            - name: STKEEPER_CLUSTER_NAME
+              value: "kube-stolon"
+            - name: STKEEPER_STORE_BACKEND
+              value: "etcd"
+            - name: STKEEPER_STORE_ENDPOINTS
+              value: "127.0.0.1:2379"
+            - name: STKEEPER_STORE_CACERT
+              value: "/etc/etcd/secrets/root.cert"
+            - name: STKEEPER_STORE_CERT
+              value: "/etc/etcd/secrets/etcd.cert"
+            - name: STKEEPER_STORE_KEY
+              value: "/etc/etcd/secrets/etcd.key"
+            - name: STKEEPER_PG_REPL_USERNAME
+              value: "repluser"
+            - name: STKEEPER_PG_REPL_PASSWORD
+              value: "replpassword"
+            - name: STKEEPER_PG_SU_USERNAME
+              value: "stolon"
+            - name: STKEEPER_PG_SU_PASSWORDFILE
+              value: "/etc/secrets/stolon/password"
+            - name: STKEEPER_DEBUG
+              value: "false"
+            - name: STKEEPER_PG_BIN_PATH
+              value: /usr/lib/postgresql/9.4/bin
+            - name: STKEEPER_PORT
+              value: "5431"
+            - name: STKEEPER_PG_PORT
+              value: "5432"
+            - name: STKEEPER_PG_SSL_REPLICATION
+              value: "true"
+            - name: STKEEPER_PG_SSL_CERT_FILE
+              value: /etc/ssl/cluster-default-postgres/default-server.pem
+            - name: STKEEPER_PG_SSL_KEY_FILE
+              value: /etc/ssl/cluster-default-postgres/default-server-key.pem
+            - name: STKEEPER_PG_SSL_CA_FILE
+              value: /etc/ssl/cluster-ca/ca.pem
+            - name: STKEEPER_PG_SSL_CIPHERS
+              value: "ECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA256:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:EECDH+aRSA+SHA384:EDH+aRSA+AESGCM:EDH+aRSA+SHA256:EDH+aRSA:EECDH:!aNULL:!eNULL:!MEDIUM:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!SEED"
       volumes:
         - name: gravity-log
           hostPath:

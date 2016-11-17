@@ -23,7 +23,7 @@ import (
 	"github.com/gravitational/trace"
 )
 
-func bootCluster(sentinels int, proxies int, rpc int, password string) error {
+func bootCluster(sentinels int, rpc int, password string) error {
 	err := createSentinels(sentinels)
 	if err != nil {
 		return trace.Wrap(err)
@@ -35,11 +35,6 @@ func bootCluster(sentinels int, proxies int, rpc int, password string) error {
 	}
 
 	err = createKeepers()
-	if err != nil {
-		return trace.Wrap(err)
-	}
-
-	err = createProxies(proxies)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -89,23 +84,8 @@ func createKeepers() error {
 	return nil
 }
 
-func createProxies(proxies int) error {
-	log.Infof("creating proxies")
-	out, err := rigging.FromFile(rigging.ActionCreate, "/var/lib/gravity/resources/proxy.yaml")
-	log.Infof("cmd output: %s", string(out))
-	if err != nil && !strings.Contains(string(out), "already exists") {
-		return trace.Wrap(err)
-	}
-
-	if err = rigging.ScaleReplicationController("stolon-proxy", proxies, 60); err != nil {
-		return trace.Wrap(err)
-	}
-
-	return nil
-}
-
 func createRPC(rpc int) error {
-	log.Infof("creating proxies")
+	log.Infof("creating rpc")
 	out, err := rigging.FromFile(rigging.ActionCreate, "/var/lib/gravity/resources/rpc.yaml")
 	log.Infof("cmd output: %s", string(out))
 	if err != nil && !strings.Contains(string(out), "already exists") {
