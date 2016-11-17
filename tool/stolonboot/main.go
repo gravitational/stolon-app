@@ -28,7 +28,6 @@ const DefaultPasswordLength = 20
 
 func main() {
 	sentinels := flag.Int("sentinels", 2, "number of sentinels")
-	proxies := flag.Int("proxies", 2, "number of proxies")
 	rpc := flag.Int("rpc", 1, "number of RPC")
 	password := flag.String("password", RandomlyGeneratedDefault, "initial database user password")
 
@@ -45,7 +44,7 @@ func main() {
 		}
 	}
 
-	err = bootCluster(*sentinels, *proxies, *rpc, *password)
+	err = bootCluster(*sentinels, *rpc, *password)
 	if err != nil {
 		log.Error(err.Error())
 		os.Exit(1)
