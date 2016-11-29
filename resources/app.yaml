@@ -57,21 +57,21 @@ installer:
   flavors:
     title: "Select a flavor"
     items:
-      - name: "single"
+      - name: "one"
         description: "1 node"
         threshold:
           value: 1
           label: "1"
         profiles:
           node: 1
-      - name: "triple"
+      - name: "three"
         description: "3 nodes"
         threshold:
           value: 3
           label: "3"
         profiles:
           node: 3
-      - name: "quintuple"
+      - name: "five"
         description: "5 nodes"
         threshold:
           value: 5
