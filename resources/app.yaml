@@ -6,6 +6,9 @@ metadata:
   resourceVersion: 0.0.1
   namespace: default
 base: gravitational.io/k8s-onprem:0.0.0+latest
+dependencies:
+  apps:
+    - gravitational.io/cluster-ssl-app:0.0.0+latest
 service_labels:
   stolon-postgres: "yes"
 installer:
