@@ -24,8 +24,6 @@ $(STOLONBOOT_BINS):
 	cd ../tool/stolonboot && make clean build
 	mkdir $(STOLONBOOT_BINS)
 	cp ../tool/stolonboot/bin/stolonboot $(STOLONBOOT_BINS)/stolonboot
-	wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64 -O $(STOLONBOOT_BINS)/cfssl
-	wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64 -O $(STOLONBOOT_BINS)/cfssljson
 
 .PHONY: bootstrap
 bootstrap: $(STOLONBOOT_BINS)
