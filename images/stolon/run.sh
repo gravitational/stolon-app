@@ -119,15 +119,8 @@ function launch_rpc() {
 	stolonrpc-cluster
 }
 
-function get_pod_ip() {
-	# use hostname command to get our pod's ip until downward api are less racy (sometimes the podIP from downward api is empty)
-	export POD_IP=$(getent ahosts ${HOSTNAME} | awk 'NR==1{print $1}')
-}
-
 function main() {
 	announce_step 'Start'
-
-	get_pod_ip
 
 	announce_step 'Dump environment variables'
 	env
