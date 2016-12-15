@@ -6,11 +6,13 @@ UNINSTALL_TAG := stolon-uninstall:$(VERSION)
 HATEST_TAG := stolon-hatest:$(VERSION)
 UPDATE_TAG := stolon-update:$(VERSION)
 STOLON_TAG := stolon:$(VERSION)
+UTILS_TAG := stolon-utils:$(VERSION)
 
 .PHONY: images
 images: bootstrap \
 		uninstall \
 		stolon \
+		utils \
 		update \
 		hatest
 	docker tag $(BOOTSTRAP_TAG) stolon-bootstrap:latest
@@ -18,6 +20,7 @@ images: bootstrap \
 	docker tag $(STOLON_TAG) stolon:latest
 	docker tag $(UPDATE_TAG) stolon-update:latest
 	docker tag $(HATEST_TAG) stolon-hatest:latest
+	docker tag $(UTILS_TAG) stolon-utils:latest
 
 STOLONBOOT_BINS := bootstrap/bin
 $(STOLONBOOT_BINS):
@@ -32,6 +35,7 @@ bootstrap: $(STOLONBOOT_BINS)
 .PHONY: uninstall
 uninstall:
 	docker build -t $(UNINSTALL_TAG) $(PWD)/uninstall
+
 .PHONY: update
 update:
 	docker build -t $(UPDATE_TAG) $(PWD)/update
@@ -58,6 +62,10 @@ $(STOLONHATEST_BINS):
 .PHONY: hatest
 hatest: $(STOLON_BINS) $(STOLONHATEST_BINS)
 	docker build -t $(HATEST_TAG) $(PWD)/hatest
+
+.PHONY: utils
+utils:
+	docker build -t $(UTILS_TAG) $(PWD)/stolon-utils
 
 .PHONY: clean
 clean:
