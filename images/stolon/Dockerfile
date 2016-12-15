@@ -17,6 +17,7 @@ RUN apt-get update && \
         /usr/share/man/ \
         /tmp/*
 
+ADD bin/ /usr/local/bin/
 ADD rootfs/ /
 
 RUN chmod a+rx /usr/local/bin/run.sh
