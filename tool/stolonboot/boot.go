@@ -46,6 +46,11 @@ func bootCluster(sentinels int, rpc int, password string) error {
 		}
 	}
 
+	err = createUtils()
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
 	return nil
 }
 
@@ -98,6 +103,18 @@ func createRPC(rpc int) error {
 
 	return nil
 }
+
+func createUtils() error {
+	log.Infof("creating utils container")
+	out, err := rigging.FromFile(rigging.ActionCreate, "/var/lib/gravity/resources/utils.yaml")
+	log.Infof("cmd output: %s", string(out))
+	if err != nil && !strings.Contains(string(out), "already exists") {
+		return trace.Wrap(err)
+	}
+
+	return nil
+}
+
 
 func generateSecret(password string) string {
 	encodedPassword := base64.StdEncoding.EncodeToString([]byte(password))
