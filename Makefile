@@ -10,12 +10,14 @@ CONTAINERS := stolon-bootstrap:$(VERSION) \
 			  stolon-hook:$(VERSION) \
 			  stolon:$(VERSION) \
 			  stolon-hatest:$(VERSION)
+			  stolon-utils:$(VERSION)
 
 IMPORT_IMAGE_OPTIONS := --set-image=stolon-bootstrap:$(VERSION) \
 	--set-image=stolon-uninstall:$(VERSION) \
 	--set-image=stolon-hook:$(VERSION) \
 	--set-image=stolon:$(VERSION) \
-	--set-image=stolon-hatest:$(VERSION)
+	--set-image=stolon-hatest:$(VERSION) \
+	--set-image=stolon-utils:$(VERSION)
 
 IMPORT_OPTIONS := --vendor \
 		--ops-url=$(OPS_URL) \
