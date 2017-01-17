@@ -38,6 +38,10 @@ uninstall:
 
 .PHONY: hook
 hook:
+	$(eval CHANGESET = $(shell echo $$VERSION | sed -e 's/[\.]//g'))
+	if [ -z "$(CHANGESET)" ]; then \
+		echo "CHANGESET is not set"; exit 1; \
+	fi;
 	docker build -t $(HOOK_TAG) $(PWD)/hook
 
 STOLON_BINS := stolon/bin
