@@ -104,14 +104,37 @@ hooks:
       metadata:
         name: stolon-app-update
       spec:
+        parallelism: 1
+        completions: 1
+        activeDeadlineSeconds: 120
         template:
           metadata:
             name: stolon-app-update
           spec:
-            restartPolicy: OnFailure
+            restartPolicy: Never
             containers:
-              - name: update
-                image: stolon-update:latest
+              - name: hook
+                image: stolon-hook:latest
+                args: ["update"]
+  rollback:
+    spec:
+      apiVersion: batch/v1
+      kind: Job
+      metadata:
+        name: stolon-app-rollback
+      spec:
+        parallelism: 1
+        completions: 1
+        activeDeadlineSeconds: 120
+        template:
+          metadata:
+            name: stolon-app-rollback
+          spec:
+            restartPolicy: Never
+            containers:
+              - name: hook
+                image: stolon-hook:latest
+                args: ["rollback"]
   uninstall:
     spec:
       apiVersion: batch/v1
