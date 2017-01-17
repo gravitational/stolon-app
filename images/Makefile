@@ -42,7 +42,7 @@ hook:
 	if [ -z "$(CHANGESET)" ]; then \
 		echo "CHANGESET is not set"; exit 1; \
 	fi;
-	docker build --build-arg CHANGESET=log-$(CHANGESET) --pull -t $(HOOK_TAG) $(PWD)/hook
+	docker build --build-arg CHANGESET=stolon-$(CHANGESET) --pull -t $(HOOK_TAG) $(PWD)/hook
 
 STOLON_BINS := stolon/bin
 $(STOLON_BINS):
