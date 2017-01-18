@@ -9,7 +9,7 @@ CONTAINERS := stolon-bootstrap:$(VERSION) \
 			  stolon-uninstall:$(VERSION) \
 			  stolon-hook:$(VERSION) \
 			  stolon:$(VERSION) \
-			  stolon-hatest:$(VERSION)
+			  stolon-hatest:$(VERSION) \
 			  stolon-utils:$(VERSION)
 
 IMPORT_IMAGE_OPTIONS := --set-image=stolon-bootstrap:$(VERSION) \
