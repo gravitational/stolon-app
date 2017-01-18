@@ -1,28 +1,30 @@
-VER ?= $(shell git describe --long --tags --always|awk -F'[.-]' '{print $$1 "." $$2 "." $$4}')
+export VERSION ?= $(shell git describe --long --tags --always|awk -F'[.-]' '{print $$1 "." $$2 "." $$4}')
 REPOSITORY := gravitational.io
 NAME := stolon-app
 OPS_URL ?= https://opscenter.localhost.localdomain:33009
 
 EXTRA_GRAVITY_OPTIONS ?=
 
-CONTAINERS := stolon-bootstrap:$(VER) \
-			  stolon-uninstall:$(VER) \
-			  stolon-update:$(VER) \
-			  stolon:$(VER) \
-			  stolon-hatest:$(VER)
+CONTAINERS := stolon-bootstrap:$(VERSION) \
+			  stolon-uninstall:$(VERSION) \
+			  stolon-hook:$(VERSION) \
+			  stolon:$(VERSION) \
+			  stolon-hatest:$(VERSION)
+			  stolon-utils:$(VERSION)
 
-IMPORT_IMAGE_OPTIONS := --set-image=stolon-bootstrap:$(VER) \
-	--set-image=stolon-uninstall:$(VER) \
-	--set-image=stolon-update:$(VER) \
-	--set-image=stolon:$(VER) \
-	--set-image=stolon-hatest:$(VER)
+IMPORT_IMAGE_OPTIONS := --set-image=stolon-bootstrap:$(VERSION) \
+	--set-image=stolon-uninstall:$(VERSION) \
+	--set-image=stolon-hook:$(VERSION) \
+	--set-image=stolon:$(VERSION) \
+	--set-image=stolon-hatest:$(VERSION) \
+	--set-image=stolon-utils:$(VERSION)
 
 IMPORT_OPTIONS := --vendor \
 		--ops-url=$(OPS_URL) \
 		--insecure \
 		--repository=$(REPOSITORY) \
 		--name=$(NAME) \
-		--version=$(VER) \
+		--version=$(VERSION) \
 		--glob=**/*.yaml \
 		--ignore=dev \
 		--exclude="dev" \
@@ -44,15 +46,15 @@ all: clean images
 
 .PHONY: what-version
 what-version:
-	@echo $(VER)
+	@echo $(VERSION)
 
 .PHONY: images
 images:
-	cd images && $(MAKE) -f Makefile VERSION=$(VER)
+	cd images && $(MAKE) -f Makefile VERSION=$(VERSION)
 
 .PHONY: import
 import: images
-	-gravity app delete --ops-url=$(OPS_URL) $(REPOSITORY)/$(NAME):$(VER) --force --insecure $(EXTRA_GRAVITY_OPTIONS)
+	-gravity app delete --ops-url=$(OPS_URL) $(REPOSITORY)/$(NAME):$(VERSION) --force --insecure $(EXTRA_GRAVITY_OPTIONS)
 	gravity app import $(IMPORT_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) .
 
 .PHONY: export
@@ -62,7 +64,7 @@ $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 $(TARBALL): import $(BUILD_DIR)
-	gravity package export $(REPOSITORY)/$(NAME):$(VER) $(TARBALL) $(EXTRA_GRAVITY_OPTIONS)
+	gravity package export $(REPOSITORY)/$(NAME):$(VERSION) $(TARBALL) $(EXTRA_GRAVITY_OPTIONS)
 
 .PHONY: clean
 clean:
