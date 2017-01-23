@@ -27,6 +27,8 @@ spec:
         stolon-cluster: "kube-stolon"
         stolon-rpc: "yes"
     spec:
+      nodeSelector:
+        stolon-keeper: "yes"
       containers:
       - name: stolon-rpc
         image: apiserver:5000/stolon:latest
@@ -59,4 +61,3 @@ spec:
         - hostPath:
             path: /usr/bin/kubectl
           name: kubectl
-
