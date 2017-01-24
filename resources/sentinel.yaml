@@ -12,6 +12,8 @@ spec:
         stolon-cluster: "kube-stolon"
         stolon-sentinel: "yes"
     spec:
+      nodeSelector:
+        stolon-keeper: "yes"
       containers:
       - name: stolon-sentinel
         image: apiserver:5000/stolon:latest
