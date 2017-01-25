@@ -6,5 +6,7 @@
         "log_min_messages": "INFO",
         "log_checkpoints": "on",
         "log_line_prefix": "%m [%p]: [%l-1] user=%u,db=%d "
-    }
+    },
+    "max_replication_lag": 300,
+    "max_replication_lag_bytes": 67108864
 }
