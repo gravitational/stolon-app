@@ -7,6 +7,12 @@ echo "Assuming changeset from the envrionment: $RIG_CHANGESET"
 if [ $1 = "update" ]; then
     echo "Starting update, changeset: $RIG_CHANGESET"
     rig cs delete --force -c cs/$RIG_CHANGESET
+
+    echo "Delete old resources"
+    rig delete rc/stolon-proxy --force
+    rig delete rc/stolon-rpc --force
+    rig delete rc/stolon-sentinel --force
+
     echo "Creating or updating resources"
     rig upsert -f /var/lib/gravity/resources/keeper.yaml --debug
     rig upsert -f /var/lib/gravity/resources/rpc.yaml --debug
