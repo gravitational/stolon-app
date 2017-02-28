@@ -14,6 +14,13 @@ if [ $1 = "update" ]; then
     rig delete rc/stolon-rpc --force
     rig delete rc/stolon-sentinel --force
 
+    # wait for keeper pods to go away
+    while kubectl get pods --show-all|grep -q stolon-keeper
+    do
+    echo "waiting for keeper pods to go away..."
+        sleep 5
+    done
+
     echo "Creating or updating resources"
     rig upsert -f /var/lib/gravity/resources/keeper.yaml --debug
     rig upsert -f /var/lib/gravity/resources/rpc.yaml --debug
