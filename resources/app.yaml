@@ -6,6 +6,13 @@ metadata:
 dependencies:
   apps:
     - gravitational.io/cluster-ssl-app:0.0.0+latest
+systemOptions:
+  docker:
+    storageDriver: overlay
+providers:
+  generic:
+    network:
+      type: vxlan
 installer:
   flavors:
     prompt: "How many nodes will you need?"
