@@ -9,10 +9,8 @@ dependencies:
 systemOptions:
   docker:
     storageDriver: overlay
-providers:
-  generic:
-    network:
-      type: vxlan
+  runtime:
+    version: "0.0.0+latest"
 installer:
   flavors:
     prompt: "How many nodes will you need?"
