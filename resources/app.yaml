@@ -73,12 +73,15 @@ nodeProfiles:
 
 hooks:
   install:
-    spec:
+    job: |
       apiVersion: batch/v1
       kind: Job
       metadata:
         name: stolon-app-install
       spec:
+        parallelism: 1
+        completions: 1
+        activeDeadlineSeconds: 300
         template:
           metadata:
             name: stolon-app-install
@@ -88,7 +91,7 @@ hooks:
               - name: bootstrap
                 image: stolon-bootstrap:latest
   update:
-    spec:
+    job: |
       apiVersion: batch/v1
       kind: Job
       metadata:
@@ -107,7 +110,7 @@ hooks:
                 image: stolon-hook:latest
                 args: ["update"]
   rollback:
-    spec:
+    job: |
       apiVersion: batch/v1
       kind: Job
       metadata:
@@ -115,7 +118,7 @@ hooks:
       spec:
         parallelism: 1
         completions: 1
-        activeDeadlineSeconds: 120
+        activeDeadlineSeconds: 300
         template:
           metadata:
             name: stolon-app-rollback
@@ -126,12 +129,15 @@ hooks:
                 image: stolon-hook:latest
                 args: ["rollback"]
   uninstall:
-    spec:
+    job: |
       apiVersion: batch/v1
       kind: Job
       metadata:
         name: stolon-app-uninstall
       spec:
+        parallelism: 1
+        completions: 1
+        activeDeadlineSeconds: 300
         template:
           metadata:
             name: stolon-app-uninstall
