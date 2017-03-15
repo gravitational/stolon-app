@@ -3,6 +3,7 @@ kind: Bundle
 metadata:
   name: stolon-app
   resourceVersion: 0.0.1
+  namespace: default
 dependencies:
   apps:
     - gravitational.io/cluster-ssl-app:0.0.0+latest
