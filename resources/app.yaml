@@ -79,6 +79,7 @@ hooks:
       kind: Job
       metadata:
         name: stolon-app-install
+        namespace: default
       spec:
         parallelism: 1
         completions: 1
@@ -97,6 +98,7 @@ hooks:
       kind: Job
       metadata:
         name: stolon-app-update
+        namespace: default
       spec:
         parallelism: 1
         completions: 1
@@ -116,6 +118,7 @@ hooks:
       kind: Job
       metadata:
         name: stolon-app-rollback
+        namespace: default
       spec:
         parallelism: 1
         completions: 1
@@ -135,6 +138,7 @@ hooks:
       kind: Job
       metadata:
         name: stolon-app-uninstall
+        namespace: default
       spec:
         parallelism: 1
         completions: 1
