@@ -58,7 +58,6 @@ spec:
             port: 5973
           initialDelaySeconds: 10
           timeoutSeconds: 5
-      hostNetwork: true
       volumes:
         - hostPath:
             path: /usr/bin/kubectl

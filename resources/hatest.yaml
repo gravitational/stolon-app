@@ -48,5 +48,4 @@ spec:
         - name: kubectl
           hostPath:
             path: /usr/bin/kubectl
-      hostNetwork: true
       restartPolicy: Never

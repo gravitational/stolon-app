@@ -168,4 +168,3 @@ spec:
         - name: cluster-default-ssl
           secret:
             secretName: cluster-default-ssl
-      hostNetwork: true
