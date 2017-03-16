@@ -15,8 +15,6 @@ spec:
             value: "kube-stolon"
           - name: STOLONCTL_STORE_BACKEND
             value: "etcd"
-          - name: STOLONCTL_STORE_ENDPOINTS
-            value: "127.0.0.1:2379"
           - name: STOLONCTL_STORE_CACERT
             value: "/etc/etcd/secrets/root.cert"
           - name: STOLONCTL_STORE_CERT
