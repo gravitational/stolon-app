@@ -15,7 +15,7 @@ spec:
       nodeSelector:
         stolon-keeper: "yes"
       containers:
-      - name: stolon-sentinel
+      - name: sentinel
         image: apiserver:5000/stolon:latest
         env:
           - name: SENTINEL

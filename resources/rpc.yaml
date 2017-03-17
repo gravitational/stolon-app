@@ -32,7 +32,7 @@ spec:
       nodeSelector:
         stolon-keeper: "yes"
       containers:
-      - name: stolon-rpc
+      - name: rpc
         image: apiserver:5000/stolon:latest
         volumeMounts:
           - mountPath: /usr/local/bin/kubectl
