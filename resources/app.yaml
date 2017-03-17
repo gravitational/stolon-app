@@ -1,54 +1,68 @@
-apiVersion: v1
-kind: Application
+apiVersion: bundle.gravitational.io/v2
+kind: Bundle
 metadata:
-  repository: gravitational.io
   name: stolon-app
   resourceVersion: 0.0.1
   namespace: default
-base: gravitational.io/k8s-onprem:0.0.0+latest
 dependencies:
   apps:
     - gravitational.io/cluster-ssl-app:0.0.0+latest
-service_labels:
-  stolon-postgres: "yes"
+systemOptions:
+  docker:
+    storageDriver: overlay
+  runtime:
+    version: "0.0.0+latest"
 installer:
-  provisioners:
-    virsh:
-      variables:
-        ram_mb: 2500
-        devices:
-          - device: vdb
-            mb: 8000
-          - device: vdc
-            mb: 4100
-      commands:
-        - 'sudo hostname {{ .server.hostname }}'
-        - 'echo $(netstat -rn | grep UG | awk ''{print $2}'') {{ .variables.system.teleport_proxy_address }} | sudo tee -a /etc/hosts'
-        - 'sudo mkfs.ext4 /dev/vdc'
-        - 'sudo mkdir -p /var/lib/data/stolon && sudo mount /dev/vdc /var/lib/data/stolon'
-        - 'curl --tlsv1.2 {{if .variables.system.devmode}}--insecure{{end}} "{{ .variables.system.ops_url }}/{{ .variables.system.token }}/auto?docker_device=vdb&mount=stolon-data:/var/lib/data/stolon" | sudo bash'
-  servers:
-    node:
+  flavors:
+    prompt: "How many nodes will you need?"
+    default: one
+    items:
+      - name: "one"
+        description: "single node"
+        nodes:
+          - profile: node
+            count: 1
+      - name: "three"
+        description: "three node cluster"
+        nodes:
+          - profile: node
+            count: 3
+      - name: "five"
+        description: "five node cluster"
+        nodes:
+          - profile: node
+            count: 5
+
+nodeProfiles:
+  - name: node
+    description: "stolon database node"
+    labels:
+      role: "node"
+      stolon-keeper: "yes"
+    requirements:
       cpu:
-        min_count: 2
-      description: "stolon server"
-      labels:
-        role: "node"
-        stolon-keeper: "yes"
+        min: 2
       ram:
-        min_total_mb: 2000
-      directories:
-        - name: /var/lib/gravity
-          min_total_mb: 4000
-      mounts:
+        min: "1GB"
+      volumes:
+        - path: /var/lib/gravity
+          capacity: "4GB"
         - name: stolon-data
-          source: /var/lib/data/stolon
-          destination: /var/lib/data/stolon
-          min_total_mb: 4000
-          fs_types: ["ext4", "xfs"]
-          create_if_missing: true
-      instance_types:
-        aws_terraform:
+          path: /var/lib/data/stolon
+          targetPath: /var/lib/data/stolon
+          capacity: "4GB"
+          filesystems: ["ext4", "xfs"]
+      network:
+        minTransferRate: "1MB/s"
+        ports:
+          - protocol: tcp
+            ranges:
+              - "5431-5435"
+              - "5973"
+    expandPolicy: fixed-instance
+    providers:
+      aws:
+        instanceTypes:
           - m3.large
           - m3.xlarge
           - c3.large
@@ -57,38 +71,19 @@ installer:
           - c3.4xlarge
           - i2.xlarge
           - i2.2xlarge
-  flavors:
-    title: "Select a flavor"
-    items:
-      - name: "one"
-        description: "1 node"
-        threshold:
-          value: 1
-          label: "1"
-        profiles:
-          node: 1
-      - name: "three"
-        description: "3 nodes"
-        threshold:
-          value: 3
-          label: "3"
-        profiles:
-          node: 3
-      - name: "five"
-        description: "5 nodes"
-        threshold:
-          value: 5
-          label: "5"
-        profiles:
-          node: 5
+
 hooks:
   install:
-    spec:
+    job: |
       apiVersion: batch/v1
       kind: Job
       metadata:
         name: stolon-app-install
+        namespace: default
       spec:
+        parallelism: 1
+        completions: 1
+        activeDeadlineSeconds: 300
         template:
           metadata:
             name: stolon-app-install
@@ -98,11 +93,12 @@ hooks:
               - name: bootstrap
                 image: stolon-bootstrap:latest
   update:
-    spec:
+    job: |
       apiVersion: batch/v1
       kind: Job
       metadata:
         name: stolon-app-update
+        namespace: default
       spec:
         parallelism: 1
         completions: 1
@@ -117,15 +113,16 @@ hooks:
                 image: stolon-hook:latest
                 args: ["update"]
   rollback:
-    spec:
+    job: |
       apiVersion: batch/v1
       kind: Job
       metadata:
         name: stolon-app-rollback
+        namespace: default
       spec:
         parallelism: 1
         completions: 1
-        activeDeadlineSeconds: 120
+        activeDeadlineSeconds: 300
         template:
           metadata:
             name: stolon-app-rollback
@@ -136,12 +133,16 @@ hooks:
                 image: stolon-hook:latest
                 args: ["rollback"]
   uninstall:
-    spec:
+    job: |
       apiVersion: batch/v1
       kind: Job
       metadata:
         name: stolon-app-uninstall
+        namespace: default
       spec:
+        parallelism: 1
+        completions: 1
+        activeDeadlineSeconds: 300
         template:
           metadata:
             name: stolon-app-uninstall

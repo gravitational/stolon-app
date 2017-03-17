@@ -15,8 +15,6 @@ spec:
             value: "kube-stolon"
           - name: STOLONCTL_STORE_BACKEND
             value: "etcd"
-          - name: STOLONCTL_STORE_ENDPOINTS
-            value: "127.0.0.1:2379"
           - name: STOLONCTL_STORE_CACERT
             value: "/etc/etcd/secrets/root.cert"
           - name: STOLONCTL_STORE_CERT
@@ -35,6 +33,10 @@ spec:
             value: "stolon-keeper=yes"
           - name: STOLON_CLUSTER_NAME
             value: "kube-stolon"
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
         volumeMounts:
           - name: etcd-secrets
             mountPath: /etc/etcd/secrets
@@ -48,5 +50,4 @@ spec:
         - name: kubectl
           hostPath:
             path: /usr/bin/kubectl
-      hostNetwork: true
       restartPolicy: Never

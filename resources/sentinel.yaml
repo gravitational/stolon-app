@@ -15,7 +15,7 @@ spec:
       nodeSelector:
         stolon-keeper: "yes"
       containers:
-      - name: stolon-sentinel
+      - name: sentinel
         image: apiserver:5000/stolon:latest
         env:
           - name: SENTINEL
@@ -24,8 +24,6 @@ spec:
             value: "kube-stolon"
           - name: STSENTINEL_STORE_BACKEND
             value: "etcd"
-          - name: STSENTINEL_STORE_ENDPOINTS
-            value: "127.0.0.1:2379"
           - name: STSENTINEL_STORE_CACERT
             value: "/etc/etcd/secrets/root.cert"
           - name: STSENTINEL_STORE_CERT
@@ -48,6 +46,10 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: status.podIP
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
         ports:
           - containerPort: 6431
         volumeMounts:
@@ -57,4 +59,3 @@ spec:
         - name: etcd-secrets
           hostPath:
             path: /var/state
-      hostNetwork: true

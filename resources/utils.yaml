@@ -15,7 +15,7 @@ spec:
       nodeSelector:
         stolon-keeper: "yes"
       containers:
-      - name: stolon-utils
+      - name: utils
         image: apiserver:5000/stolon-utils:latest
         env:
           - name: STOLON_USERNAME

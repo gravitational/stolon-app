@@ -39,7 +39,7 @@ spec:
       nodeSelector:
         stolon-keeper: "yes"
       containers:
-        - name: stolon-proxy
+        - name: proxy
           image: apiserver:5000/stolon:latest
           ports:
             - containerPort: 5434
@@ -62,8 +62,6 @@ spec:
               value: "kube-stolon"
             - name: STPROXY_STORE_BACKEND
               value: "etcd"
-            - name: STPROXY_STORE_ENDPOINTS
-              value: "127.0.0.1:2379"
             - name: STPROXY_STORE_CACERT
               value: "/etc/etcd/secrets/root.cert"
             - name: STPROXY_STORE_CERT
@@ -86,7 +84,11 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
-        - name: stolon-keeper
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+        - name: keeper
           image: apiserver:5000/stolon:latest
           ports:
             - containerPort: 5431
@@ -111,8 +113,6 @@ spec:
               value: "kube-stolon"
             - name: STKEEPER_STORE_BACKEND
               value: "etcd"
-            - name: STKEEPER_STORE_ENDPOINTS
-              value: "127.0.0.1:2379"
             - name: STKEEPER_STORE_CACERT
               value: "/etc/etcd/secrets/root.cert"
             - name: STKEEPER_STORE_CERT
@@ -149,6 +149,10 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
       volumes:
         - name: gravity-log
           hostPath:
@@ -168,4 +172,3 @@ spec:
         - name: cluster-default-ssl
           secret:
             secretName: cluster-default-ssl
-      hostNetwork: true
