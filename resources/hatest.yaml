@@ -33,6 +33,10 @@ spec:
             value: "stolon-keeper=yes"
           - name: STOLON_CLUSTER_NAME
             value: "kube-stolon"
+          - name: HOST_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
         volumeMounts:
           - name: etcd-secrets
             mountPath: /etc/etcd/secrets
