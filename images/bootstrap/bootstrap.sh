@@ -6,3 +6,6 @@ if [[ $(kubectl get nodes -l stolon-keeper=yes -o name | wc -l) -ge 3 ]]
 then
     kubectl scale --replicas=3 deployment stolon-sentinel
 fi
+
+kubectl create -f /var/lib/gravity/resources/jenkins.yaml
+kubectl create -f /var/lib/gravity/resources/pgweb.yaml

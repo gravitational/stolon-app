@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: stolon-pgweb
+  namespace: default
+  labels:
+    stolon-pgweb: "yes"
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort: 8081
+      nodePort: 31950
+  selector:
+    stolon-pgweb: "yes"
+    stolon-cluster: "kube-stolon"
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: stolon-pgweb
+  namespace: default
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: stolon-pgweb
+        stolon-cluster: "kube-stolon"
+        stolon-pgweb: "yes"
+    spec:
+      nodeSelector:
+        stolon-keeper: "yes"
+      containers:
+      - name: pgweb
+        image: apiserver:5000/pgweb:latest
+        env:
+          - name: STOLON_USERNAME
+            value: "stolon"
+          - name: STOLON_PASSWORDFILE
+            value: "/etc/secrets/stolon/password"
+        volumeMounts:
+          - name: secrets
+            mountPath: /etc/secrets/stolon
+      volumes:
+        - name: secrets
+          secret:
+            secretName: stolon

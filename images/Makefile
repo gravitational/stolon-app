@@ -7,6 +7,7 @@ HATEST_TAG := stolon-hatest:$(VERSION)
 HOOK_TAG := stolon-hook:$(VERSION)
 STOLON_TAG := stolon:$(VERSION)
 UTILS_TAG := stolon-utils:$(VERSION)
+PGWEB_TAG := pgweb:$(VERSION)
 
 .PHONY: images
 images: bootstrap \
@@ -14,6 +15,7 @@ images: bootstrap \
 		stolon \
 		utils \
 		hook \
+		pgweb \
 		hatest
 	docker tag $(BOOTSTRAP_TAG) stolon-bootstrap:latest
 	docker tag $(UNINSTALL_TAG) stolon-uninstall:latest
@@ -21,6 +23,7 @@ images: bootstrap \
 	docker tag $(HOOK_TAG) stolon-hook:latest
 	docker tag $(HATEST_TAG) stolon-hatest:latest
 	docker tag $(UTILS_TAG) stolon-utils:latest
+	docker tag $(PGWEB_TAG) pgweb:latest
 
 STOLONBOOT_BINS := bootstrap/bin
 $(STOLONBOOT_BINS):
@@ -70,6 +73,10 @@ hatest: $(STOLON_BINS) $(STOLONHATEST_BINS)
 .PHONY: utils
 utils:
 	docker build -t $(UTILS_TAG) $(PWD)/stolon-utils
+
+.PHONY: pgweb
+pgweb:
+	docker build -t $(PGWEB_TAG) $(PWD)/pgweb
 
 .PHONY: clean
 clean:
