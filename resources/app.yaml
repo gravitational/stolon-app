@@ -4,6 +4,17 @@ metadata:
   name: stolon-app
   resourceVersion: 0.0.1
   namespace: default
+endpoints:
+  - name: "Jenkins"
+    selector:
+      app: jenkins
+    protocol: http
+    port: 31951
+  - name: "PgWeb"
+    selector:
+      stolon-pgweb: "yes"
+    protocol: http
+    port: 31950
 dependencies:
   apps:
     - gravitational.io/cluster-ssl-app:0.0.0+latest
