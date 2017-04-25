@@ -16,7 +16,7 @@ spec:
         stolon-keeper: "yes"
       containers:
       - name: utils
-        image: apiserver:5000/stolon-utils:latest
+        image: apiserver:5000/stolon-telegraf:latest
         env:
           - name: STOLON_USERNAME
             value: "stolon"

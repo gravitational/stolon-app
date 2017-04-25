@@ -39,6 +39,18 @@ spec:
       nodeSelector:
         stolon-keeper: "yes"
       containers:
+        - name: telegraf
+          image: apiserver:5000/stolon-telegraf-node:latest
+          env:
+            - name: STOLON_USERNAME
+              value: "stolon"
+            - name: STOLON_PASSWORDFILE
+              value: "/etc/secrets/stolon/password"
+          volumeMounts:
+            - name: stolon
+              mountPath: /etc/secrets/stolon
+            - name: gravity-log
+              mountPath: /var/log
         - name: proxy
           image: apiserver:5000/stolon:latest
           ports:
