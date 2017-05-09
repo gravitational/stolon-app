@@ -165,6 +165,20 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: pithos-keys
+                  key: tenant.key
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: pithos-keys
+                  key: tenant.secret
+            - name: PITHOS_S3_ENDPOINT
+              value: "pithos.default.svc"
+            - name: PITHOS_BACKUP_BUCKET
+              value: "stolon-backup"
       volumes:
         - name: gravity-log
           hostPath:

@@ -57,6 +57,17 @@ EOF
 	chmod +x /usr/local/bin/stolonctl-cluster
 }
 
+function setup_wal-e() {
+    announce_step 'Setup wal-e backup application'
+
+    mkdir -p /etc/wal-e.d/env
+    echo ${AWS_SECRET_ACCESS_KEY} > /etc/wal-e.d/env/AWS_SECRET_ACCESS_KEY
+    echo ${AWS_ACCESS_KEY_ID} > /etc/wal-e.d/env/AWS_ACCESS_KEY_ID
+    echo "https+path://${PITHOS_S3_ENDPOINT}:443" > /etc/wal-e.d/env/WALE_S3_ENDPOINT
+    echo "s3://${PITHOS_BACKUP_BUCKET}/" > /etc/wal-e.d/env/WALE_S3_PREFIX
+    chown -R root:postgres /etc/wal-e.d
+}
+
 function setup_stolonrpc() {
 	announce_step 'Setup stolon RPC'
 
@@ -137,6 +148,7 @@ function main() {
 	announce_step 'Select which component to start'
 	if [[ "${KEEPER}" == "true" ]]; then
 		chmod_keys
+        setup_wal-e
 		launch_keeper
 		exit 0
 	fi
