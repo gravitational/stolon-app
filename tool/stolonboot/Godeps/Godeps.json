@@ -1,7 +1,7 @@
 {
 	"ImportPath": "github.com/gravitational/stolon-app/tool/stolonboot",
-	"GoVersion": "go1.5",
-	"GodepVersion": "v74",
+	"GoVersion": "go1.7",
+	"GodepVersion": "v79",
 	"Packages": [
 		"./..."
 	],
@@ -23,6 +23,21 @@
 			"ImportPath": "github.com/jonboulle/clockwork",
 			"Comment": "v0.1.0-2-ge3653ac",
 			"Rev": "e3653ace2d63753697e0e5b07b9393971c0bba9d"
+		},
+		{
+			"ImportPath": "github.com/minio/minio-go",
+			"Comment": "v2.0.1-57-g1167dcb",
+			"Rev": "1167dcbe0150ed14e094f3b1f0b907c5811aa734"
+		},
+		{
+			"ImportPath": "github.com/minio/minio-go/pkg/policy",
+			"Comment": "v2.0.1-57-g1167dcb",
+			"Rev": "1167dcbe0150ed14e094f3b1f0b907c5811aa734"
+		},
+		{
+			"ImportPath": "github.com/minio/minio-go/pkg/set",
+			"Comment": "v2.0.1-57-g1167dcb",
+			"Rev": "1167dcbe0150ed14e094f3b1f0b907c5811aa734"
 		},
 		{
 			"ImportPath": "golang.org/x/net/context",

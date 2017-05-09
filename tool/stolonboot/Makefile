@@ -4,7 +4,7 @@ all: bin/stolonboot
 NOROOT=-u $$(id -u):$$(id -g)
 SRCDIR=/go/src/github.com/gravitational/stolon-app
 DOCKERFLAGS=--rm=true $(NOROOT) -v $(PWD):$(SRCDIR) -w $(SRCDIR) -e GO15VENDOREXPERIMENT=1
-BUILDIMAGE=golang:1.5.4
+BUILDIMAGE=golang:1.7.1
 
 .PHONY: build
 build:
