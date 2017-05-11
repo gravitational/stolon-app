@@ -96,6 +96,19 @@ function _create_pg_pass() {
 	chmod 0600 ~/.pgpass
 }
 
+function launch_cron() {
+    announce_step 'Launching cron for base backups'
+
+    if [ "x$CRON_SCHEDULE" = "x" ]; then
+        CRON_SCHEDULE='0 0 * * *'
+    fi
+
+    echo "$CRON_SCHEDULE /usr/local/bin/cron-wal-e.sh" > /etc/cron.d/basebackup
+
+    # watch /var/log/cron.log restarting if necessary
+    cron && tail -f /var/log/cron.log
+}
+
 function launch_keeper() {
 	announce_step 'Launching stolon keeper'
 
@@ -175,6 +188,12 @@ function main() {
 		launch_rpc
 		exit 0
 	fi
+
+    if [[ "$CRON" == "true" ]]; then
+        setup_wal-e
+        launch_cron
+        exit 0
+    fi
 
 	die 'Nothing is selected.'
 }

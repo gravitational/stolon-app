@@ -8,7 +8,7 @@ RUN apt-get update && \
         daemontools file \
         gcc libc6-dev \
         python3-pip python3-dev \
-        lzop pv \
+        lzop pv cron gawk \
         postgresql \
         postgresql-client \
         postgresql-contrib && \
@@ -25,8 +25,11 @@ RUN apt-get update && \
 ADD bin/ /usr/local/bin/
 ADD rootfs/ /
 
-RUN chmod a+rx /usr/local/bin/run.sh
+RUN chmod a+rx /usr/local/bin/run.sh && \
+    chmod a+rx /usr/local/bin/cron-wal-e.sh
+
 RUN useradd -ms /bin/bash stolon
+RUN mkfifo --mode 0666 /var/log/cron.log
 
 EXPOSE 5431 5432 6431
 
