@@ -1,31 +1,65 @@
-apiVersion: batch/v1
-kind: Job
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
   name: stolon-restore
+  namespace: default
 spec:
+  replicas: 1
   template:
     metadata:
-      name: stolon-restore
+      labels:
+        name: stolon-restore
     spec:
+      nodeSelector:
+        stolon-keeper: "yes"
       containers:
       - name: restore
-        image: apiserver:5000/stolon:latest
-        args: ["db", "restore", "{{STOLON_BACKUP_FILE}}"]
+        image: apiserver:5000/stolon-restore:latest
         env:
-          - name: CTL
-            value: "true"
-          - name: STOLONCTL_DB_USERNAME
-            value: "stolon"
-          - name: STOLON_DB_PASSWORD
+          - name: AWS_ACCESS_KEY_ID
+            valueFrom:
+              secretKeyRef:
+                name: pithos-keys
+                key: tenant.key
+          - name: AWS_SECRET_ACCESS_KEY
+            valueFrom:
+              secretKeyRef:
+                name: pithos-keys
+                key: tenant.secret
+          - name: STOLON_USERNAME
+            value: stolon
+          - name: STOLON_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: stolon
                 key: password
+          - name: PITHOS_S3_ENDPOINT
+            value: "pithos.default.svc"
+          - name: PITHOS_BACKUP_BUCKET
+            value: "stolon-backup"
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
         volumeMounts:
-          - mountPath: /backups
-            name: backups
+          - name: kubectl
+            mountPath: /usr/bin/kubectl
+          - name: etcdctl
+            mountPath: /usr/bin/etcdctl
+          - name: etcd-secrets
+            mountPath: /etc/etcd/secrets
+          - name: resources
+            mountPath: /var/lib/gravity/resources
       volumes:
-        - name: backups
+        - name: kubectl
           hostPath:
-            path: /var/backups
-      restartPolicy: OnFailure
+            path: /usr/bin/kubectl
+        - name: etcdctl
+          hostPath:
+            path: /usr/bin/etcdctl
+        - name: etcd-secrets
+          hostPath:
+            path: /var/state
+        - name: resources
+          hostPath:
+            path: /var/lib/gravity/local/packages/unpacked/gravitational.io/stolon-app

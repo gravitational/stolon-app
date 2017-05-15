@@ -46,6 +46,59 @@ $ gravity site create --app="gravitational.io/stolon-app:0.0.5"`
 
 **Note**: you might want to deploy it on kubernetes manually but it's not recommended.
 
+
+### Recovering Using a Continuous Archive Backup
+Stolon application uses [Continuous Archive Backup](https://www.postgresql.org/docs/9.4/static/continuous-archiving.html) feature of PostgreSQL database.
+You can restore Stolon database to the latest archived checkpoint.
+1. Create new pod, where all restoration steps will perform.
+
+``` shell
+kubectl create -f /var/lib/gravity/local/packages/unpacked/gravitational.io/stolon-app/1.2.3/resources/restore.yaml
+```
+2. Delete old stolon resources. Important: **Do not create new stolon keepers before restoring data from WAL's in step 5.**
+
+``` shell
+kubectl delete daemonset stolon-keeper
+kubectl delete deployment stolon-sentinel
+```
+3. Clean stolon data directories on host. You can check on which nodes stolon daemonset is exists with command below.
+
+``` shell
+kubectl get nodes -L stolon-keeper
+
+rm -rf /var/lib/data/stolon/*
+```
+4. Create new empty database and restore latest WAL's.
+
+``` shell
+su - postgres -c "rm -rf /var/lib/postgresql/9.4/main/"
+su - postgres -c "envdir /etc/wal-e.d/env /usr/local/bin/wal-e backup-fetch /var/lib/postgresql/9.4/main LATEST"
+echo "restore_command = '/usr/bin/envdir /etc/wal-e.d/env /usr/local/bin/wal-e wal-fetch %f %p'" > /var/lib/postgresql/9.4/main/recovery.conf
+chown postgres:postgres -R /var/lib/postgresql/9.4/main/
+service postgresql start
+```
+5. Create dump of restored data.
+
+``` shell
+PGHOST=localhost PGUSER=stolon pg_dumpall > /root/dump.sql
+```
+6. Clear stolon cluster data in etcd.
+
+``` shell
+etcdctl --endpoint "https://${NODE_NAME}:2379" rm /stolon/cluster/kube-stolon --recursive
+```
+7. Create new sentinels and keepers.
+
+``` shell
+kubectl create -f /var/lib/gravity/resources/1.2.3/resources/sentinel.yaml
+kubectl create -f /var/lib/gravity/resources/1.2.3/resources/keeper.yaml
+```
+8. Restore data into freshly created stolon cluster.
+
+``` shell
+psql -h stolon-postgres.default.svc -U stolon -d postgres < /tmp/dump.sql
+```
+
 ### Development
 
 There are several development `Makefile` targets to simplify your workflow:
