@@ -50,7 +50,7 @@ $ gravity site create --app="gravitational.io/stolon-app:0.0.5"`
 ### Recovering Using a Continuous Archive Backup
 Stolon application uses [Continuous Archive Backup](https://www.postgresql.org/docs/9.4/static/continuous-archiving.html) feature of PostgreSQL database.
 You can restore Stolon database to the latest archived checkpoint.
-1. Create new pod, where all restoration steps will perform.
+1. Create new pod, where all restoration steps above[2-8] will perform.
 
 ``` shell
 kubectl create -f /var/lib/gravity/local/packages/unpacked/gravitational.io/stolon-app/1.2.3/resources/restore.yaml
@@ -97,6 +97,11 @@ kubectl create -f /var/lib/gravity/resources/1.2.3/resources/keeper.yaml
 
 ``` shell
 psql -h stolon-postgres.default.svc -U stolon -d postgres < /tmp/dump.sql
+```
+9. Delete `stolon-restore` deployment after checking data in stolon database.
+
+``` shell
+kubectl delete deployment stolon-restore
 ```
 
 ### Development
