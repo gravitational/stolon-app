@@ -50,7 +50,7 @@ $ gravity site create --app="gravitational.io/stolon-app:0.0.5"`
 ### Recovering Using a Continuous Archive Backup
 Stolon application uses [Continuous Archive Backup](https://www.postgresql.org/docs/9.4/static/continuous-archiving.html) feature of PostgreSQL database.
 You can restore Stolon database to the latest archived checkpoint.
-1. Create new pod, where all restoration steps above[2-8] will perform.
+1. Create new pod, where all restoration steps above[4-8] will perform.
 
 ``` shell
 kubectl create -f /var/lib/gravity/local/packages/unpacked/gravitational.io/stolon-app/1.2.3/resources/restore.yaml
@@ -64,11 +64,16 @@ kubectl delete deployment stolon-sentinel
 3. Clean stolon data directories on host. You can check on which nodes stolon daemonset is exists with command below.
 
 ``` shell
-kubectl get nodes -L stolon-keeper
+kubectl get nodes -l stolon-keeper=yes
 
 rm -rf /var/lib/data/stolon/*
 ```
-4. Create new empty database and restore latest WAL's.
+4. Enter into stolon-restore pod.
+
+``` shell
+kubectl exec -ti $(kubectl get po -l name=stolon-restore -o custom-columns=NAME:.metadata.name --no-headers=true) /bin/bash
+```
+5. Create new empty database and restore latest WAL's.
 
 ``` shell
 su - postgres -c "rm -rf /var/lib/postgresql/9.4/main/"
@@ -77,28 +82,28 @@ echo "restore_command = '/usr/bin/envdir /etc/wal-e.d/env /usr/local/bin/wal-e w
 chown postgres:postgres -R /var/lib/postgresql/9.4/main/
 service postgresql start
 ```
-5. Create dump of restored data.
+6. Create dump of restored data.
 
 ``` shell
 PGHOST=localhost PGUSER=stolon pg_dumpall > /root/dump.sql
 ```
-6. Clear stolon cluster data in etcd.
+7. Clear stolon cluster data in etcd.
 
 ``` shell
 etcdctl --endpoint "https://${NODE_NAME}:2379" rm /stolon/cluster/kube-stolon --recursive
 ```
-7. Create new sentinels and keepers.
+8. Create new sentinels and keepers.
 
 ``` shell
 kubectl create -f /var/lib/gravity/resources/1.2.3/resources/sentinel.yaml
 kubectl create -f /var/lib/gravity/resources/1.2.3/resources/keeper.yaml
 ```
-8. Restore data into freshly created stolon cluster.
+9. Restore data into freshly created stolon cluster.
 
 ``` shell
 psql -h stolon-postgres.default.svc -U stolon -d postgres < /tmp/dump.sql
 ```
-9. Delete `stolon-restore` deployment after checking data in stolon database.
+10. Exit from `stolon-restore` and delete `stolon-restore` deployment after checking data in stolon database.
 
 ``` shell
 kubectl delete deployment stolon-restore
