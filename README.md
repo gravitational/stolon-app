@@ -80,6 +80,7 @@ su - postgres -c "rm -rf /var/lib/postgresql/9.4/main/"
 su - postgres -c "envdir /etc/wal-e.d/env /usr/local/bin/wal-e backup-fetch /var/lib/postgresql/9.4/main LATEST"
 echo "restore_command = '/usr/bin/envdir /etc/wal-e.d/env /usr/local/bin/wal-e wal-fetch %f %p'" > /var/lib/postgresql/9.4/main/recovery.conf
 chown postgres:postgres -R /var/lib/postgresql/9.4/main/
+echo "max_replication_slots = 5" >> /etc/postgresql/9.4/main/postgresql.conf
 service postgresql start
 ```
 6. Create dump of restored data.
@@ -101,7 +102,7 @@ kubectl create -f /var/lib/gravity/resources/1.2.3/resources/keeper.yaml
 9. Restore data into freshly created stolon cluster.
 
 ``` shell
-psql -h stolon-postgres.default.svc -U stolon -d postgres < /tmp/dump.sql
+psql -h stolon-postgres.default.svc -U stolon -d postgres < /root/dump.sql
 ```
 10. Exit from `stolon-restore` and delete `stolon-restore` deployment after checking data in stolon database.
 

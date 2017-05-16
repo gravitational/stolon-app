@@ -2,7 +2,7 @@
 # -*- mode: sh; -*-
 
 # File: setup-wal-e.sh
-# Time-stamp: <2017-05-15 17:01:12>
+# Time-stamp: <2017-05-16 13:42:19>
 # Copyright (C) 2017 Gravitational Inc
 # Description: Setup WAL-e envdir
 
@@ -21,8 +21,10 @@ chown -R root:postgres /etc/wal-e.d
 echo "*:5432:*:${STOLON_USERNAME}:${STOLON_PASSWORD}" > ~/.pgpass
 chmod 0600 ~/.pgpass
 
+cat <<EOF > /root/.bashrc
 export ETCDCTL_CA_FILE=/etc/etcd/secrets/root.cert
 export ETCDCTL_CERT_FILE=/etc/etcd/secrets/etcd.cert
 export ETCDCTL_KEY_FILE=/etc/etcd/secrets/etcd.key
+EOF
 
 while true; do sleep 30; done
