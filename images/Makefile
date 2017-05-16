@@ -3,6 +3,7 @@ all: images
 
 BOOTSTRAP_TAG := stolon-bootstrap:$(VERSION)
 UNINSTALL_TAG := stolon-uninstall:$(VERSION)
+RESTORE_TAG := stolon-restore:$(VERSION)
 HATEST_TAG := stolon-hatest:$(VERSION)
 HOOK_TAG := stolon-hook:$(VERSION)
 STOLON_TAG := stolon:$(VERSION)
@@ -12,6 +13,7 @@ TELEGRAF_NODE_TAG := stolon-telegraf-node:$(VERSION)
 .PHONY: images
 images: bootstrap \
 		uninstall \
+		restore \
 		stolon \
 		telegraf \
 		telegraf-node \
@@ -19,6 +21,7 @@ images: bootstrap \
 		hatest
 	docker tag $(BOOTSTRAP_TAG) stolon-bootstrap:latest
 	docker tag $(UNINSTALL_TAG) stolon-uninstall:latest
+	docker tag $(RESTORE_TAG) stolon-restore:latest
 	docker tag $(STOLON_TAG) stolon:latest
 	docker tag $(HOOK_TAG) stolon-hook:latest
 	docker tag $(HATEST_TAG) stolon-hatest:latest
@@ -38,6 +41,10 @@ bootstrap: $(STOLONBOOT_BINS)
 .PHONY: uninstall
 uninstall:
 	docker build -t $(UNINSTALL_TAG) $(PWD)/uninstall
+
+.PHONY: restore
+restore:
+	docker build -t $(RESTORE_TAG) $(PWD)/restore
 
 .PHONY: hook
 hook:

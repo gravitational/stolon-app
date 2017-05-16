@@ -22,18 +22,11 @@ RUN apt-get update && \
         /usr/share/man/ \
         /tmp/*
 
-ADD bin/ /usr/local/bin/
 ADD rootfs/ /
 
-RUN chmod a+rx /usr/local/bin/run.sh && \
-    chmod a+rx /usr/local/bin/cron-wal-e.sh
-
-RUN useradd -ms /bin/bash stolon
-RUN mkfifo --mode 0666 /var/log/cron.log
+RUN chmod a+rx /usr/local/bin/run.sh
 
 EXPOSE 5431 5432 6431
-
-RUN test -f /cleanup.sh && sh /cleanup.sh
 
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 CMD ["/usr/local/bin/run.sh"]
