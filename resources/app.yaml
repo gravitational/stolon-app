@@ -85,7 +85,6 @@ hooks:
       spec:
         parallelism: 1
         completions: 1
-        activeDeadlineSeconds: 300
         template:
           metadata:
             name: stolon-app-install
@@ -123,7 +122,6 @@ hooks:
       spec:
         parallelism: 1
         completions: 1
-        activeDeadlineSeconds: 120
         template:
           metadata:
             name: stolon-app-update
@@ -143,7 +141,6 @@ hooks:
       spec:
         parallelism: 1
         completions: 1
-        activeDeadlineSeconds: 300
         template:
           metadata:
             name: stolon-app-rollback
@@ -163,7 +160,6 @@ hooks:
       spec:
         parallelism: 1
         completions: 1
-        activeDeadlineSeconds: 300
         template:
           metadata:
             name: stolon-app-uninstall
