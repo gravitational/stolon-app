@@ -35,6 +35,8 @@ spec:
         stolon-cluster: "kube-stolon"
         stolon-keeper: "yes"
         stolon-proxy: "yes"
+        app: stolon
+        component: keeper
     spec:
       nodeSelector:
         stolon-keeper: "yes"

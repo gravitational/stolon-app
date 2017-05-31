@@ -11,6 +11,8 @@ spec:
         name: stolon-sentinel
         stolon-cluster: "kube-stolon"
         stolon-sentinel: "yes"
+        app: stolon
+        component: sentinel
     spec:
       nodeSelector:
         stolon-keeper: "yes"

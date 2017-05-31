@@ -11,6 +11,8 @@ spec:
         name: stolon-utils
         stolon-cluster: "kube-stolon"
         stolon-utils: "yes"
+        app: stolon
+        component: utils
     spec:
       nodeSelector:
         stolon-keeper: "yes"

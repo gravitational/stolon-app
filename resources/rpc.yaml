@@ -28,6 +28,8 @@ spec:
         name: stolon-rpc
         stolon-cluster: "kube-stolon"
         stolon-rpc: "yes"
+        app: stolon
+        component: rpc
     spec:
       nodeSelector:
         stolon-keeper: "yes"
