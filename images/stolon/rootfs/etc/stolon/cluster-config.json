@@ -9,7 +9,8 @@
         "archive_mode": "on",
         "archive_command": "envdir /etc/wal-e.d/env wal-e wal-push %p",
         "archive_timeout": "60",
-        "wal_keep_segments": "1024"
+        "wal_keep_segments": "64",
+        "checkpoint_segments": "3"
     },
     "max_replication_lag": 300,
     "max_replication_lag_bytes": 67108864
