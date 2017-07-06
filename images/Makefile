@@ -36,15 +36,15 @@ $(STOLONBOOT_BINS):
 
 .PHONY: bootstrap
 bootstrap: $(STOLONBOOT_BINS)
-	docker build -t $(BOOTSTRAP_TAG) $(PWD)/bootstrap
+	docker build --pull -t $(BOOTSTRAP_TAG) $(PWD)/bootstrap
 
 .PHONY: uninstall
 uninstall:
-	docker build -t $(UNINSTALL_TAG) $(PWD)/uninstall
+	docker build --pull -t $(UNINSTALL_TAG) $(PWD)/uninstall
 
 .PHONY: restore
 restore:
-	docker build -t $(RESTORE_TAG) $(PWD)/restore
+	docker build --pull -t $(RESTORE_TAG) $(PWD)/restore
 
 .PHONY: hook
 hook:
@@ -52,7 +52,7 @@ hook:
 	if [ -z "$(CHANGESET)" ]; then \
 		echo "CHANGESET is not set"; exit 1; \
 	fi;
-	docker build --build-arg CHANGESET=stolon-$(CHANGESET) --pull -t $(HOOK_TAG) $(PWD)/hook
+	docker build --pull --build-arg CHANGESET=stolon-$(CHANGESET) -t $(HOOK_TAG) $(PWD)/hook
 
 STOLON_BINS := stolon/bin
 $(STOLON_BINS):
@@ -64,7 +64,7 @@ $(STOLON_BINS):
 
 .PHONY: stolon
 stolon: $(STOLON_BINS)
-	docker build -t $(STOLON_TAG) $(PWD)/stolon
+	docker build --pull -t $(STOLON_TAG) $(PWD)/stolon
 	docker tag $(STOLON_TAG) stolon:latest
 
 STOLONHATEST_BINS := hatest/bin
@@ -79,11 +79,11 @@ hatest: $(STOLON_BINS) $(STOLONHATEST_BINS)
 
 .PHONY: telegraf
 telegraf:
-	docker build -t $(TELEGRAF_TAG) $(PWD)/telegraf
+	docker build --pull -t $(TELEGRAF_TAG) $(PWD)/telegraf
 
 .PHONY: telegraf-node
 telegraf-node:
-	docker build -t $(TELEGRAF_NODE_TAG) $(PWD)/telegraf-node
+	docker build --pull -t $(TELEGRAF_NODE_TAG) $(PWD)/telegraf-node
 
 .PHONY: clean
 clean:
