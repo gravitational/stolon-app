@@ -57,17 +57,6 @@ EOF
 	chmod +x /usr/local/bin/stolonctl-cluster
 }
 
-function setup_wal-e() {
-    announce_step 'Setup wal-e backup application'
-
-    mkdir -p /etc/wal-e.d/env
-    echo ${AWS_SECRET_ACCESS_KEY} > /etc/wal-e.d/env/AWS_SECRET_ACCESS_KEY
-    echo ${AWS_ACCESS_KEY_ID} > /etc/wal-e.d/env/AWS_ACCESS_KEY_ID
-    echo "https+path://${PITHOS_S3_ENDPOINT}:443" > /etc/wal-e.d/env/WALE_S3_ENDPOINT
-    echo "s3://${PITHOS_BACKUP_BUCKET}/" > /etc/wal-e.d/env/WALE_S3_PREFIX
-    chown -R root:postgres /etc/wal-e.d
-}
-
 function setup_stolonrpc() {
 	announce_step 'Setup stolon RPC'
 
@@ -94,19 +83,6 @@ function _create_pg_pass() {
 
 	echo "$host:$port:$database:$username:$password" > ~/.pgpass
 	chmod 0600 ~/.pgpass
-}
-
-function launch_cron() {
-    announce_step 'Launching cron for base backups'
-
-    if [ "x$CRON_SCHEDULE" = "x" ]; then
-        CRON_SCHEDULE='0 0 * * *'
-    fi
-
-    echo "$CRON_SCHEDULE /usr/local/bin/cron-wal-e.sh" > /etc/cron.d/basebackup
-
-    # watch /var/log/cron.log restarting if necessary
-    cron && tail -f /var/log/cron.log
 }
 
 function launch_keeper() {
@@ -161,7 +137,6 @@ function main() {
 	announce_step 'Select which component to start'
 	if [[ "${KEEPER}" == "true" ]]; then
 		chmod_keys
-        setup_wal-e
 		launch_keeper
 		exit 0
 	fi
@@ -188,12 +163,6 @@ function main() {
 		launch_rpc
 		exit 0
 	fi
-
-    if [[ "$CRON" == "true" ]]; then
-        setup_wal-e
-        launch_cron
-        exit 0
-    fi
 
 	die 'Nothing is selected.'
 }

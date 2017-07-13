@@ -23,23 +23,13 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-const (
-	RandomlyGeneratedDefault = "<randomly generated>"
-	ClusterCaPath            = "/etc/ssl/cluster-ca/ca.pem"
-	DefaultPasswordLength    = 20
-	DefaultS3Endpoint        = "pithos.default.svc"
-	DefaultS3Bucket          = "stolon-backup"
-	DefaultS3BucketLocation  = "G1"
-)
+const RandomlyGeneratedDefault = "<randomly generated>"
+const DefaultPasswordLength = 20
 
 func main() {
 	sentinels := flag.Int("sentinels", 2, "number of sentinels")
 	rpc := flag.Int("rpc", 1, "number of RPC")
 	password := flag.String("password", RandomlyGeneratedDefault, "initial database user password")
-	s3AccessKeyID := flag.String("access-key", "", "S3 access key")
-	s3SecretAccessKey := flag.String("secret-key", "", "S3 secret key")
-	s3Endpoint := flag.String("endpoint", DefaultS3Endpoint, "S3 endpoint address")
-	s3Bucket := flag.String("bucket", DefaultS3Bucket, "S3 Bucket name")
 
 	flag.Parse()
 
@@ -48,20 +38,6 @@ func main() {
 	var err error
 	if *password == RandomlyGeneratedDefault {
 		*password, err = randomPassword(DefaultPasswordLength)
-		if err != nil {
-			log.Error(err.Error())
-			os.Exit(1)
-		}
-	}
-
-	if *s3AccessKeyID != "" && *s3SecretAccessKey != "" {
-		log.Infof("creating bucket in pithos for backups")
-		err = createBackupBucket(&S3Config{
-			AccessKeyID:     *s3AccessKeyID,
-			SecretAccessKey: *s3SecretAccessKey,
-			Endpoint:        *s3Endpoint,
-			Bucket:          *s3Bucket,
-		})
 		if err != nil {
 			log.Error(err.Error())
 			os.Exit(1)

@@ -53,48 +53,6 @@ spec:
               mountPath: /etc/secrets/stolon
             - name: gravity-log
               mountPath: /var/log
-        - name: cron
-          image: apiserver:5000/stolon:latest
-          volumeMounts:
-            - name: data
-              mountPath: /stolon-data
-            - name: etcd-secrets
-              mountPath: /etc/etcd/secrets
-          env:
-            - name: STOLON_USERNAME
-              value: "stolon"
-            - name: CRON
-              value: "true"
-            - name: CRON_SCHEDULE
-              value: "35 3 * * *"
-            - name: AWS_ACCESS_KEY_ID
-              valueFrom:
-                secretKeyRef:
-                  name: pithos-keys
-                  key: tenant.key
-            - name: AWS_SECRET_ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: pithos-keys
-                  key: tenant.secret
-            - name: PITHOS_S3_ENDPOINT
-              value: "pithos.default.svc"
-            - name: PITHOS_BACKUP_BUCKET
-              value: "stolon-backup"
-            - name: CLUSTER_NAME
-              value: "kube-stolon"
-            - name: STORE_BACKEND
-              value: "etcd"
-            - name: STORE_CACERT
-              value: "/etc/etcd/secrets/root.cert"
-            - name: STORE_CERT
-              value: "/etc/etcd/secrets/etcd.cert"
-            - name: STORE_KEY
-              value: "/etc/etcd/secrets/etcd.key"
-            - name: NODE_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: spec.nodeName
         - name: proxy
           image: apiserver:5000/stolon:latest
           ports:
@@ -209,20 +167,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
-            - name: AWS_ACCESS_KEY_ID
-              valueFrom:
-                secretKeyRef:
-                  name: pithos-keys
-                  key: tenant.key
-            - name: AWS_SECRET_ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: pithos-keys
-                  key: tenant.secret
-            - name: PITHOS_S3_ENDPOINT
-              value: "pithos.default.svc"
-            - name: PITHOS_BACKUP_BUCKET
-              value: "stolon-backup"
       volumes:
         - name: gravity-log
           hostPath:

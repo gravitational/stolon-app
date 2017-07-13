@@ -7,7 +7,6 @@ EXTRA_GRAVITY_OPTIONS ?=
 
 CONTAINERS := stolon-bootstrap:$(VERSION) \
 			  stolon-uninstall:$(VERSION) \
-			  stolon-restore:$(VERSION) \
 			  stolon-hook:$(VERSION) \
 			  stolon:$(VERSION) \
 			  stolon-hatest:$(VERSION) \
@@ -16,7 +15,6 @@ CONTAINERS := stolon-bootstrap:$(VERSION) \
 
 IMPORT_IMAGE_OPTIONS := --set-image=stolon-bootstrap:$(VERSION) \
 	--set-image=stolon-uninstall:$(VERSION) \
-	--set-image=stolon-restore:$(VERSION) \
 	--set-image=stolon-hook:$(VERSION) \
 	--set-image=stolon:$(VERSION) \
 	--set-image=stolon-hatest:$(VERSION) \
