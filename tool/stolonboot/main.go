@@ -18,9 +18,11 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"flag"
+	"fmt"
 	"os"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/gravitational/trace"
 )
 
 const (
@@ -54,15 +56,19 @@ func main() {
 	if *password == RandomlyGeneratedDefault {
 		*password, err = randomPassword(DefaultPasswordLength)
 		if err != nil {
-			log.Error(err.Error())
-			os.Exit(1)
+			log.Error(trace.DebugReport(err))
+			fmt.Printf("ERROR: %v\n", err.Error())
+			os.Exit(255)
 		}
 	}
 
 	err = bootCluster(*sentinels, *rpc, *password)
 	if err != nil {
-		log.Error(err.Error())
-		os.Exit(1)
+		log.Error(trace.DebugReport(err))
+		fmt.Printf("ERROR: %v\n", err.Error())
+		os.Exit(255)
+	}
+
 	log.Infof("Creating telegraf user in InfluxDB")
 	influxDBClient, err := NewInfluxDBClient()
 	if err != nil {
