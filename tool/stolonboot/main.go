@@ -23,8 +23,23 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-const RandomlyGeneratedDefault = "<randomly generated>"
-const DefaultPasswordLength = 20
+const (
+	RandomlyGeneratedDefault = "<randomly generated>"
+	DefaultPasswordLength    = 20
+
+	// InfluxDBServiceAddr is the address of InfluxDB service
+	InfluxDBServiceAddr = "http://influxdb.kube-system.svc:8086"
+	// InfluxDBAdminUser is the InfluxDB admin user name
+	InfluxDBAdminUser = "root"
+	// InfluxDBAdminPassword is the InfluxDB admin user password
+	InfluxDBAdminPassword = "root"
+	// InfluxDBDatabase is the name of the database where all metrics go
+	InfluxDBDatabase = "k8s"
+	// InfluxDBTelegrafUser is the InfluxDB user for Telegraf
+	InfluxDBTelegrafUser = "telegraf"
+	// InfluxDBTelegrafPassword is the InfluxDB password for Telegraf
+	InfluxDBTelegrafPassword = "telegraf"
+)
 
 func main() {
 	sentinels := flag.Int("sentinels", 2, "number of sentinels")
@@ -48,6 +63,19 @@ func main() {
 	if err != nil {
 		log.Error(err.Error())
 		os.Exit(1)
+	log.Infof("Creating telegraf user in InfluxDB")
+	influxDBClient, err := NewInfluxDBClient()
+	if err != nil {
+		log.Error(trace.DebugReport(err))
+		fmt.Printf("ERROR: %v\n", err.Error())
+		os.Exit(255)
+	}
+
+	err = influxDBClient.Setup()
+	if err != nil {
+		log.Error(trace.DebugReport(err))
+		fmt.Printf("ERROR: %v\n", err.Error())
+		os.Exit(255)
 	}
 
 	os.Exit(0)

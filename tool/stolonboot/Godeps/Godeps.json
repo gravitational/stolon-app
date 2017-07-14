@@ -1,10 +1,7 @@
 {
 	"ImportPath": "github.com/gravitational/stolon-app/tool/stolonboot",
 	"GoVersion": "go1.5",
-	"GodepVersion": "v74",
-	"Packages": [
-		"./..."
-	],
+	"GodepVersion": "v79",
 	"Deps": [
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
@@ -14,6 +11,10 @@
 		{
 			"ImportPath": "github.com/gravitational/rigging",
 			"Rev": "81303d407207723025951142c1e238c59080e496"
+		},
+		{
+			"ImportPath": "github.com/gravitational/roundtrip",
+			"Rev": "4162b978cd8cbec3f35dea84aae8d5fc696363c7"
 		},
 		{
 			"ImportPath": "github.com/gravitational/trace",
