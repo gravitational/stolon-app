@@ -24,6 +24,16 @@ spec:
             value: "stolon"
           - name: STOLON_PASSWORDFILE
             value: "/etc/secrets/stolon/password"
+          - name: INFLUXDB_TELEGRAF_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: telegraf-influxdb-creds
+                key: username
+          - name: INFLUXDB_TELEGRAF_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: telegraf-influxdb-creds
+                key: password
         volumeMounts:
           - name: secrets
             mountPath: /etc/secrets/stolon
