@@ -10,16 +10,24 @@ metadata:
   name: stolon-rpc
   namespace: default
 rules:
-  - apiGroups: [ "" ]
-    verbs:     [ "get" , "list" , "watch" ]
+  - apiGroups:
+      -  ""
+    verbs:
+      - get
+      - list
+      - watch
     resources:
       - secrets
     resourceNames:
-      - "stolon"
-      - "cluster-ca"
-      - "cluster-default-ssl"
-  - apiGroups: [ "" ]
-    verbs:     [ "get" , "list" , "watch" ]
+      - stolon
+      - cluster-ca
+      - cluster-default-ssl
+  - apiGroups:
+      -  ""
+    verbs:
+      - get
+      - list
+      - watch
     resources:
       - configmaps
       - endpoints
