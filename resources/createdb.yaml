@@ -57,6 +57,7 @@ spec:
     metadata:
       name: stolon-createdb
     spec:
+      serviceAccountName: stolon-createdb
       containers:
       - name: createdb
         image: apiserver:5000/stolon:latest

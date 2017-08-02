@@ -90,6 +90,7 @@ spec:
         app: stolon
         component: keeper
     spec:
+      serviceAccountName: stolon-keeper
       nodeSelector:
         stolon-keeper: "yes"
       containers:

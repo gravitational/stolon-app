@@ -83,6 +83,7 @@ spec:
         app: stolon
         component: rpc
     spec:
+      serviceAccountName: stolon-rpc
       nodeSelector:
         stolon-keeper: "yes"
       containers:

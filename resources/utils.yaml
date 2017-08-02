@@ -64,6 +64,7 @@ spec:
         app: stolon
         component: utils
     spec:
+      serviceAccountName: stolon-utils
       nodeSelector:
         stolon-keeper: "yes"
       containers:

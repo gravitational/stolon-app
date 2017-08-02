@@ -57,6 +57,7 @@ spec:
     metadata:
       name: stolon-backup
     spec:
+      serviceAccountName: stolon-backup
       containers:
       - name: backup
         image: apiserver:5000/stolon:latest

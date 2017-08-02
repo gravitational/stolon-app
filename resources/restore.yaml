@@ -60,6 +60,7 @@ spec:
       labels:
         name: stolon-restore
     spec:
+      serviceAccountName: stolon-restore
       nodeSelector:
         stolon-keeper: "yes"
       containers:

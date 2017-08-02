@@ -57,6 +57,7 @@ spec:
     metadata:
       name: stolon-hatest
     spec:
+      serviceAccountName: stolon-hatest
       containers:
       - name: hatest
         image: apiserver:5000/stolon-hatest:latest

@@ -64,6 +64,7 @@ spec:
         app: stolon
         component: sentinel
     spec:
+      serviceAccountName: stolon-sentinel
       nodeSelector:
         stolon-keeper: "yes"
       containers:
