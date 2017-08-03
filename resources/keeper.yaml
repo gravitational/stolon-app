@@ -95,6 +95,7 @@ spec:
       namespace: default
       labels:
         name: stolon-keeper
+        namespace: default
         stolon-cluster: "kube-stolon"
         stolon-keeper: "yes"
         stolon-proxy: "yes"

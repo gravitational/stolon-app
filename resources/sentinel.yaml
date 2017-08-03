@@ -70,6 +70,7 @@ spec:
       namespace: default
       labels:
         name: stolon-sentinel
+        namespace: default
         stolon-cluster: "kube-stolon"
         stolon-sentinel: "yes"
         app: stolon
