@@ -3,6 +3,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: stolon-keeper
+  namespace: default
 ---
 apiVersion: rbac.authorization.k8s.io/v1alpha1
 kind: Role
@@ -41,6 +42,7 @@ kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1alpha1
 metadata:
   name: stolon-keeper
+  namespace: default
 subjects:
   - kind: ServiceAccount
     name: stolon-keeper
@@ -84,6 +86,7 @@ spec:
     metadata:
       labels:
         name: stolon-keeper
+        namespace: default
         stolon-cluster: "kube-stolon"
         stolon-keeper: "yes"
         stolon-proxy: "yes"
