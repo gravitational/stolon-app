@@ -48,6 +48,16 @@ spec:
               value: "stolon"
             - name: STOLON_PASSWORDFILE
               value: "/etc/secrets/stolon/password"
+            - name: INFLUXDB_TELEGRAF_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: telegraf-influxdb-creds
+                  key: username
+            - name: INFLUXDB_TELEGRAF_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: telegraf-influxdb-creds
+                  key: password
           volumeMounts:
             - name: stolon
               mountPath: /etc/secrets/stolon
@@ -186,3 +196,13 @@ spec:
         - name: cluster-default-ssl
           secret:
             secretName: cluster-default-ssl
+---
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: telegraf-influxdb-creds
+  namespace: default
+data:
+  username: dGVsZWdyYWY=
+  password: c3VwZXJTZWN1cmVQYXNzd29yZA==
