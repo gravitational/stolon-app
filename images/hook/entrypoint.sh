@@ -10,9 +10,9 @@ if [ $1 = "update" ]; then
 
     echo "Delete old resources"
     rig delete ds/stolon-keeper --force
-    rig delete rc/stolon-proxy --force
-    rig delete rc/stolon-rpc --force
-    rig delete rc/stolon-sentinel --force
+    rig delete deployments/stolon-proxy --force
+    rig delete deployemnts/stolon-rpc --force
+    rig delete deployemnts/stolon-sentinel --force
 
     # wait for keeper pods to go away
     while kubectl get pods --show-all|grep -q stolon-keeper
