@@ -1,3 +1,53 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: stolon-createdb
+---
+apiVersion: rbac.authorization.k8s.io/v1alpha1
+kind: Role
+metadata:
+  name: stolon-createdb
+  namespace: default
+rules:
+  - apiGroups:
+      -  ""
+    verbs:
+      - get
+      - list
+      - watch
+    resources:
+      - secrets
+    resourceNames:
+      - stolon
+  - apiGroups:
+      -  ""
+    verbs:
+      - get
+      - list
+      - watch
+    resources:
+      - configmaps
+      - endpoints
+      - events
+      - pods
+      - persistentvolumes
+      - persistentvolumeclaims
+      - services
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1alpha1
+metadata:
+  name: stolon-createdb
+subjects:
+  - kind: ServiceAccount
+    name: stolon-createdb
+    namespace: default
+roleRef:
+  kind: Role
+  name: stolon-createdb
+  apiGroup: rbac.authorization.k8s.io
+---
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -7,6 +57,7 @@ spec:
     metadata:
       name: stolon-createdb
     spec:
+      serviceAccountName: stolon-createdb
       containers:
       - name: createdb
         image: apiserver:5000/stolon:latest
