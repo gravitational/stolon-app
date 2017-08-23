@@ -40,6 +40,16 @@ IMPORT_OPTIONS := --vendor \
 		--registry-url=apiserver:5000 \
 		$(IMPORT_IMAGE_OPTIONS)
 
+TELE_BUILD_OPTIONS := --insecure \
+                --repository=$(OPS_URL) \
+                --name=$(NAME) \
+                --version=$(VERSION) \
+                --glob=**/*.yaml \
+                --ignore=".git" \
+                --ignore="images" \
+                --ignore="tool" \
+                $(IMPORT_IMAGE_OPTIONS)
+
 BUILD_DIR := build
 TARBALL := $(BUILD_DIR)/stolon-app.tar.gz
 
@@ -67,6 +77,10 @@ $(BUILD_DIR):
 
 $(TARBALL): import $(BUILD_DIR)
 	gravity package export $(REPOSITORY)/$(NAME):$(VERSION) $(TARBALL) $(EXTRA_GRAVITY_OPTIONS)
+
+.PHONY: build-app
+build-app: images
+	tele build -o build/installer.tar $(TELE_BUILD_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) resources/app.yaml
 
 .PHONY: clean
 clean:
