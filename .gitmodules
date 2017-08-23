@@ -1,4 +1,4 @@
 [submodule "images/stolon/stolon"]
 	path = images/stolon/stolon
-	url = git@github.com:gravitational/stolon.git
+	url = https://github.com/gravitational/stolon.git
 	branch = master
