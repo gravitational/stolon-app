@@ -32,7 +32,7 @@ if [ $1 = "update" ]; then
     rig upsert -f /var/lib/gravity/resources/sentinel.yaml --debug
     rig upsert -f /var/lib/gravity/resources/utils.yaml --debug
 
-    if [[ $(kubectl get nodes -l stolon-keeper=yes -o name | wc -l) -ge 3 ]]
+    if [ $(kubectl get nodes -l stolon-keeper=yes -o name | wc -l) -ge 3 ]
     then
         kubectl scale --replicas=3 deployment stolon-sentinel
     fi
