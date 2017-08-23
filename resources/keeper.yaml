@@ -104,53 +104,21 @@ spec:
               value: "stolon"
             - name: STOLON_PASSWORDFILE
               value: "/etc/secrets/stolon/password"
+            - name: INFLUXDB_TELEGRAF_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: telegraf-influxdb-creds
+                  key: username
+            - name: INFLUXDB_TELEGRAF_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: telegraf-influxdb-creds
+                  key: password
           volumeMounts:
             - name: stolon
               mountPath: /etc/secrets/stolon
             - name: gravity-log
               mountPath: /var/log
-        - name: cron
-          image: apiserver:5000/stolon:latest
-          volumeMounts:
-            - name: data
-              mountPath: /stolon-data
-            - name: etcd-secrets
-              mountPath: /etc/etcd/secrets
-          env:
-            - name: STOLON_USERNAME
-              value: "stolon"
-            - name: CRON
-              value: "true"
-            - name: CRON_SCHEDULE
-              value: "35 3 * * *"
-            - name: AWS_ACCESS_KEY_ID
-              valueFrom:
-                secretKeyRef:
-                  name: pithos-keys
-                  key: tenant.key
-            - name: AWS_SECRET_ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: pithos-keys
-                  key: tenant.secret
-            - name: PITHOS_S3_ENDPOINT
-              value: "pithos.default.svc"
-            - name: PITHOS_BACKUP_BUCKET
-              value: "stolon-backup"
-            - name: CLUSTER_NAME
-              value: "kube-stolon"
-            - name: STORE_BACKEND
-              value: "etcd"
-            - name: STORE_CACERT
-              value: "/etc/etcd/secrets/root.cert"
-            - name: STORE_CERT
-              value: "/etc/etcd/secrets/etcd.cert"
-            - name: STORE_KEY
-              value: "/etc/etcd/secrets/etcd.key"
-            - name: NODE_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: spec.nodeName
         - name: proxy
           image: apiserver:5000/stolon:latest
           ports:
@@ -270,20 +238,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
-            - name: AWS_ACCESS_KEY_ID
-              valueFrom:
-                secretKeyRef:
-                  name: pithos-keys
-                  key: tenant.key
-            - name: AWS_SECRET_ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: pithos-keys
-                  key: tenant.secret
-            - name: PITHOS_S3_ENDPOINT
-              value: "pithos.default.svc"
-            - name: PITHOS_BACKUP_BUCKET
-              value: "stolon-backup"
       volumes:
         - name: gravity-log
           hostPath:
@@ -303,3 +257,13 @@ spec:
         - name: cluster-default-ssl
           secret:
             secretName: cluster-default-ssl
+---
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: telegraf-influxdb-creds
+  namespace: default
+data:
+  username: dGVsZWdyYWY=
+  password: c3VwZXJTZWN1cmVQYXNzd29yZA==

@@ -10,9 +10,10 @@ if [ $1 = "update" ]; then
 
     echo "Delete old resources"
     rig delete ds/stolon-keeper --force
-    rig delete rc/stolon-proxy --force
-    rig delete rc/stolon-rpc --force
-    rig delete rc/stolon-sentinel --force
+    rig delete deployments/stolon-proxy --force
+    rig delete deployments/stolon-rpc --force
+    rig delete deployments/stolon-sentinel --force
+    rig delete deployments/stolon-utils --force
 
     # wait for keeper pods to go away
     while kubectl get pods --show-all|grep -q stolon-keeper
@@ -21,16 +22,26 @@ if [ $1 = "update" ]; then
         sleep 5
     done
 
+	etcdctl get /stolon/cluster/kube-stolon/clusterdata > clusterdata.json
+	sed -i 's/"archive_mode":"on"/"archive_mode":"off"/g' clusterdata.json
+	etcdctl set /stolon/cluster/kube-stolon/clusterdata "$(cat clusterdata.json)"
+
     echo "Creating or updating resources"
     rig upsert -f /var/lib/gravity/resources/keeper.yaml --debug
     rig upsert -f /var/lib/gravity/resources/rpc.yaml --debug
     rig upsert -f /var/lib/gravity/resources/sentinel.yaml --debug
     rig upsert -f /var/lib/gravity/resources/utils.yaml --debug
 
+    if [ $(kubectl get nodes -l stolon-keeper=yes -o name | wc -l) -ge 3 ]
+    then
+        kubectl scale --replicas=3 deployment stolon-sentinel
+    fi
+
     echo "Checking status"
     rig status $RIG_CHANGESET --retry-attempts=120 --retry-period=1s --debug
     echo "Freezing"
     rig freeze
+
 elif [ $1 = "rollback" ]; then
     echo "Reverting changeset $RIG_CHANGESET"
     rig revert
