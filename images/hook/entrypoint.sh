@@ -13,8 +13,11 @@ if [ $1 = "update" ]; then
     rig delete deployments/stolon-proxy --force
     rig delete deployments/stolon-rpc --force
     rig delete deployments/stolon-sentinel --force
+    kubectl delete rs -l name=stolon-rpc --ignore-not-found
     kubectl delete pods -l name=stolon-rpc --ignore-not-found
+    kubectl delete rs -l name=stolon-sentinel --ignore-not-found
     kubectl delete pods -l name=stolon-sentinel --ignore-not-found
+    kubectl delete rs -l name=stolon-utils --ignore-not-found
     kubectl delete pods -l name=stolon-utils --ignore-not-found
 
     # wait for keeper pods to go away
