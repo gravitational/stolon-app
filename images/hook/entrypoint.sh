@@ -14,6 +14,7 @@ if [ $1 = "update" ]; then
     rig delete deployments/stolon-rpc --force
     rig delete deployments/stolon-sentinel --force
     rig delete deployments/stolon-utils --force
+    kubectl create -f /var/lib/gravity/resources/delete-backup-bucket.yaml
 
     # wait for keeper pods to go away
     while kubectl get pods --show-all|grep -q stolon-keeper
@@ -46,6 +47,12 @@ if [ $1 = "update" ]; then
 elif [ $1 = "rollback" ]; then
     echo "Reverting changeset $RIG_CHANGESET"
     rig revert
+
+    kubectl create -f /var/lib/gravity/resources/create-backup-bucket.yaml
+    if [ $(kubectl get nodes -l stolon-keeper=yes -o name | wc -l) -ge 3 ]
+    then
+        kubectl scale --replicas=3 deployment stolon-sentinel
+    fi
 else
     echo "Missing argument, should be either 'update' or 'rollback'"
 fi
