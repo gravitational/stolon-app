@@ -66,6 +66,8 @@ spec:
       name: stolon-hatest
     spec:
       serviceAccountName: stolon-hatest
+      securityContext:
+        runAsUser: 0
       containers:
       - name: hatest
         image: apiserver:5000/stolon-hatest:latest

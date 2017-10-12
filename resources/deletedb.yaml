@@ -65,6 +65,9 @@ spec:
     metadata:
       name: stolon-deletedb
     spec:
+      serviceAccount: stolon-deletedb
+      securityContext:
+        runAsUser: 0
       containers:
       - name: deletedb
         image: apiserver:5000/stolon:latest

@@ -66,6 +66,8 @@ spec:
       name: stolon-createdb
     spec:
       serviceAccountName: stolon-createdb
+      securityContext:
+        runAsUser: 0
       containers:
       - name: createdb
         image: apiserver:5000/stolon:latest
