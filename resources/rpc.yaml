@@ -92,6 +92,8 @@ spec:
         component: rpc
     spec:
       serviceAccountName: stolon-rpc
+      securityContext:
+        runAsUser: 0
       nodeSelector:
         stolon-keeper: "yes"
       containers:

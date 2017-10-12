@@ -99,6 +99,8 @@ spec:
         component: keeper
     spec:
       serviceAccountName: stolon-keeper
+      securityContext:
+        runAsUser: 0
       nodeSelector:
         stolon-keeper: "yes"
       containers:

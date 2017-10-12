@@ -65,6 +65,8 @@ spec:
     metadata:
       name: stolon-backup
     spec:
+      securityContext:
+        runAsUser: 0
       serviceAccountName: stolon-backup
       containers:
       - name: backup
