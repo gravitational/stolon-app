@@ -1,0 +1,19 @@
+---
+apiVersion: v1
+data:
+  spec: '{"metadata":{"name":"postgresql-alert"},"kind":"alert","version":"v2","spec":{"formula":"var
+    period = 5m\nvar every = 1m\nvar crit = 1800\nvar critReset = 0\n\nvar replication_lag
+    = stream\n    |from()\n        .measurement(''postgresql_lag'')\n        .groupBy(''host'')\n    |window()\n        .period(period)\n        .every(every)\n\nvar
+    trigger = replication_lag\n    |alert()\n        .message(''{{ .Level}} / PostgreSQL
+    instance {{ index .Tags \"host\" }} has high replication lag: {{ index .Fields
+    \"pg_replication_lag\" }}'')\n        .crit(lambda: \"pg_replication_lag\" \u003e
+    crit)\n        .critReset(lambda: \"pg_replication_lag\" \u003c critReset)\n        .stateChangesOnly()\n        .details(''''''\n\u003cb\u003e{{
+    .Message }}\u003c/b\u003e\n\u003cp\u003eLevel: {{ .Level }}\u003c/p\u003e\n\u003cp\u003ePod
+    name: {{ index .Tags \"host\" }}\u003c/p\u003e\n\u003cp\u003eReplication lag:
+    {{ index .Fields \"pg_replication_lag\" }} sec\u003c/p\u003e\n'''''')\n        .email()\n        .log(''/var/lib/kapacitor/logs/postgresql_lag.log'')\n        .mode(0644)\n"}}'
+kind: ConfigMap
+metadata:
+  labels:
+    monitoring: alert
+  name: postgresql-alert
+  namespace: kube-system

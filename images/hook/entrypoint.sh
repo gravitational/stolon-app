@@ -30,6 +30,7 @@ if [ $1 = "update" ]; then
     rig upsert -f /var/lib/gravity/resources/rpc.yaml --debug
     rig upsert -f /var/lib/gravity/resources/sentinel.yaml --debug
     rig upsert -f /var/lib/gravity/resources/utils.yaml --debug
+    rig upsert -f /var/lib/gravity/resources/alerts.yaml --debug
 
     echo "Checking status"
     rig status $RIG_CHANGESET --retry-attempts=120 --retry-period=1s --debug
