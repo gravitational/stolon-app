@@ -92,7 +92,10 @@ function launch_keeper() {
 		echo "stolon data doesn't exist, data won't be persistent!"
 		mkdir /stolon-data
 	fi
-	chown stolon:stolon /stolon-data
+    if [[ ! -f /stolon-data/dummy.file ]]; then
+        fallocate -l 300MB /stolon-data/dummy.file
+    fi
+	chown -R stolon:stolon /stolon-data
 
 	export STKEEPER_LISTEN_ADDRESS=$POD_IP
 	export STKEEPER_PG_LISTEN_ADDRESS=$POD_IP
