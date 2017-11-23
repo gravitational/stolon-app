@@ -1,16 +1,17 @@
+---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: delete-backup-bucket
+  name: create-backup-bucket
 spec:
   template:
     metadata:
-      name: delete-backup-bucket
+      name: create-backup-bucket
     spec:
       restartPolicy: OnFailure
       containers:
         - image: stolon-jobs:latest
-          name: delete-backup-bucket
+          name: create-backup-bucket
           command: ["/entrypoint.sh", "create-backup-bucket"]
           env:
             - name: AWS_ACCESS_KEY_ID
