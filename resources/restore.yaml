@@ -72,6 +72,8 @@ spec:
       serviceAccount: stolon-restore
       securityContext:
         runAsUser: 0
+      nodeSelector:
+        stolon-keeper: "yes"
       containers:
       - name: restore
         image: apiserver:5000/stolon:latest

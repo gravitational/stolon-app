@@ -1,0 +1,37 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-backup-bucket
+spec:
+  template:
+    metadata:
+      name: create-backup-bucket
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - image: stolon-jobs:latest
+          name: create-backup-bucket
+          command: ["/entrypoint.sh", "create-backup-bucket"]
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: pithos-keys
+                  key: tenant.key
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: pithos-keys
+                  key: tenant.secret
+            - name: PITHOS_S3_ENDPOINT
+              value: "pithos.default.svc"
+            - name: PITHOS_BACKUP_BUCKET
+              value: "stolon-backup"
+          volumeMounts:
+            - name: cluster-ca
+              mountPath: /etc/ssl/cluster-ca
+      volumes:
+        - name: cluster-ca
+          secret:
+            secretName: cluster-ca

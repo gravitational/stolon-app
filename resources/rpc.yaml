@@ -89,6 +89,7 @@ spec:
       namespace: default
       labels:
         name: stolon-rpc
+        namespace: default
         stolon-cluster: "kube-stolon"
         stolon-rpc: "yes"
         app: stolon
