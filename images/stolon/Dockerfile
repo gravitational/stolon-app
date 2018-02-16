@@ -4,10 +4,12 @@ ENV DEBIAN_FRONTEND=noninteractive \
     TERM=xterm
 
 RUN apt-get update && \
-    apt-get install --yes --no-install-recommends \
-        postgresql \
-        postgresql-client \
-        postgresql-contrib && \
+    echo "deb http://deb.debian.org/debian jessie-backports main contrib non-free" > /etc/apt/sources.list.d/jessie-backports.list && \
+    apt-get update && \
+    apt-get install --yes --no-install-recommends -t jessie-backports \
+        postgresql-9.6 \
+        postgresql-client-9.6 \
+        postgresql-contrib-9.6 && \
     apt-get clean && \
     rm -rf \
         /var/lib/apt/lists/* \
