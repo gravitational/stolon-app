@@ -38,6 +38,10 @@ function chmod_keys() {
 	chmod 0600 /etc/ssl/cluster-default-postgres/default-server-key.pem
 }
 
+function chown_etcd_keys() {
+    cp -R /etc/etcd/secrets /etc/etcd/secrets-rw
+    chown -R stolon /etc/etcd/secrets-rw
+}
 
 # TODO: find how to map ENV vars which is populated by k8s services for discovery to vars, which utilities uses
 function setup_stolonctl() {
@@ -140,6 +144,7 @@ function main() {
 	announce_step 'Select which component to start'
 	if [[ "${KEEPER}" == "true" ]]; then
 		chmod_keys
+        chown_etcd_keys
 		launch_keeper
 		exit 0
 	fi
@@ -151,6 +156,7 @@ function main() {
 
 	if [[ "${PROXY}" == "true" ]]; then
 		chmod_keys
+        chown_etcd_keys
 		launch_proxy
 		exit 0
 	fi
