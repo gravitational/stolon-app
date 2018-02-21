@@ -154,11 +154,11 @@ spec:
             - name: STPROXY_STORE_BACKEND
               value: "etcd"
             - name: STPROXY_STORE_CACERT
-              value: "/etc/etcd/secrets/root.cert"
+              value: "/etc/etcd/secrets-rw/root.cert"
             - name: STPROXY_STORE_CERT
-              value: "/etc/etcd/secrets/etcd.cert"
+              value: "/etc/etcd/secrets-rw/etcd.cert"
             - name: STPROXY_STORE_KEY
-              value: "/etc/etcd/secrets/etcd.key"
+              value: "/etc/etcd/secrets-rw/etcd.key"
             - name: STPROXY_DEBUG
               value: "false"
             - name: STPROXY_PORT
@@ -205,11 +205,11 @@ spec:
             - name: STKEEPER_STORE_BACKEND
               value: "etcd"
             - name: STKEEPER_STORE_CACERT
-              value: "/etc/etcd/secrets/root.cert"
+              value: "/etc/etcd/secrets-rw/root.cert"
             - name: STKEEPER_STORE_CERT
-              value: "/etc/etcd/secrets/etcd.cert"
+              value: "/etc/etcd/secrets-rw/etcd.cert"
             - name: STKEEPER_STORE_KEY
-              value: "/etc/etcd/secrets/etcd.key"
+              value: "/etc/etcd/secrets-rw/etcd.key"
             - name: STKEEPER_PG_REPL_USERNAME
               value: "repluser"
             - name: STKEEPER_PG_REPL_PASSWORD
