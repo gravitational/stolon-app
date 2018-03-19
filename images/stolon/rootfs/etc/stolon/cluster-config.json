@@ -2,6 +2,7 @@
     "init_with_multiple_keepers": true,
     "max_standbys_per_sender": 15,
     "pg_parameters": {
+        "idle_in_transaction_session_timeout": "10min",
         "log_destination": "stderr",
         "log_min_messages": "INFO",
         "log_checkpoints": "on",
