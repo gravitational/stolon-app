@@ -17,7 +17,6 @@ limitations under the License.
 package cluster
 
 import (
-	"fmt"
 	"path/filepath"
 
 	"github.com/gravitational/stolon-app/tool/stolonctl/internal/pkg/defaults"
@@ -29,8 +28,13 @@ import (
 	"k8s.io/client-go/pkg/api/v1"
 )
 
-// Pods returns list of keeper and sentinel pods
-func Pods(client *kubernetes.Client, config *Config) ([]v1.Pod, error) {
+// pods returns list of keeper and sentinel pods
+func pods(config *Config) ([]v1.Pod, error) {
+	client, err := kubernetes.NewClient(config.KubeConfig)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
 	pods, err := client.Pods(config.KeepersPodFilterKey, config.KeepersPodFilterValue, config.Namespace)
 	if err != nil {
 		return nil, trace.Wrap(err)
@@ -46,9 +50,14 @@ func Pods(client *kubernetes.Client, config *Config) ([]v1.Pod, error) {
 }
 
 // GetStatus returns status of Stolon cluster
-func GetStatus(pods []v1.Pod, config *Config) (*Status, error) {
+func GetStatus(config *Config) (*Status, error) {
+	podList, err := pods(config)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
 	var podsStatus []kubernetes.PodStatus
-	for _, pod := range pods {
+	for _, pod := range podList {
 		podIP := pod.Status.PodIP
 		if podIP == "" {
 			podIP = "<none>"
@@ -77,8 +86,6 @@ func GetStatus(pods []v1.Pod, config *Config) (*Status, error) {
 	if err != nil {
 		return nil, trace.Wrap(err, "error connecting to Etcd")
 	}
-
-	fmt.Printf("%+v\n", etcdStore)
 
 	storePath := filepath.Join(defaults.EtcdClusterBasePath, config.Name)
 	storeManager := store.NewStoreManager(etcdStore, storePath)

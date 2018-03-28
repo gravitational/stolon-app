@@ -44,7 +44,7 @@ gofiles: $(GO_FILES)
 
 .PHONY: stolonctl
 stolonctl:
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -gcflags="-N -l" -o $(BUILD_DIR)/$@ -a -installsuffix cgo cmd/*.go
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o $(BUILD_DIR)/$@ -a -installsuffix cgo cmd/*.go
 
 .PHONY: clean
 clean:

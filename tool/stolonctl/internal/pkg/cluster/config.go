@@ -18,6 +18,8 @@ package cluster
 
 // Config represent configuration of Stolon cluster
 type Config struct {
+	// KubeConfig defines path to Kubernetes config file
+	KubeConfig string
 	// Namespace defines Kubernetes namespace for Stolon cluster
 	Namespace string
 

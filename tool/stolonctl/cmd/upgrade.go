@@ -17,11 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"fmt"
-
-	"github.com/gravitational/stolon-app/tool/stolonctl/internal/pkg/cluster"
-	"github.com/gravitational/stolon-app/tool/stolonctl/internal/pkg/kubernetes"
-	"github.com/gravitational/trace"
 	"github.com/spf13/cobra"
 )
 
@@ -38,34 +33,6 @@ func init() {
 }
 
 func upgrade(ccmd *cobra.Command, args []string) error {
-	client, err := kubernetes.NewClient(kubeConfig)
-	if err != nil {
-		return trace.Wrap(err)
-	}
 
-	clusterConfig := &cluster.Config{
-		Name:                    clusterName,
-		Namespace:               namespace,
-		KeepersPodFilterKey:     keepersFilterKey,
-		KeepersPodFilterValue:   keepersFilterValue,
-		SentinelsPodFilterKey:   sentinelsFilterKey,
-		SentinelsPodFilterValue: sentinelsFilterValue,
-		EtcdEndpoints:           etcdEndpoints,
-		EtcdCertFile:            etcdCertFile,
-		EtcdKeyFile:             etcdKeyFile,
-		EtcdCAFile:              etcdCAFile,
-	}
-
-	pods, err := cluster.Pods(client, clusterConfig)
-	if err != nil {
-		return trace.Wrap(err)
-	}
-
-	status, err := cluster.GetStatus(pods, clusterConfig)
-	if err != nil {
-		return trace.Wrap(err)
-	}
-
-	fmt.Println(status.ClusterData)
 	return nil
 }

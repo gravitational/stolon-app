@@ -2,7 +2,7 @@
 # -*- mode: sh; -*-
 
 # File: entrypoint.sh
-# Time-stamp: <2018-03-21 15:27:07>
+# Time-stamp: <2018-03-28 11:51:14>
 # Copyright (C) 2018 Sergei Antipov
 # Description: Entrypoint for PostgreSQL upgarder tool
 

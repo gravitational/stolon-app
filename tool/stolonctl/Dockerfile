@@ -1,4 +1,4 @@
-FROM quay.io/gravitational/debian-tall:0.0.1
+FROM quay.io/gravitational/debian-grande:0.0.1
 
 ADD build/stolonctl /usr/bin/stolonctl
 ADD entrypoint.sh /usr/bin/entrypoint.sh
