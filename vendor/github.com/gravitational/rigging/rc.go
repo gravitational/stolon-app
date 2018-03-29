@@ -19,8 +19,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gravitational/trace"
 	log "github.com/sirupsen/logrus"
+	"github.com/gravitational/trace"
 )
 
 func GetRCPods(name string) (*PodList, error) {

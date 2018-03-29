@@ -34,4 +34,8 @@ ignored = ["github.com/gravitational/stolon-app/images*"]
 
 [[constraint]]
   name = "github.com/gravitational/rigging"
-  branch = "master"
+  branch = "kevin/dep-updates"
+
+[[override]]
+  name = "k8s.io/api"
+  branch = "release-1.9"
