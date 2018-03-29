@@ -3,6 +3,10 @@ REPOSITORY := gravitational.io
 NAME := stolon-app
 OPS_URL ?= https://opscenter.localhost.localdomain:33009
 
+SRCDIR=/go/src/github.com/gravitational/stolon-app
+DOCKERFLAGS=--rm=true -v $(PWD):$(SRCDIR) -w $(SRCDIR)
+BUILDIMAGE=golang:1.9.4
+
 EXTRA_GRAVITY_OPTIONS ?=
 
 CONTAINERS := stolon-bootstrap:$(VERSION) \
@@ -10,7 +14,6 @@ CONTAINERS := stolon-bootstrap:$(VERSION) \
 			  stolon-hook:$(VERSION) \
 			  stolon-jobs:$(VERSION) \
 			  stolon:$(VERSION) \
-			  stolon-hatest:$(VERSION) \
 			  stolon-telegraf:$(VERSION) \
 			  stolon-telegraf-node:$(VERSION)
 
@@ -19,7 +22,6 @@ IMPORT_IMAGE_OPTIONS := --set-image=stolon-bootstrap:$(VERSION) \
 	--set-image=stolon-hook:$(VERSION) \
 	--set-image=stolon-jobs:$(VERSION) \
 	--set-image=stolon:$(VERSION) \
-	--set-image=stolon-hatest:$(VERSION) \
 	--set-image=stolon-telegraf:$(VERSION) \
 	--set-image=stolon-telegraf-node:$(VERSION)
 
@@ -30,14 +32,13 @@ IMPORT_OPTIONS := --vendor \
 		--name=$(NAME) \
 		--version=$(VERSION) \
 		--glob=**/*.yaml \
-		--ignore=dev \
-		--exclude="dev" \
 		--exclude="build" \
-        --exclude=".git" \
-        --exclude="tool" \
-        --exclude="Makefile" \
-        --exclude="images" \
-        --exclude="gravity.log" \
+		--exclude=".git" \
+		--exclude="cmd" \
+		--exclude="vendor" \
+		--exclude="Makefile" \
+		--exclude="images" \
+		--exclude="gravity.log" \
 		--ignore=images \
 		--registry-url=apiserver:5000 \
 		$(IMPORT_IMAGE_OPTIONS)
@@ -49,7 +50,8 @@ TELE_BUILD_OPTIONS := --insecure \
                 --glob=**/*.yaml \
                 --ignore=".git" \
                 --ignore="images" \
-                --ignore="tool" \
+                --ignore="cmd" \
+                --ignore="vendor" \
                 $(IMPORT_IMAGE_OPTIONS)
 
 BUILD_DIR := build
@@ -84,33 +86,16 @@ $(TARBALL): import $(BUILD_DIR)
 build-app: images
 	tele build -o build/installer.tar $(TELE_BUILD_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) resources/app.yaml
 
+.PHONY: build-stolonboot
+build-stolonboot:
+	docker run $(DOCKERFLAGS) $(BUILDIMAGE) make build/stolonboot
+
+build/stolonboot:
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -o $@ cmd/stolonboot/*.go
+
 .PHONY: clean
 clean:
 	cd images && $(MAKE) clean
-
-.PHONY: dev-push
-dev-push: images
-	for container in $(CONTAINERS); do \
-		docker tag $$container apiserver:5000/$$container ;\
-		docker push apiserver:5000/$$container ;\
-	done
-
-.PHONY: dev-redeploy
-dev-redeploy: dev-clean dev-deploy
-
-.PHONY: dev-deploy
-dev-deploy: dev-push
-	-kubectl label nodes -l role=node stolon-keeper=yes
-	kubectl create -f dev/bootstrap.yaml
-
-.PHONY: dev-clean
-dev-clean:
-	-kubectl label nodes -l stolon-keeper=yes stolon-keeper-
-	-kubectl delete pod/stolon-init secret/stolon
-	-kubectl delete \
-		-f resources/keeper.yaml \
-		-f resources/proxy.yaml \
-		-f resources/sentinel.yaml
 
 DB_NAME ?= postgres
 .PHONY: dev-createdb
@@ -134,8 +119,3 @@ BACKUP_FILE ?=
 dev-restore:
 	-kubectl delete -f resources/restore.yaml
 	sed 's/{{STOLON_BACKUP_FILE}}/\backups\/$(BACKUP_FILE)/' resources/restore.yaml | kubectl create -f -
-
-.PHONY: dev-hatest
-dev-hatest:
-	-kubectl delete -f resources/hatest.yaml
-	kubectl create -f resources/hatest.yaml
