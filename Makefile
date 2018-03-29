@@ -5,7 +5,7 @@ OPS_URL ?= https://opscenter.localhost.localdomain:33009
 
 SRCDIR=/go/src/github.com/gravitational/stolon-app
 DOCKERFLAGS=--rm=true -v $(PWD):$(SRCDIR) -w $(SRCDIR)
-BUILDIMAGE=golang:1.9.4
+BUILDIMAGE=golang:1.9
 
 EXTRA_GRAVITY_OPTIONS ?=
 
@@ -93,7 +93,36 @@ build-stolonboot: $(BUILD_DIR)
 build/stolonboot:
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -o $@ cmd/stolonboot/*.go
 
+.PHONY: build-stolonctl
+build-stolonctl: $(BUILD_DIR)
+	docker run $(DOCKERFLAGS) $(BUILDIMAGE) make build/stolonctl
+
+build/stolonctl:
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -o $@ cmd/stolonctl/*.go
+
 .PHONY: clean
 clean:
 	rm -rf $(BUILD_DIR)
 	cd images && $(MAKE) clean
+
+$(GOMETALINTER):
+	go get -u gopkg.in/alecthomas/gometalinter.v2
+	ln -s $(GOPATH)/bin/gometalinter.v2 $(GOPATH)/bin/gometalinter
+	gometalinter --install
+
+.PHONY: lint
+lint: $(GOMETALINTER)
+	gometalinter --vendor --disable-all \
+		--enable=deadcode \
+		--enable=ineffassign \
+		--enable=gosimple \
+		--enable=staticcheck \
+		--enable=gofmt \
+		--enable=goimports \
+		--enable=dupl \
+		--enable=misspell \
+		--enable=errcheck \
+		--enable=vet \
+		--enable=vetshadow \
+		--deadline=1m \
+		./...
