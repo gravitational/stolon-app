@@ -84,10 +84,10 @@ $(TARBALL): import $(BUILD_DIR)
 
 .PHONY: build-app
 build-app: images
-	tele build -o build/installer.tar $(TELE_BUILD_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) resources/app.yaml
+	tele build -o $(BUILD_DIR)/installer.tar $(TELE_BUILD_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) resources/app.yaml
 
 .PHONY: build-stolonboot
-build-stolonboot:
+build-stolonboot: $(BUILD_DIR)
 	docker run $(DOCKERFLAGS) $(BUILDIMAGE) make build/stolonboot
 
 build/stolonboot:
@@ -95,27 +95,5 @@ build/stolonboot:
 
 .PHONY: clean
 clean:
+	rm -rf $(BUILD_DIR)
 	cd images && $(MAKE) clean
-
-DB_NAME ?= postgres
-.PHONY: dev-createdb
-dev-createdb:
-	-kubectl delete -f resources/createdb.yaml
-	sed 's/{{STOLON_CREATE_DB}}/$(DB_NAME)/' resources/createdb.yaml | kubectl create -f -
-
-.PHONY: dev-deletedb
-dev-deletedb:
-	-kubectl delete -f resources/deletedb.yaml
-	sed 's/{{STOLON_DELETE_DB}}/$(DB_NAME)/' resources/deletedb.yaml | kubectl create -f -
-
-
-.PHONY: dev-backup
-dev-backup:
-	-kubectl delete -f resources/backup.yaml
-	sed 's/{{STOLON_BACKUP_DB}}/$(DB_NAME)/' resources/backup.yaml | kubectl create -f -
-
-BACKUP_FILE ?=
-.PHONY: dev-restore
-dev-restore:
-	-kubectl delete -f resources/restore.yaml
-	sed 's/{{STOLON_BACKUP_FILE}}/\backups\/$(BACKUP_FILE)/' resources/restore.yaml | kubectl create -f -

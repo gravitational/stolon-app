@@ -27,9 +27,9 @@ images: bootstrap \
 
 STOLONBOOT_BINS := bootstrap/bin
 $(STOLONBOOT_BINS):
-	cd ../tool/stolonboot && make clean build
+	cd ../ && make build-stolonboot
 	mkdir $(STOLONBOOT_BINS)
-	cp ../tool/stolonboot/bin/stolonboot $(STOLONBOOT_BINS)/stolonboot
+	cp ../build/stolonboot $(STOLONBOOT_BINS)/stolonboot
 
 .PHONY: bootstrap
 bootstrap: $(STOLONBOOT_BINS)
