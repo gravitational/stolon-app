@@ -3,7 +3,6 @@ all: images
 
 BOOTSTRAP_TAG := stolon-bootstrap:$(VERSION)
 UNINSTALL_TAG := stolon-uninstall:$(VERSION)
-HATEST_TAG := stolon-hatest:$(VERSION)
 HOOK_TAG := stolon-hook:$(VERSION)
 JOBS_TAG := stolon-jobs:$(VERSION)
 STOLON_TAG := stolon:$(VERSION)
@@ -17,14 +16,12 @@ images: bootstrap \
 		telegraf \
 		telegraf-node \
 		hook \
-		jobs \
-		hatest
+		jobs
 	docker tag $(BOOTSTRAP_TAG) stolon-bootstrap:latest
 	docker tag $(UNINSTALL_TAG) stolon-uninstall:latest
 	docker tag $(STOLON_TAG) stolon:latest
 	docker tag $(HOOK_TAG) stolon-hook:latest
 	docker tag $(JOBS_TAG) stolon-jobs:latest
-	docker tag $(HATEST_TAG) stolon-hatest:latest
 	docker tag $(TELEGRAF_TAG) stolon-telegraf:latest
 	docker tag $(TELEGRAF_NODE_TAG) stolon-telegraf-node:latest
 
@@ -63,16 +60,6 @@ stolon: $(STOLON_BINS)
 	docker build --pull -t $(STOLON_TAG) $(PWD)/stolon
 	docker tag $(STOLON_TAG) stolon:latest
 
-STOLONHATEST_BINS := hatest/bin
-$(STOLONHATEST_BINS):
-	cd ../tool/stolonhatest && make clean build
-	mkdir $(STOLONHATEST_BINS)
-	cp ../tool/stolonhatest/bin/stolonhatest $(STOLONHATEST_BINS)/stolonhatest
-
-.PHONY: hatest
-hatest: $(STOLON_BINS) $(STOLONHATEST_BINS)
-	docker build -t $(HATEST_TAG) $(PWD)/hatest
-
 .PHONY: telegraf
 telegraf:
 	docker build --pull -t $(TELEGRAF_TAG) $(PWD)/telegraf
@@ -89,4 +76,3 @@ jobs:
 clean:
 	-rm -rf $(STOLONBOOT_BINS)
 	-rm -rf $(STOLON_BINS)
-	-rm -rf $(STOLONHATEST_BINS)
