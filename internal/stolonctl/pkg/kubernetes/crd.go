@@ -39,5 +39,5 @@ func (c *Client) CreateCRD() error {
 			},
 		},
 	}
-
+	return nil
 }

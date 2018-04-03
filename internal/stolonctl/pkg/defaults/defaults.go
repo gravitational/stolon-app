@@ -31,4 +31,20 @@ const (
 
 	// ClusterName defines name of stolon cluster
 	ClusterName = "kube-stolon"
+
+	// Custom Resource Definition variables
+	// StolonUpgradeName defines CRD name
+	StolonUpgradeName = "stolonupgrade.stolon.gravitational.io"
+	// StolonUpgradeGroup defines CRD group
+	StolonUpgradeGroup = "stolon.gravitational.io"
+	// StolonUpgradeVersion defines CRD version
+	StolonUpgradeVersion = "v1"
+	// StolonUpgradeScope defines CRD scope
+	StolonUpgradeScope = "Namespaced"
+	// StolonUpgradeKind defines CRD kind
+	StolonUpgradeKind = "StolonUpgrade"
+	// StolonUpgradePlural defines CRD plural form
+	StolonUpgradePlural = "stolonupgrades"
+	// StolonUpgradeSingular defines CRD singular form
+	StolonUpgradeSingular = "stolonupgrade"
 )
