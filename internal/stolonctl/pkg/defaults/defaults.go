@@ -22,7 +22,7 @@ const (
 	// KeepersPodFilter defines label selector to filter keeper pods
 	KeepersPodFilter = "name=stolon-keeper"
 	// SentinelsPodFilter defines label selector to filter sentinel pods
-	SentinelsPodFilterValue = "name=stolon-sentinel"
+	SentinelsPodFilter = "name=stolon-sentinel"
 
 	// EtcdEndpoints defines endpoints for connecting to etcd
 	EtcdEndpoints = "127.0.0.1:2379"

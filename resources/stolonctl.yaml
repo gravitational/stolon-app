@@ -10,7 +10,6 @@ spec:
       labels:
         app: stolonctl
     spec:
-      serviceAccountName: stolonctl
       securityContext:
         runAsUser: 0
       containers:
