@@ -24,18 +24,6 @@
   version = "v3.0.17"
 
 [[projects]]
-  name = "github.com/coreos/go-systemd"
-  packages = ["journal"]
-  revision = "40e2722dffead74698ca12a750f64ef313ddce05"
-  version = "v16"
-
-[[projects]]
-  name = "github.com/coreos/pkg"
-  packages = ["capnslog"]
-  revision = "3ac0863d7acf3bc44daf49afef8919af12f704ef"
-  version = "v3"
-
-[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
@@ -153,14 +141,14 @@
   version = "0.0.10"
 
 [[projects]]
-  branch = "sasha/clusters"
+  branch = "master"
   name = "github.com/gravitational/stolon"
   packages = [
     "common",
     "pkg/cluster",
     "pkg/store"
   ]
-  revision = "34e9011269a58186d368ae52143f7831873d24ab"
+  revision = "cf9226e5b7d4658f126f7c0f27bdd93312538a18"
 
 [[projects]]
   name = "github.com/gravitational/trace"
@@ -258,6 +246,18 @@
   packages = ["."]
   revision = "0360b2af4f38e8d38c7fce2a9f4e702702d73a39"
   version = "v0.0.3"
+
+[[projects]]
+  name = "github.com/minio/minio-go"
+  packages = [
+    ".",
+    "pkg/policy",
+    "pkg/s3signer",
+    "pkg/s3utils",
+    "pkg/set"
+  ]
+  revision = "dcaae9ec4d0b0a81d17f22f6d7a186491f6a55ec"
+  version = "v2.0.4"
 
 [[projects]]
   branch = "master"
@@ -542,6 +542,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9d1956ecd9b9ec2ea6c2df194947cc60c67ef6638720e4e0933f923f728d7971"
+  inputs-digest = "71217279092da81b131b35ce707de0dbd0b42e248c054c3c4d6e4c0d4f267df3"
   solver-name = "gps-cdcl"
   solver-version = 1

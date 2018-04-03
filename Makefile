@@ -126,3 +126,7 @@ lint: $(GOMETALINTER)
 		--enable=vetshadow \
 		--deadline=1m \
 		./...
+
+.PHONY: fix-logrus
+fix-logrus:
+	find vendor -type f -print0 | xargs -0 sed -i 's/Sirupsen/sirupsen/g'

@@ -20,7 +20,7 @@
 #   version = "2.4.0"
 #
 
-ignored = ["github.com/gravitational/stolon-app/images*"]
+ignored = ["github.com/gravitational/stolon-app/images*", "github.com/Sirupsen/logrus"]
 
 [prune]
   non-go = true
@@ -55,3 +55,11 @@ ignored = ["github.com/gravitational/stolon-app/images*"]
 [[override]]
   name = "github.com/ugorji/go"
   revision = "f1f1a805ed361a0e078bb537e4ea78cd37dcf065"
+
+[[override]]
+  name = "github.com/gravitational/stolon"
+  branch = "master"
+
+[[override]]
+  name = "github.com/minio/minio-go"
+  version = "~2.0"
