@@ -23,14 +23,10 @@ type Config struct {
 	// Namespace defines Kubernetes namespace for Stolon cluster
 	Namespace string
 
-	// KeepersPodFilterValue defines label value to filter keeper pods
-	KeepersPodFilterValue string
-	// KeepersPodFilterKey defines label key to filter keeper pods
-	KeepersPodFilterKey string
-	// SentinelsPodFilterValue defines label value to filter sentinel pods
-	SentinelsPodFilterValue string
-	// SentinelsPodFilterKey defines label key to filter sentinel pods
-	SentinelsPodFilterKey string
+	// KeepersPodFilter defines labels to filter keeper pods
+	KeepersPodFilter string
+	// SentinelsPodFilter defines labels to filter sentinel pods
+	SentinelsPodFilter string
 
 	// EtcdEnpoints defines addresses for connecting to Etcd
 	EtcdEndpoints string

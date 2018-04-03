@@ -17,18 +17,12 @@ limitations under the License.
 package defaults
 
 const (
-	// ConfigPath defines path to configuration file
-	ConfigPath = "/etc/pgupgrade/config.yaml"
 	// Namespace defines Kubernetes namespace for Stolon application
 	Namespace = "default"
-	// KeepersPodFilterValue defines label value to filter keeper pods
-	KeepersPodFilterValue = "stolon-keeper"
-	// KeepersPodFilterKey defines label key to filter keeper pods
-	KeepersPodFilterKey = "name"
-	// SentinelsPodFilterValue defines label value to filter sentinel pods
-	SentinelsPodFilterValue = "stolon-sentinel"
-	// SentinelsPodFilterKey defines label key to filter sentinel pods
-	SentinelsPodFilterKey = "name"
+	// KeepersPodFilter defines label selector to filter keeper pods
+	KeepersPodFilter = "name=stolon-keeper"
+	// SentinelsPodFilter defines label selector to filter sentinel pods
+	SentinelsPodFilterValue = "name=stolon-sentinel"
 
 	// EtcdEndpoints defines endpoints for connecting to etcd
 	EtcdEndpoints = "127.0.0.1:2379"

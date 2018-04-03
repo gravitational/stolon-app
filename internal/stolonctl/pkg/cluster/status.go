@@ -35,12 +35,12 @@ func getPods(config *Config) ([]v1.Pod, error) {
 		return nil, trace.Wrap(err)
 	}
 
-	pods, err := client.Pods(config.KeepersPodFilterKey, config.KeepersPodFilterValue, config.Namespace)
+	pods, err := client.Pods(config.KeepersPodFilter, config.Namespace)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
-	sentinelPods, err := client.Pods(config.SentinelsPodFilterKey, config.SentinelsPodFilterValue, config.Namespace)
+	sentinelPods, err := client.Pods(config.SentinelsPodFilter, config.Namespace)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}

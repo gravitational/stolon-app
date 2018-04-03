@@ -21,7 +21,6 @@ import (
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -50,19 +49,19 @@ func NewClient(kubeConfig string) (client *Client, err error) {
 }
 
 // Pods returns stolon pods matching the specified label
-func (c *Client) Pods(filterKey, filterValue, namespace string) ([]v1.Pod, error) {
-	label, err := matchLabel(filterKey, filterValue)
+func (c *Client) Pods(filter, namespace string) ([]v1.Pod, error) {
+	labelSelector, err := labels.Parse(filter)
 	if err != nil {
-		return nil, trace.Wrap(err)
+		return nil, trace.Wrap(err, "the provided label selector %s is not valid", filter)
 	}
 
-	podList, err := c.Clientset.CoreV1().Pods(namespace).List(metav1.ListOptions{LabelSelector: label.String()})
+	podList, err := c.Clientset.CoreV1().Pods(namespace).List(metav1.ListOptions{LabelSelector: labelSelector.String()})
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
 	if len(podList.Items) == 0 {
-		return nil, trace.NotFound("pod(s) with label %s not found", label.String())
+		return nil, trace.NotFound("pod(s) with label selector %s not found", labelSelector.String())
 	}
 
 	return podList.Items, nil
@@ -76,22 +75,4 @@ func getClientConfig(kubeConfig string) (*rest.Config, error) {
 	}
 	return rest.InClusterConfig()
 
-}
-
-// Label represents a kubernetes label which is used
-// as a search target for Pods
-type Label struct {
-	Key   string
-	Value string
-}
-
-// matchLabel matches a resource with the specified label
-func matchLabel(key, value string) (labels.Selector, error) {
-	req, err := labels.NewRequirement(key, selection.In, []string{value})
-	if err != nil {
-		return nil, trace.Wrap(err, "failed to build a requirement from %v=%q", key, value)
-	}
-	selector := labels.NewSelector()
-	selector = selector.Add(*req)
-	return selector, nil
 }

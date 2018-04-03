@@ -52,17 +52,15 @@ func status(ccmd *cobra.Command, args []string) error {
 // Status returns status of Stolon cluster(Pods state and ClusterView)
 func Status() (*cluster.Status, error) {
 	clusterConfig := &cluster.Config{
-		KubeConfig:              kubeConfig,
-		Name:                    clusterName,
-		Namespace:               namespace,
-		KeepersPodFilterKey:     keepersFilterKey,
-		KeepersPodFilterValue:   keepersFilterValue,
-		SentinelsPodFilterKey:   sentinelsFilterKey,
-		SentinelsPodFilterValue: sentinelsFilterValue,
-		EtcdEndpoints:           etcdEndpoints,
-		EtcdCertFile:            etcdCertFile,
-		EtcdKeyFile:             etcdKeyFile,
-		EtcdCAFile:              etcdCAFile,
+		KubeConfig:         kubeConfig,
+		Name:               clusterName,
+		Namespace:          namespace,
+		KeepersPodFilter:   keepersFilter,
+		SentinelsPodFilter: sentinelsFilter,
+		EtcdEndpoints:      etcdEndpoints,
+		EtcdCertFile:       etcdCertFile,
+		EtcdKeyFile:        etcdKeyFile,
+		EtcdCAFile:         etcdCAFile,
 	}
 
 	status, err := cluster.GetStatus(clusterConfig)

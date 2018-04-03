@@ -28,17 +28,15 @@ import (
 )
 
 var (
-	kubeConfig           string
-	keepersFilterValue   string
-	keepersFilterKey     string
-	sentinelsFilterValue string
-	sentinelsFilterKey   string
-	namespace            string
-	etcdEndpoints        string
-	etcdCertFile         string
-	etcdKeyFile          string
-	etcdCAFile           string
-	clusterName          string
+	kubeConfig      string
+	keepersFilter   string
+	sentinelsFilter string
+	namespace       string
+	etcdEndpoints   string
+	etcdCertFile    string
+	etcdKeyFile     string
+	etcdCAFile      string
+	clusterName     string
 
 	envs = map[string]string{
 		"ETCD_CERT":      "etcd-cert-file",
@@ -66,10 +64,8 @@ func main() {
 func init() {
 	stolonctlCmd.PersistentFlags().StringVar(&kubeConfig, "kubeconfig", "", "Kubernetes client config file")
 	stolonctlCmd.PersistentFlags().StringVarP(&namespace, "namespace", "n", defaults.Namespace, "Kubernetes namespace for Stolon application")
-	stolonctlCmd.PersistentFlags().StringVar(&keepersFilterKey, "keepers-filter-key", defaults.KeepersPodFilterKey, "Label key to filter keeper pods")
-	stolonctlCmd.PersistentFlags().StringVar(&keepersFilterValue, "keepers-filter-value", defaults.KeepersPodFilterValue, "Label value to filter keeper pods")
-	stolonctlCmd.PersistentFlags().StringVar(&sentinelsFilterKey, "sentinels-filter-key", defaults.SentinelsPodFilterKey, "Label key to filter sentinel pods")
-	stolonctlCmd.PersistentFlags().StringVar(&sentinelsFilterValue, "sentinels-filter-value", defaults.SentinelsPodFilterValue, "Label value to filter sentinel pods")
+	stolonctlCmd.PersistentFlags().StringVar(&keepersFilterKey, "keepers-filter", defaults.KeepersPodFilterKey, "Label to filter keeper pods")
+	stolonctlCmd.PersistentFlags().StringVar(&sentinelsFilterKey, "sentinels-filter", defaults.SentinelsPodFilterKey, "Label to filter sentinel pods")
 	stolonctlCmd.PersistentFlags().StringVar(&etcdEndpoints, "etcd-endpoints", defaults.EtcdEndpoints, "Etcd server endpoints")
 	stolonctlCmd.PersistentFlags().StringVar(&etcdCertFile, "etcd-cert-file", "", "Path to TLS certificate for connecting to etcd")
 	stolonctlCmd.PersistentFlags().StringVar(&etcdKeyFile, "etcd-key-file", "", "Path to TLS key for connecting to etcd")
