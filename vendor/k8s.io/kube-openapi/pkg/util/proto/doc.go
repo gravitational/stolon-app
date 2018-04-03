@@ -14,6 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package unstructured provides conversion from runtime objects
-// to map[string]interface{} representation.
-package unstructured // import "k8s.io/apimachinery/pkg/conversion/unstructured"
+// Package proto is a collection of libraries for parsing and indexing the type definitions.
+// The openapi spec contains the object model definitions and extensions metadata.
+package proto

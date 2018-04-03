@@ -147,10 +147,10 @@
   version = "v0.1.0"
 
 [[projects]]
-  branch = "kevin/dep-updates"
   name = "github.com/gravitational/rigging"
   packages = ["."]
-  revision = "3802199266dda688571e846a619f0cc743a236ad"
+  revision = "561af5ddfe9fa8646c4ec01b4b786112ed3c4073"
+  version = "0.0.10"
 
 [[projects]]
   branch = "sasha/clusters"
@@ -292,8 +292,9 @@
 [[projects]]
   name = "github.com/sirupsen/logrus"
   packages = ["."]
-  revision = "8ab1e1b91d5f1a6124287906f8b0402844d3a2b3"
+  revision = "dcdb95d728dbb6fe4b9fbe6b3b9d1fb268e68036"
   source = "github.com/gravitational/logrus"
+  version = "1.0.6"
 
 [[projects]]
   name = "github.com/spf13/cobra"
@@ -421,9 +422,9 @@
   revision = "e2ae4843c087434b059aa70bb4d620c415643b86"
 
 [[projects]]
+  branch = "release-1.9"
   name = "k8s.io/apimachinery"
   packages = [
-    "pkg/api/equality",
     "pkg/api/errors",
     "pkg/api/meta",
     "pkg/api/resource",
@@ -433,7 +434,6 @@
     "pkg/apis/meta/v1alpha1",
     "pkg/conversion",
     "pkg/conversion/queryparams",
-    "pkg/conversion/unstructured",
     "pkg/fields",
     "pkg/labels",
     "pkg/runtime",
@@ -447,7 +447,6 @@
     "pkg/selection",
     "pkg/types",
     "pkg/util/clock",
-    "pkg/util/diff",
     "pkg/util/errors",
     "pkg/util/framer",
     "pkg/util/intstr",
@@ -466,7 +465,7 @@
     "third_party/forked/golang/json",
     "third_party/forked/golang/reflect"
   ]
-  revision = "5134afd2c0c91158afac0d8a28bd2177185a3bcc"
+  revision = "cb88e003047fb517f284ff8af294451b20f0b403"
 
 [[projects]]
   name = "k8s.io/client-go"
@@ -524,7 +523,10 @@
 [[projects]]
   branch = "master"
   name = "k8s.io/kube-openapi"
-  packages = ["pkg/common"]
+  packages = [
+    "pkg/common",
+    "pkg/util/proto"
+  ]
   revision = "50ae88d24ede7b8bad68e23c805b5d3da5c8abaf"
 
 [[projects]]
@@ -540,6 +542,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "28b91936346af42b8fe27dd81dffe2af39cd22b54eca2cdc9c24c2200e615901"
+  inputs-digest = "9d1956ecd9b9ec2ea6c2df194947cc60c67ef6638720e4e0933f923f728d7971"
   solver-name = "gps-cdcl"
   solver-version = 1

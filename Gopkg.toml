@@ -29,12 +29,12 @@ ignored = ["github.com/gravitational/stolon-app/images*"]
 
 [[constraint]]
   name = "github.com/sirupsen/logrus"
-  revision = "8ab1e1b91d5f1a6124287906f8b0402844d3a2b3"
+  version = "1.0.6"
   source = "github.com/gravitational/logrus"
 
 [[constraint]]
   name = "github.com/gravitational/rigging"
-  branch = "kevin/dep-updates"
+  version = "0.0.10"
 
 [[override]]
   name = "k8s.io/api"
@@ -50,7 +50,7 @@ ignored = ["github.com/gravitational/stolon-app/images*"]
 
 [[override]]
   name = "k8s.io/apimachinery"
-  revision = "5134afd2c0c91158afac0d8a28bd2177185a3bcc"
+  branch = "release-1.9"
 
 [[override]]
   name = "github.com/ugorji/go"
