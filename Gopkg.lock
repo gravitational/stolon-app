@@ -535,6 +535,7 @@
   packages = [
     "pkg/apis/core",
     "pkg/kubelet/apis",
+    "pkg/kubelet/kubeletconfig/util/log",
     "pkg/util/node"
   ]
   revision = "c90bcf8d77f48516d4827aeaaaad3b337e4d6ff6"
@@ -542,6 +543,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d9bb6553d79136eb44f025466a378fcf91af01446c929f39d53ed787690351ab"
+  inputs-digest = "ed2d1dc5afc9bab1b1355627ced41f0f649995db50efebb9176d4c4ef876ff19"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -14,16 +14,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package kubernetes
+package crd
 
 import (
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/defaults"
+	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/kubernetes"
+	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/utils"
 
-	"k8s.io/apiextensions-apiserver/pkg/apis/apiextensions"
+	"github.com/gravitational/trace"
+	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (c *Client) CreateCRD() error {
+func CreateCRD(kubeClient *kubernetes.Client) error {
 	crd := &apiextensions.CustomResourceDefinition{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: defaults.StolonUpgradeName,
@@ -39,5 +42,14 @@ func (c *Client) CreateCRD() error {
 			},
 		},
 	}
+
+	_, err := kubeClient.ExtClient.ApiextensionsV1beta1().CustomResourceDefinitions().Create(crd)
+	err = utils.ConvertError(err)
+	if err != nil {
+		if !trace.IsAlreadyExists(err) {
+			return trace.Wrap(err)
+		}
+	}
+
 	return nil
 }

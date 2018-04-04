@@ -19,6 +19,7 @@ package kubernetes
 import (
 	"github.com/gravitational/trace"
 	"k8s.io/api/core/v1"
+	apiextensionsclientset "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
@@ -28,12 +29,14 @@ import (
 
 // Client is the Kubernetes API client
 type Client struct {
-	*kubernetes.Clientset
+	Client *kubernetes.Clientset
+	// ExtClient is a client for the extensions server
+	ExtClient *apiextensionsclientset.Clientset
 }
 
-// NewClient returns a new Kubernetes API client
+// NewClient returns a new Kubernetes API(s) client
 func NewClient(kubeConfig string) (client *Client, err error) {
-	config, err := getClientConfig(kubeConfig)
+	config, err := GetClientConfig(kubeConfig)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -43,8 +46,14 @@ func NewClient(kubeConfig string) (client *Client, err error) {
 		return nil, trace.Wrap(err)
 	}
 
+	extClientset, err := apiextensionsclientset.NewForConfig(config)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
 	return &Client{
-		clientset,
+		Client:    clientset,
+		ExtClient: extClientset,
 	}, nil
 }
 
@@ -55,7 +64,7 @@ func (c *Client) Pods(selector, namespace string) ([]v1.Pod, error) {
 		return nil, trace.Wrap(err, "the provided label selector %s is not valid", selector)
 	}
 
-	podList, err := c.Clientset.CoreV1().Pods(namespace).List(metav1.ListOptions{LabelSelector: labelSelector.String()})
+	podList, err := c.Client.CoreV1().Pods(namespace).List(metav1.ListOptions{LabelSelector: labelSelector.String()})
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -67,9 +76,9 @@ func (c *Client) Pods(selector, namespace string) ([]v1.Pod, error) {
 	return podList.Items, nil
 }
 
-// getClientConfig returns client configuration,
+// GetClientConfig returns client configuration,
 // if master is not specified, in-cluster configuration is assumed
-func getClientConfig(kubeConfig string) (*rest.Config, error) {
+func GetClientConfig(kubeConfig string) (*rest.Config, error) {
 	if kubeConfig != "" {
 		return clientcmd.BuildConfigFromFlags("", kubeConfig)
 	}

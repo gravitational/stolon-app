@@ -17,7 +17,10 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/cluster"
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/defaults"
@@ -30,6 +33,7 @@ import (
 
 var (
 	clusterConfig cluster.Config
+	ctx           context.Context
 
 	envs = map[string]string{
 		"ETCD_CERT":      "etcd-cert-file",
@@ -82,6 +86,20 @@ func init() {
 			}
 		}
 	}
+
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithCancel(context.TODO())
+	go func() {
+		exitSignals := make(chan os.Signal, 1)
+		signal.Notify(exitSignals, syscall.SIGTERM, syscall.SIGINT)
+
+		select {
+		case sig := <-exitSignals:
+			log.Infof("signal: %v", sig)
+			cancel()
+		}
+	}()
+
 }
 
 // printError prints the error message to the console

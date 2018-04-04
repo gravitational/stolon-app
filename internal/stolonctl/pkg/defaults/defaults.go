@@ -34,7 +34,7 @@ const (
 
 	// Custom Resource Definition variables
 	// StolonUpgradeName defines CRD name
-	StolonUpgradeName = "stolonupgrade.stolon.gravitational.io"
+	StolonUpgradeName = "stolonupgrades.stolon.gravitational.io"
 	// StolonUpgradeGroup defines CRD group
 	StolonUpgradeGroup = "stolon.gravitational.io"
 	// StolonUpgradeVersion defines CRD version
