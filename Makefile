@@ -39,7 +39,6 @@ IMPORT_OPTIONS := --vendor \
         --exclude="images" \
         --exclude="gravity.log" \
 		--ignore=images \
-		--registry-url=apiserver:5000 \
 		$(IMPORT_IMAGE_OPTIONS)
 
 TELE_BUILD_OPTIONS := --insecure \
