@@ -5,7 +5,7 @@ metadata:
   name: stolon-backup
   namespace: default
 ---
-apiVersion: rbac.authorization.k8s.io/v1alpha1
+apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: Role
 metadata:
   name: stolon-backup
@@ -45,7 +45,7 @@ rules:
       - services
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1alpha1
+apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
   name: stolon-backup
   namespace: default
