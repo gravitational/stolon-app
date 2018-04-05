@@ -18,6 +18,7 @@ package cluster
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/crd"
@@ -48,10 +49,18 @@ func Upgrade(ctx context.Context, config *Config) error {
 		return trace.Wrap(err)
 	}
 
+	res, err := crdclient.Create(ctx, "upgrade-94-96", config.Namespace)
+	if err != nil {
+		if !trace.IsAlreadyExists(err) {
+			return trace.Wrap(err)
+		}
+	}
+
+	fmt.Println(res)
+
 	// wait for the controller to init by trying to list stuff
 	return utils.Retry(ctx, 30, time.Second, func() error {
 		_, err := crdclient.List()
 		return err
 	})
-
 }

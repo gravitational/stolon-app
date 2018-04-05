@@ -17,12 +17,15 @@ limitations under the License.
 package crd
 
 import (
+	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/defaults"
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/utils"
 	"github.com/gravitational/trace"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -59,7 +62,33 @@ type crdclient struct {
 	plural    string
 }
 
-func (c *crdclient) Create(obj StolonUpgradeResource) (*StolonUpgradeResource, error) {
+func (c *crdclient) Create(ctx context.Context, name, namespace string) (*StolonUpgradeResource, error) {
+	res := &StolonUpgradeResource{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       defaults.StolonUpgradeKind,
+			APIVersion: defaults.StolonUpgradeAPIVersion,
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		Spec: StolonUpgradeSpec{
+			Status: defaults.StolonUpgradeStatusInProgress,
+			Phases: []StolonUpgradePhase{
+				StolonUpgradePhase{
+					Status:            defaults.StolonUpgradeStatusInProgress,
+					Name:              defaults.StolonUpgradeStepInit,
+					Description:       "Initialize update operation",
+					CreationTimestamp: time.Now().UTC(),
+				},
+			},
+			CreationTimestamp: time.Now().UTC(),
+		},
+	}
+	return c.create(res)
+}
+
+func (c *crdclient) create(obj *StolonUpgradeResource) (*StolonUpgradeResource, error) {
 	data, err := json.Marshal(obj)
 	if err != nil {
 		return nil, trace.Wrap(err)

@@ -39,6 +39,8 @@ const (
 	StolonUpgradeGroup = "stolon.gravitational.io"
 	// StolonUpgradeVersion defines CRD version
 	StolonUpgradeVersion = "v1"
+	// StolonUpgradeAPIVersion definec CRD API version
+	StolonUpgradeAPIVersion = "stolon.gravitational.io/v1"
 	// StolonUpgradeScope defines CRD scope
 	StolonUpgradeScope = "Namespaced"
 	// StolonUpgradeKind defines CRD kind
@@ -47,4 +49,10 @@ const (
 	StolonUpgradePlural = "stolonupgrades"
 	// StolonUpgradeSingular defines CRD singular form
 	StolonUpgradeSingular = "stolonupgrade"
+
+	// Status of stolon upgrade
+	StolonUpgradeStatusInProgress = "in-progress"
+
+	// Steps of stolon upgrade
+	StolonUpgradeStepInit = "init"
 )

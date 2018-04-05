@@ -45,13 +45,20 @@ func (cr *StolonUpgradeResource) GetObjectKind() schema.ObjectKind {
 }
 
 func (cr *StolonUpgradeResource) String() string {
-	return fmt.Sprintf("namespace=%v, name=%v. status=%v", cr.Namespace, cr.Name, cr.Spec.Status)
+	return fmt.Sprintf("namespace=%v, name=%v, status=%v", cr.Namespace, cr.Name, cr.Spec.Status)
 }
 
 type StolonUpgradeSpec struct {
-	UID               string    `json:"uid"`
+	Status            string               `json:"status"`
+	Phases            []StolonUpgradePhase `json:"phases"`
+	CreationTimestamp time.Time            `json:"startTime"`
+	FinishTimestamp   time.Time            `json:"finishTime"`
+}
+
+type StolonUpgradePhase struct {
 	Status            string    `json:"status"`
-	Step              string    `json:"step"`
-	CreationTimestamp time.Time `json:"start_time"`
-	FinishTimestamp   time.Time `json:"finish_time"`
+	Name              string    `json:"name"`
+	Description       string    `json:"description"`
+	CreationTimestamp time.Time `json:"startTime"`
+	FinishTimestamp   time.Time `json:"finishTime"`
 }
