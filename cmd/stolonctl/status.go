@@ -19,12 +19,12 @@ package main
 import (
 	"fmt"
 	"os"
-	"text/tabwriter"
 	"time"
 
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/cluster"
 
 	"github.com/gravitational/trace"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -73,17 +73,8 @@ func Status() (*cluster.Status, error) {
 
 // PrintStatus prints status of Stolon cluster to stdout
 func PrintStatus(status *cluster.Status) {
-	w := new(tabwriter.Writer)
-
-	var (
-		minwidth int
-		tabwidth = 8
-		padding  = 2
-		flags    uint
-		padchar  byte = '\t'
-	)
-	w.Init(os.Stdout, minwidth, tabwidth, padding, padchar, flags)
-	fmt.Fprintln(w, "NAME\tPOD_STATUS\tREADY\tIP\tNODE\tAGE\tKEEPER_ID\tKEEPER_HEALTHY\tMASTER")
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"NAME", "POD_STATUS", "READY", "IP", "NODE", "AGE", "KEEPER_ID", "KEEPER_HEALTHY", "MASTER"})
 
 	for _, pod := range status.PodsStatus {
 		var keeperID string
@@ -93,16 +84,16 @@ func PrintStatus(status *cluster.Status) {
 			}
 		}
 		if keeperID != "" {
-			fmt.Fprintf(w, "%s\t%s\t%v/%v\t%s\t%s\t%s\t%s\t%s\t%s\n", pod.Name, pod.Status, pod.ReadyContainers, pod.TotalContainers, pod.PodIP, pod.HostIP,
+			table.Append([]string{pod.Name, pod.Status, string(pod.ReadyContainers), string(pod.TotalContainers), pod.PodIP, pod.HostIP,
 				translateTimestamp(*pod.CreationTimestamp), keeperID, convertBoolean(status.ClusterData.KeepersState[keeperID].Healthy),
-				status.ClusterData.KeepersState[keeperID].PGState.Role.String())
+				status.ClusterData.KeepersState[keeperID].PGState.Role.String()})
 		} else {
-			fmt.Fprintf(w, "%s\t%s\t%v/%v\t%s\t%s\t%s\t%s\t%s\t%s\n", pod.Name, pod.Status, pod.ReadyContainers, pod.TotalContainers, pod.PodIP, pod.HostIP,
-				translateTimestamp(*pod.CreationTimestamp), "N/A", "N/A", "N/A")
+			table.Append([]string{pod.Name, pod.Status, string(pod.ReadyContainers), string(pod.TotalContainers), pod.PodIP, pod.HostIP,
+				translateTimestamp(*pod.CreationTimestamp), "N/A", "N/A", "N/A"})
 		}
 	}
 
-	w.Flush()
+	table.Render()
 }
 
 // shortHumanDuration represents pod creation timestamp in

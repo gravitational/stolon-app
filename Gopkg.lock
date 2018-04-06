@@ -248,6 +248,12 @@
   version = "v0.0.3"
 
 [[projects]]
+  name = "github.com/mattn/go-runewidth"
+  packages = ["."]
+  revision = "9e777a8366cce605130a531d2cd6363d07ad7317"
+  version = "v0.0.2"
+
+[[projects]]
   name = "github.com/minio/minio-go"
   packages = [
     ".",
@@ -276,6 +282,12 @@
   packages = ["."]
   revision = "1df9eeb2bb81f327b96228865c5687bc2194af3f"
   version = "1.0.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/olekukonko/tablewriter"
+  packages = ["."]
+  revision = "b8a9be070da40449e501c3c4730a889e42d87a9e"
 
 [[projects]]
   branch = "master"
@@ -542,6 +554,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "71217279092da81b131b35ce707de0dbd0b42e248c054c3c4d6e4c0d4f267df3"
+  inputs-digest = "32f9892c641a4ee27e03af97219409db3e5535307b8f56bb87cfd60554f21d61"
   solver-name = "gps-cdcl"
   solver-version = 1
