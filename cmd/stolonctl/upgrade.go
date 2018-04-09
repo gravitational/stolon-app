@@ -23,7 +23,7 @@ import (
 var (
 	upgradeCmd = &cobra.Command{
 		Use:   "upgrade",
-		Short: "Upgrade PostgreSQL major version",
+		Short: "Upgrade stolon application",
 		RunE:  upgrade,
 	}
 )

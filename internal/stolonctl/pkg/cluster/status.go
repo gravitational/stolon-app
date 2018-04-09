@@ -19,6 +19,7 @@ package cluster
 import (
 	"path/filepath"
 
+	"github.com/gravitational/rigging"
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/defaults"
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/kubernetes"
 
@@ -35,21 +36,20 @@ func getPods(config *Config) ([]v1.Pod, error) {
 		return nil, trace.Wrap(err)
 	}
 
-	pods, err := client.Pods(config.KeepersPodFilter, config.Namespace)
+	pods, err := client.Pods(config.KeepersPodSelector, config.Namespace)
 	if err != nil {
-		return nil, trace.Wrap(err)
+		return nil, rigging.ConvertError(err)
 	}
 
-	sentinelPods, err := client.Pods(config.SentinelsPodFilter, config.Namespace)
+	sentinelPods, err := client.Pods(config.SentinelsPodSelector, config.Namespace)
 	if err != nil {
-		return nil, trace.Wrap(err)
+		return nil, rigging.ConvertError(err)
 	}
 
-	pods = append(pods, sentinelPods...)
-	return pods, nil
+	return append(pods, sentinelPods...), nil
 }
 
-// GetStatus returns status of Stolon cluster
+// GetStatus returns status of stolon cluster
 func GetStatus(config *Config) (*Status, error) {
 	podList, err := getPods(config)
 	if err != nil {
@@ -82,7 +82,6 @@ func GetStatus(config *Config) (*Status, error) {
 		config.EtcdKeyFile,
 		config.EtcdCAFile,
 	)
-
 	if err != nil {
 		return nil, trace.Wrap(err, "error connecting to etcd")
 	}
@@ -99,7 +98,7 @@ func GetStatus(config *Config) (*Status, error) {
 
 // Status represents status of stolon cluster
 type Status struct {
-	// List of statuses of stolon pods
+	// PodStatusList is a list of stolon pod statuses
 	PodsStatus []kubernetes.PodStatus
 	// State of the cluster received from etcd
 	ClusterData *cluster.ClusterData

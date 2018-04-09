@@ -26,11 +26,11 @@ import (
 
 // PodStatus represents status of a kubernetes Pod
 type PodStatus struct {
-	// Pod name
+	// Name is the name of the pod
 	Name string
-	// IP address of the host to which the pod is assigned
+	// HostIP is the IP address of the host to which the pod is assigned
 	HostIP string
-	// IP address allocated to the pod
+	// PodIP is the IP address allocated to the pod
 	PodIP string
 	// Status of the pod
 	Status string
@@ -38,13 +38,13 @@ type PodStatus struct {
 	ReadyContainers int
 	// TotalContainers - total number of containers in Pod
 	TotalContainers int
-	// CreationTimestamp is a timestamp representing the server time
-	// when this pod was created
+	// CreationTimestamp is the timestamp representing the server time
+	// when the pod was created
 	CreationTimestamp *metav1.Time
 }
 
-// DeterminePodStatus returns state of the pod, value of total containers
-// and value of ready containers
+// DeterminePodStatus returns state of the pod, number of total containers
+// and number of ready containers
 func DeterminePodStatus(pod v1.Pod) (string, int, int) {
 	totalContainers := len(pod.Spec.Containers)
 	readyContainers := 0
@@ -55,10 +55,10 @@ func DeterminePodStatus(pod v1.Pod) (string, int, int) {
 	}
 
 	initializing := false
-	for i := range pod.Status.InitContainerStatuses {
-		container := pod.Status.InitContainerStatuses[i]
+	for i, container := range pod.Status.InitContainerStatuses {
 		switch {
 		case container.State.Terminated != nil && container.State.Terminated.ExitCode == 0:
+			// Container was terminated with successeful status
 			continue
 		case container.State.Terminated != nil:
 			// initialization is failed

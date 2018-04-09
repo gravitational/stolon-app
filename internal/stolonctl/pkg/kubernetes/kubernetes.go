@@ -49,10 +49,10 @@ func NewClient(kubeConfig string) (client *Client, err error) {
 }
 
 // Pods returns stolon pods matching the specified label
-func (c *Client) Pods(filter, namespace string) ([]v1.Pod, error) {
-	labelSelector, err := labels.Parse(filter)
+func (c *Client) Pods(selector, namespace string) ([]v1.Pod, error) {
+	labelSelector, err := labels.Parse(selector)
 	if err != nil {
-		return nil, trace.Wrap(err, "the provided label selector %s is not valid", filter)
+		return nil, trace.Wrap(err, "the provided label selector %s is not valid", selector)
 	}
 
 	podList, err := c.Clientset.CoreV1().Pods(namespace).List(metav1.ListOptions{LabelSelector: labelSelector.String()})
@@ -61,13 +61,13 @@ func (c *Client) Pods(filter, namespace string) ([]v1.Pod, error) {
 	}
 
 	if len(podList.Items) == 0 {
-		return nil, trace.NotFound("pod(s) with label selector %s not found", labelSelector.String())
+		return nil, trace.NotFound("no pods found matching the specified selector %s", labelSelector.String())
 	}
 
 	return podList.Items, nil
 }
 
-// getClientConfig returns client configguration,
+// getClientConfig returns client configuration,
 // if master is not specified, in-cluster configuration is assumed
 func getClientConfig(kubeConfig string) (*rest.Config, error) {
 	if kubeConfig != "" {

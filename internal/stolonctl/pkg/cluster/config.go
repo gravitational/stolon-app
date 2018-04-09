@@ -16,19 +16,21 @@ limitations under the License.
 
 package cluster
 
+import "github.com/gravitational/trace"
+
 // Config represents configuration of stolon cluster
 type Config struct {
 	// KubeConfig defines path to Kubernetes config file
 	KubeConfig string
-	// Namespace defines Kubernetes namespace for Stolon cluster
+	// Namespace defines Kubernetes namespace for stolon cluster
 	Namespace string
 
-	// KeepersPodFilter defines labels to filter keeper pods
-	KeepersPodFilter string
-	// SentinelsPodFilter defines labels to filter sentinel pods
-	SentinelsPodFilter string
+	// KeepersPodSelector defines labels to select keeper pods
+	KeepersPodSelector string
+	// SentinelsPodSelector defines labels to select sentinel pods
+	SentinelsPodSelector string
 
-	// EtcdEnpoints defines addresses for connecting to Etcd
+	// EtcdEndpoints defines addresses for connecting to Etcd
 	EtcdEndpoints string
 	// EtcdCertFile defines path to TLS cert for connecting to etcd
 	EtcdCertFile string
@@ -39,4 +41,13 @@ type Config struct {
 
 	// Name defines name of stolon cluster
 	Name string
+}
+
+// CheckConfig checks provided configuration
+func (c *Config) CheckConfig() error {
+	if c.EtcdCertFile == "" || c.EtcdKeyFile == "" ||
+		c.EtcdCAFile == "" || c.EtcdEndpoints == "" {
+		return trace.BadParameter("etcd-endpoints, etcd-cert-file, etcd-key-file and etcd-ca-file are required")
+	}
+	return nil
 }

@@ -17,12 +17,12 @@ limitations under the License.
 package defaults
 
 const (
-	// Namespace defines Kubernetes namespace for Stolon application
+	// Namespace defines Kubernetes namespace for stolon application
 	Namespace = "default"
-	// KeepersPodFilter defines label selector to filter keeper pods
-	KeepersPodFilter = "name=stolon-keeper"
-	// SentinelsPodFilter defines label selector to filter sentinel pods
-	SentinelsPodFilter = "name=stolon-sentinel"
+	// KeepersPodSelector defines label selector to select keeper pods
+	KeepersPodSelector = "name=stolon-keeper"
+	// SentinelsPodSelector defines label selector to select sentinel pods
+	SentinelsPodSelector = "name=stolon-sentinel"
 
 	// EtcdEndpoints defines endpoints for connecting to etcd
 	EtcdEndpoints = "127.0.0.1:2379"

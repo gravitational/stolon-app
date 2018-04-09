@@ -19,12 +19,12 @@ package main
 import (
 	"fmt"
 	"os"
+	"text/tabwriter"
 	"time"
 
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/cluster"
 
 	"github.com/gravitational/trace"
-	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -40,6 +40,10 @@ func init() {
 }
 
 func status(ccmd *cobra.Command, args []string) error {
+	if err := clusterConfig.CheckConfig(); err != nil {
+		return trace.Wrap(err)
+	}
+
 	clusterStatus, err := Status()
 	if err != nil {
 		return trace.Wrap(err)
@@ -49,21 +53,9 @@ func status(ccmd *cobra.Command, args []string) error {
 	return nil
 }
 
-// Status returns status of Stolon cluster(Pods state and ClusterView)
+// Status returns status of stolon cluster(Pods state and ClusterView)
 func Status() (*cluster.Status, error) {
-	clusterConfig := &cluster.Config{
-		KubeConfig:         kubeConfig,
-		Name:               clusterName,
-		Namespace:          namespace,
-		KeepersPodFilter:   keepersFilter,
-		SentinelsPodFilter: sentinelsFilter,
-		EtcdEndpoints:      etcdEndpoints,
-		EtcdCertFile:       etcdCertFile,
-		EtcdKeyFile:        etcdKeyFile,
-		EtcdCAFile:         etcdCAFile,
-	}
-
-	status, err := cluster.GetStatus(clusterConfig)
+	status, err := cluster.GetStatus(&clusterConfig)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -71,10 +63,19 @@ func Status() (*cluster.Status, error) {
 	return status, nil
 }
 
-// PrintStatus prints status of Stolon cluster to stdout
+// PrintStatus prints status of stolon cluster to stdout
 func PrintStatus(status *cluster.Status) {
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"NAME", "POD_STATUS", "READY", "IP", "NODE", "AGE", "KEEPER_ID", "KEEPER_HEALTHY", "MASTER"})
+	w := new(tabwriter.Writer)
+
+	var (
+		minwidth int
+		tabwidth = 8
+		padding  = 2
+		flags    uint
+		padchar  byte = '\t'
+	)
+	w.Init(os.Stdout, minwidth, tabwidth, padding, padchar, flags)
+	fmt.Fprintln(w, "NAME\tREADY\tSTATUS\tIP\tNODE\tAGE\tKEEPER_ID\tHEALTHY\tROLE")
 
 	for _, pod := range status.PodsStatus {
 		var keeperID string
@@ -84,16 +85,19 @@ func PrintStatus(status *cluster.Status) {
 			}
 		}
 		if keeperID != "" {
-			table.Append([]string{pod.Name, pod.Status, string(pod.ReadyContainers), string(pod.TotalContainers), pod.PodIP, pod.HostIP,
-				translateTimestamp(*pod.CreationTimestamp), keeperID, convertBoolean(status.ClusterData.KeepersState[keeperID].Healthy),
-				status.ClusterData.KeepersState[keeperID].PGState.Role.String()})
+			fmt.Fprintf(w, "%s\t%v/%v\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", pod.Name,
+				pod.ReadyContainers, pod.TotalContainers, pod.Status, pod.PodIP, pod.HostIP,
+				translateTimestamp(*pod.CreationTimestamp), keeperID,
+				translateBoolean(status.ClusterData.KeepersState[keeperID].Healthy),
+				status.ClusterData.KeepersState[keeperID].PGState.Role.String())
 		} else {
-			table.Append([]string{pod.Name, pod.Status, string(pod.ReadyContainers), string(pod.TotalContainers), pod.PodIP, pod.HostIP,
-				translateTimestamp(*pod.CreationTimestamp), "N/A", "N/A", "N/A"})
+			fmt.Fprintf(w, "%s\t%v/%v\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", pod.Name,
+				pod.ReadyContainers, pod.TotalContainers, pod.Status, pod.PodIP, pod.HostIP,
+				translateTimestamp(*pod.CreationTimestamp), "N/A", "N/A", "N/A")
 		}
 	}
 
-	table.Render()
+	w.Flush()
 }
 
 // shortHumanDuration represents pod creation timestamp in
@@ -124,7 +128,7 @@ func translateTimestamp(timestamp metav1.Time) string {
 	return shortHumanDuration(time.Since(timestamp.Time))
 }
 
-func convertBoolean(value bool) string {
+func translateBoolean(value bool) string {
 	if value {
 		return "Yes"
 	}
