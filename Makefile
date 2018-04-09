@@ -111,7 +111,7 @@ $(GOMETALINTER):
 
 .PHONY: lint
 lint: $(GOMETALINTER)
-	gometalinter --vendor --disable-all \
+	gometalinter --vendor --skip images/stolon/stolon --disable-all \
 		--enable=deadcode \
 		--enable=ineffassign \
 		--enable=gosimple \
