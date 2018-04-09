@@ -36,19 +36,11 @@ func init() {
 }
 
 func upgrade(ccmd *cobra.Command, args []string) error {
-	clusterConfig := &cluster.Config{
-		KubeConfig:         kubeConfig,
-		Name:               clusterName,
-		Namespace:          namespace,
-		KeepersPodFilter:   keepersFilter,
-		SentinelsPodFilter: sentinelsFilter,
-		EtcdEndpoints:      etcdEndpoints,
-		EtcdCertFile:       etcdCertFile,
-		EtcdKeyFile:        etcdKeyFile,
-		EtcdCAFile:         etcdCAFile,
+	if err := clusterConfig.CheckConfig(); err != nil {
+		return trace.Wrap(err)
 	}
 
-	err := cluster.Upgrade(ctx, clusterConfig)
+	err := cluster.Upgrade(ctx, &clusterConfig)
 	if err != nil {
 		return trace.Wrap(err, "error upgrading cluster")
 	}
