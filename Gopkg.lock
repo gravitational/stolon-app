@@ -141,7 +141,6 @@
   version = "0.0.10"
 
 [[projects]]
-  branch = "master"
   name = "github.com/gravitational/stolon"
   packages = [
     "common",
@@ -149,6 +148,7 @@
     "pkg/store"
   ]
   revision = "cf9226e5b7d4658f126f7c0f27bdd93312538a18"
+  version = "v0.3.0"
 
 [[projects]]
   name = "github.com/gravitational/trace"
@@ -543,6 +543,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8889a005b172ac955ea8a0b9201e70bb4851799d13aa9735376804be8c6e4701"
+  inputs-digest = "5b3c5ad90cee9618d52af2bbcb8d09029424b1dfe8034255ee7bec6c2e4eba88"
   solver-name = "gps-cdcl"
   solver-version = 1
