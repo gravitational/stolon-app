@@ -8,6 +8,7 @@ JOBS_TAG := stolon-jobs:$(VERSION)
 STOLON_TAG := stolon:$(VERSION)
 TELEGRAF_TAG := stolon-telegraf:$(VERSION)
 TELEGRAF_NODE_TAG := stolon-telegraf-node:$(VERSION)
+STOLONCTL_TAG := quay.io/gravitational/stolonctl:latest
 
 .PHONY: images
 images: bootstrap \
@@ -34,6 +35,16 @@ $(STOLONBOOT_BINS):
 .PHONY: bootstrap
 bootstrap: $(STOLONBOOT_BINS)
 	docker build --pull -t $(BOOTSTRAP_TAG) $(PWD)/bootstrap
+
+STOLONCTL_BINS := stolonctl/bin
+$(STOLONCTL_BINS):
+	cd ../ && make build-stolonctl
+	mkdir $(STOLONCTL_BINS)
+	cp ../build/stolonctl $(STOLONCTL_BINS)/stolonctl
+
+.PHONY: stolonctl
+stolonctl: $(STOLONCTL_BINS)
+	docker build --pull -t $(STOLONCTL_TAG) $(PWD)/stolonctl
 
 .PHONY: uninstall
 uninstall:
@@ -72,7 +83,12 @@ telegraf-node:
 jobs:
 	docker build --pull -t $(JOBS_TAG) $(PWD)/jobs
 
+.PHONY: publish-stolonctl
+publish-stolonctl: stolonctl
+	docker push $(STOLONCTL_TAG)
+
 .PHONY: clean
 clean:
 	-rm -rf $(STOLONBOOT_BINS)
+	-rm -rf $(STOLONCTL_BINS)
 	-rm -rf $(STOLON_BINS)

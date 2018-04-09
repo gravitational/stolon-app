@@ -20,7 +20,7 @@
 #   version = "2.4.0"
 #
 
-ignored = ["github.com/gravitational/stolon-app/images*"]
+ignored = ["github.com/gravitational/stolon-app/images*", "github.com/Sirupsen/logrus"]
 
 [prune]
   non-go = true
@@ -29,13 +29,37 @@ ignored = ["github.com/gravitational/stolon-app/images*"]
 
 [[constraint]]
   name = "github.com/sirupsen/logrus"
-  revision = "8ab1e1b91d5f1a6124287906f8b0402844d3a2b3"
+  version = "1.0.6"
   source = "github.com/gravitational/logrus"
 
 [[constraint]]
   name = "github.com/gravitational/rigging"
-  branch = "kevin/dep-updates"
+  version = "0.0.10"
 
 [[override]]
   name = "k8s.io/api"
   branch = "release-1.9"
+
+[[override]]
+  name = "github.com/coreos/etcd"
+  version = "~3.0.0"
+
+[[override]]
+  name = "k8s.io/kubernetes"
+  branch = "release-1.9"
+
+[[override]]
+  name = "k8s.io/apimachinery"
+  branch = "release-1.9"
+
+[[override]]
+  name = "github.com/ugorji/go"
+  revision = "f1f1a805ed361a0e078bb537e4ea78cd37dcf065"
+
+[[override]]
+  name = "github.com/gravitational/stolon"
+  version = "0.3.0"
+
+[[override]]
+  name = "github.com/minio/minio-go"
+  version = "~2.0"

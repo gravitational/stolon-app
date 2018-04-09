@@ -1,0 +1,43 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: stolonctl
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: stolonctl
+    spec:
+      securityContext:
+        runAsUser: 0
+      containers:
+        - name: stolonctl
+          image: quay.io/gravitational/stolonctl:latest
+          imagePullPolicy: Always
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: ETCD_CACERT
+              value: "/etc/etcd/secrets/root.cert"
+            - name: ETCD_CERT
+              value: "/etc/etcd/secrets/etcd.cert"
+            - name: ETCD_KEY
+              value: "/etc/etcd/secrets/etcd.key"
+            - name: ETCD_ENDPOINTS
+              value: "$(NODE_NAME):2379"
+          volumeMounts:
+            - name: kubectl
+              mountPath: /usr/bin/kubectl
+            - name: etcd-secrets
+              mountPath: /etc/etcd/secrets
+      volumes:
+        - name: kubectl
+          hostPath:
+            path: /usr/bin/kubectl
+        - name: etcd-secrets
+          hostPath:
+            path: /var/state
