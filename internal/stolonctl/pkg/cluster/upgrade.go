@@ -18,23 +18,18 @@ package cluster
 
 import (
 	"context"
-	"fmt"
-	"time"
 
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/crd"
+	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/defaults"
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/kubernetes"
-	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/utils"
 
 	"github.com/gravitational/trace"
+	log "github.com/sirupsen/logrus"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func Upgrade(ctx context.Context, config *Config) error {
+func Upgrade(ctx context.Context, config Config) error {
 	client, err := kubernetes.NewClient(config.KubeConfig)
-	if err != nil {
-		return trace.Wrap(err)
-	}
-
-	err = crd.CreateCRD(client)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -44,23 +39,26 @@ func Upgrade(ctx context.Context, config *Config) error {
 		return trace.Wrap(err)
 	}
 
-	crdclient, err := crd.CrdClient(cfg, config.Namespace)
+	crdclient, err := crd.NewClient(cfg, config.Namespace)
 	if err != nil {
 		return trace.Wrap(err)
 	}
 
-	res, err := crdclient.Create(ctx, "upgrade-94-96", config.Namespace)
+	err = crd.CreateDefinition(ctx, client, crdclient)
 	if err != nil {
-		if !trace.IsAlreadyExists(err) {
-			return trace.Wrap(err)
-		}
+		return trace.Wrap(err)
 	}
 
-	fmt.Println(res)
+	objMeta := metav1.ObjectMeta{
+		Name:      defaults.CRDName,
+		Namespace: config.Namespace,
+	}
+	res, err := crdclient.Create(ctx, objMeta)
+	if err != nil && !trace.IsAlreadyExists(err) {
+		return trace.Wrap(err)
+	}
 
-	// wait for the controller to init by trying to list stuff
-	return utils.Retry(ctx, 30, time.Second, func() error {
-		_, err := crdclient.List()
-		return err
-	})
+	// temporary
+	log.Info(res)
+	return nil
 }

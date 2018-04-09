@@ -24,6 +24,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+// StolonUpgradeList is a list of StolonUpgradeResource objects
+// with additional information related to kubernetes Custom Resource Definition
 type StolonUpgradeList struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -34,6 +36,8 @@ func (cr *StolonUpgradeList) GetObjectKind() schema.ObjectKind {
 	return &cr.TypeMeta
 }
 
+// StolonUpgradeResource is the definition of kubernetes custom
+// resource for upgrade stolon application
 type StolonUpgradeResource struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -45,20 +49,33 @@ func (cr *StolonUpgradeResource) GetObjectKind() schema.ObjectKind {
 }
 
 func (cr *StolonUpgradeResource) String() string {
-	return fmt.Sprintf("namespace=%v, name=%v, status=%v", cr.Namespace, cr.Name, cr.Spec.Status)
+	return fmt.Sprintf("StolonUpgradeResource(namespace=%v, name=%v, status=%v)",
+		cr.Namespace, cr.Name, cr.Spec.Status)
 }
 
+// StolonUpgradeSpec is a specification of Custom Resource Definition
+// for upgrade stolon application
 type StolonUpgradeSpec struct {
-	Status            string               `json:"status"`
-	Phases            []StolonUpgradePhase `json:"phases"`
-	CreationTimestamp time.Time            `json:"startTime"`
-	FinishTimestamp   time.Time            `json:"finishTime"`
+	// Status is a status of stolon upgrade
+	Status string `json:"status"`
+	// Phases is a list of phases to upgrade stolon
+	Phases []StolonUpgradePhase `json:"phases"`
+	// CreationTimestamp is a starting time of upgrade
+	CreationTimestamp time.Time `json:"startTime"`
+	// FinishTimestamp is a time when upgrade are finished
+	FinishTimestamp time.Time `json:"finishTime"`
 }
 
+// StolonUpgradePhase defines phase of upgrade
 type StolonUpgradePhase struct {
-	Status            string    `json:"status"`
-	Name              string    `json:"name"`
-	Description       string    `json:"description"`
+	// Status is a status of upgrade step(phase)
+	Status string `json:"status"`
+	// Name is a name of upgrade step
+	Name string `json:"name"`
+	// Description is a small description of upgrade step
+	Description string `json:"description"`
+	// CreationTimestamp is a starting time of upgrade step
 	CreationTimestamp time.Time `json:"startTime"`
-	FinishTimestamp   time.Time `json:"finishTime"`
+	// FinishTimestamp is a time when upgrade step are finished
+	FinishTimestamp time.Time `json:"finishTime"`
 }

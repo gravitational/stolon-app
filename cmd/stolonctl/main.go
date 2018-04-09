@@ -91,11 +91,11 @@ func init() {
 	ctx, cancel = context.WithCancel(context.TODO())
 	go func() {
 		exitSignals := make(chan os.Signal, 1)
-		signal.Notify(exitSignals, syscall.SIGTERM, syscall.SIGINT)
+		signal.Notify(exitSignals, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
 
 		select {
 		case sig := <-exitSignals:
-			log.Infof("signal: %v", sig)
+			log.Infof("Caught signal: %v.", sig)
 			cancel()
 		}
 	}()

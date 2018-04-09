@@ -34,7 +34,7 @@ type Client struct {
 	ExtClient *apiextensionsclientset.Clientset
 }
 
-// NewClient returns a new Kubernetes API(s) client
+// NewClient returns a new client for Kubernetes APIs
 func NewClient(kubeConfig string) (client *Client, err error) {
 	config, err := GetClientConfig(kubeConfig)
 	if err != nil {

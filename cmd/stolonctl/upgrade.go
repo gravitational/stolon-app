@@ -18,8 +18,8 @@ package main
 
 import (
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/cluster"
-	"github.com/gravitational/trace"
 
+	"github.com/gravitational/trace"
 	"github.com/spf13/cobra"
 )
 
@@ -40,7 +40,7 @@ func upgrade(ccmd *cobra.Command, args []string) error {
 		return trace.Wrap(err)
 	}
 
-	err := cluster.Upgrade(ctx, &clusterConfig)
+	err := cluster.Upgrade(ctx, clusterConfig)
 	if err != nil {
 		return trace.Wrap(err, "error upgrading cluster")
 	}

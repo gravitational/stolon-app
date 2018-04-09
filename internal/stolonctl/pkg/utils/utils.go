@@ -18,70 +18,23 @@ package utils
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/gravitational/trace"
-	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/kubelet/kubeletconfig/util/log"
+	log "github.com/sirupsen/logrus"
 )
 
-func ConvertError(err error) error {
-	return ConvertErrorWithContext(err, "")
-}
-
-func ConvertErrorWithContext(err error, format string, args ...interface{}) error {
-	if err == nil {
-		return nil
-	}
-	statusErr, ok := err.(*errors.StatusError)
-	if !ok {
-		return err
-	}
-
-	message := fmt.Sprintf("%v", err)
-	if !isEmptyDetails(statusErr.ErrStatus.Details) {
-		message = fmt.Sprintf("%v, details: %v", message, statusErr.ErrStatus.Details)
-	}
-	if format != "" {
-		message = fmt.Sprintf("%v: %v", fmt.Sprintf(format, args...), message)
-	}
-
-	status := statusErr.Status()
-	switch {
-	case status.Code == http.StatusConflict && status.Reason == metav1.StatusReasonAlreadyExists:
-		return trace.AlreadyExists(message)
-	case status.Code == http.StatusNotFound:
-		return trace.NotFound(message)
-	case status.Code == http.StatusForbidden:
-		return trace.AccessDenied(message)
-	}
-	return err
-}
-
-func isEmptyDetails(details *metav1.StatusDetails) bool {
-	if details == nil {
-		return true
-	}
-
-	if details.Name == "" && details.Group == "" && details.Kind == "" && len(details.Causes) == 0 {
-		return true
-	}
-	return false
-}
-
+// Retry will retry function X times until period is reached
 func Retry(ctx context.Context, times int, period time.Duration, fn func() error) error {
 	if times < 1 {
 		return nil
 	}
 	err := fn()
 	for i := 1; i < times && err != nil; i += 1 {
-		log.Infof("attempt %v, result: %v, retry in %v", i+1, trace.DebugReport(err), period)
+		log.Infof("Attempt %v, result: %v, retry in %v.", i+1, trace.DebugReport(err), period)
 		select {
 		case <-ctx.Done():
-			log.Infof("context is closing, return")
+			log.Infof("Context is closing, return")
 			return err
 		case <-time.After(period):
 		}

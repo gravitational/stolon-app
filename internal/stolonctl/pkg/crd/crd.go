@@ -17,39 +17,47 @@ limitations under the License.
 package crd
 
 import (
-	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/defaults"
+	"context"
+	"time"
+
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/kubernetes"
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/utils"
 
+	"github.com/gravitational/rigging"
 	"github.com/gravitational/trace"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func CreateCRD(kubeClient *kubernetes.Client) error {
+// CreateDefinition creates Custom Resource Definition for
+// StolonUpgradeResource
+func CreateDefinition(ctx context.Context, kubeClient *kubernetes.Client, crdClient *Client) error {
 	crd := &apiextensions.CustomResourceDefinition{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: defaults.StolonUpgradeName,
+			Name: StolonUpgradeName,
 		},
 		Spec: apiextensions.CustomResourceDefinitionSpec{
-			Group:   defaults.StolonUpgradeGroup,
-			Version: defaults.StolonUpgradeVersion,
-			Scope:   defaults.StolonUpgradeScope,
+			Group:   StolonUpgradeGroup,
+			Version: StolonUpgradeVersion,
+			Scope:   StolonUpgradeScope,
 			Names: apiextensions.CustomResourceDefinitionNames{
-				Kind:     defaults.StolonUpgradeKind,
-				Plural:   defaults.StolonUpgradePlural,
-				Singular: defaults.StolonUpgradeSingular,
+				Kind:     StolonUpgradeKind,
+				Plural:   StolonUpgradePlural,
+				Singular: StolonUpgradeSingular,
 			},
 		},
 	}
 
 	_, err := kubeClient.ExtClient.ApiextensionsV1beta1().CustomResourceDefinitions().Create(crd)
-	err = utils.ConvertError(err)
-	if err != nil {
-		if !trace.IsAlreadyExists(err) {
-			return trace.Wrap(err)
-		}
+	err = rigging.ConvertError(err)
+	if err != nil && !trace.IsAlreadyExists(err) {
+		return trace.Wrap(err)
 	}
 
-	return nil
+	// wait for the controller to init by trying to list
+	// stolonupgrade resources
+	return utils.Retry(ctx, 30, time.Second, func() error {
+		_, err := crdClient.List()
+		return err
+	})
 }

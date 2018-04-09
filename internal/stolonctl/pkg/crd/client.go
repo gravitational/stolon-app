@@ -21,10 +21,8 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/defaults"
-	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/utils"
+	"github.com/gravitational/rigging"
 	"github.com/gravitational/trace"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -33,8 +31,8 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-// CrdClient creates CRD client interface
-func CrdClient(cfg *rest.Config, namespace string) (*crdclient, error) {
+// NewClient creates CRD client interface
+func NewClient(cfg *rest.Config, namespace string) (*Client, error) {
 	cfg.APIPath = "/apis"
 	if cfg.UserAgent == "" {
 		cfg.UserAgent = rest.DefaultKubernetesUserAgent()
@@ -42,42 +40,40 @@ func CrdClient(cfg *rest.Config, namespace string) (*crdclient, error) {
 
 	cfg.ContentType = runtime.ContentTypeJSON
 	cfg.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: scheme.Codecs}
-	cfg.GroupVersion = &schema.GroupVersion{Group: defaults.StolonUpgradeGroup, Version: defaults.StolonUpgradeVersion}
+	cfg.GroupVersion = &schema.GroupVersion{Group: StolonUpgradeGroup, Version: StolonUpgradeVersion}
 
 	clt, err := rest.RESTClientFor(cfg)
 	if err != nil {
-		return nil, utils.ConvertError(err)
+		return nil, rigging.ConvertError(err)
 	}
 
-	return &crdclient{
-		client:    clt,
+	return &Client{
+		Client:    clt,
 		namespace: namespace,
-		plural:    defaults.StolonUpgradePlural,
+		plural:    StolonUpgradePlural,
 	}, nil
 }
 
-type crdclient struct {
-	client    *rest.RESTClient
+// Client defines client to kubernetes custom resource definition API
+type Client struct {
+	Client    *rest.RESTClient
 	namespace string
 	plural    string
 }
 
-func (c *crdclient) Create(ctx context.Context, name, namespace string) (*StolonUpgradeResource, error) {
+func (c *Client) Create(ctx context.Context, objMeta metav1.ObjectMeta) (*StolonUpgradeResource, error) {
 	res := &StolonUpgradeResource{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       defaults.StolonUpgradeKind,
-			APIVersion: defaults.StolonUpgradeAPIVersion,
+			Kind:       StolonUpgradeKind,
+			APIVersion: StolonUpgradeAPIVersion,
 		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
-		},
+		ObjectMeta: objMeta,
 		Spec: StolonUpgradeSpec{
-			Status: defaults.StolonUpgradeStatusInProgress,
+			Status: StolonUpgradeStatusInProgress,
 			Phases: []StolonUpgradePhase{
 				StolonUpgradePhase{
-					Status:            defaults.StolonUpgradeStatusInProgress,
-					Name:              defaults.StolonUpgradeStepInit,
+					Status:            StolonUpgradeStatusInProgress,
+					Name:              StolonUpgradeStepInit,
 					Description:       "Initialize update operation",
 					CreationTimestamp: time.Now().UTC(),
 				},
@@ -88,21 +84,21 @@ func (c *crdclient) Create(ctx context.Context, name, namespace string) (*Stolon
 	return c.create(res)
 }
 
-func (c *crdclient) create(obj *StolonUpgradeResource) (*StolonUpgradeResource, error) {
+func (c *Client) create(obj *StolonUpgradeResource) (*StolonUpgradeResource, error) {
 	data, err := json.Marshal(obj)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
 
 	var raw runtime.Unknown
-	err = c.client.Post().
+	err = c.Client.Post().
 		Namespace(c.namespace).
 		Resource(c.plural).
 		Body(data).
 		Do().
 		Into(&raw)
 	if err != nil {
-		return nil, utils.ConvertError(err)
+		return nil, rigging.ConvertError(err)
 	}
 
 	var result StolonUpgradeResource
@@ -112,15 +108,15 @@ func (c *crdclient) create(obj *StolonUpgradeResource) (*StolonUpgradeResource, 
 	return &result, nil
 }
 
-func (c *crdclient) List() (*StolonUpgradeList, error) {
+func (c *Client) List() (*StolonUpgradeList, error) {
 	var raw runtime.Unknown
-	err := c.client.Get().
+	err := c.Client.Get().
 		Namespace(c.namespace).
 		Resource(c.plural).
 		Do().
 		Into(&raw)
 	if err != nil {
-		return nil, utils.ConvertError(err)
+		return nil, rigging.ConvertError(err)
 	}
 
 	var result StolonUpgradeList
