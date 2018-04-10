@@ -62,7 +62,7 @@ type StolonUpgradeSpec struct {
 	Phases []StolonUpgradePhase `json:"phases"`
 	// CreationTimestamp is a starting time of upgrade
 	CreationTimestamp time.Time `json:"startTime"`
-	// FinishTimestamp is a time when upgrade are finished
+	// FinishTimestamp is a time when upgrade finished
 	FinishTimestamp time.Time `json:"finishTime"`
 }
 
@@ -76,6 +76,6 @@ type StolonUpgradePhase struct {
 	Description string `json:"description"`
 	// CreationTimestamp is a starting time of upgrade step
 	CreationTimestamp time.Time `json:"startTime"`
-	// FinishTimestamp is a time when upgrade step are finished
+	// FinishTimestamp is a time when upgrade step finished
 	FinishTimestamp time.Time `json:"finishTime"`
 }
