@@ -56,7 +56,7 @@ ignored = ["github.com/gravitational/stolon-app/images*", "github.com/Sirupsen/l
   name = "github.com/ugorji/go"
   revision = "f1f1a805ed361a0e078bb537e4ea78cd37dcf065"
 
-[[override]]
+[[constraint]]
   name = "github.com/gravitational/stolon"
   version = "0.3.0"
 

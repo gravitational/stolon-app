@@ -14,35 +14,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package utils
 
 import (
-	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/cluster"
+	"context"
+	"time"
 
 	"github.com/gravitational/trace"
-	"github.com/spf13/cobra"
+	log "github.com/sirupsen/logrus"
 )
 
-var (
-	upgradeCmd = &cobra.Command{
-		Use:   "upgrade",
-		Short: "Upgrade stolon application",
-		RunE:  upgrade,
+// Retry will retry function X times until period is reached
+func Retry(ctx context.Context, times int, period time.Duration, fn func() error) error {
+	if times < 1 {
+		return nil
 	}
-)
-
-func init() {
-	stolonctlCmd.AddCommand(upgradeCmd)
-}
-
-func upgrade(ccmd *cobra.Command, args []string) error {
-	if err := clusterConfig.CheckConfig(); err != nil {
-		return trace.Wrap(err)
+	err := fn()
+	for i := 1; i < times && err != nil; i += 1 {
+		log.Infof("Attempt %v, result: %v, retry in %v.", i+1, trace.DebugReport(err), period)
+		select {
+		case <-ctx.Done():
+			log.Infof("Context is closing, return")
+			return err
+		case <-time.After(period):
+		}
+		err = fn()
 	}
-
-	err := cluster.Upgrade(ctx, clusterConfig)
-	if err != nil {
-		return trace.Wrap(err, "error upgrading cluster")
-	}
-	return nil
+	return err
 }

@@ -1,0 +1,10 @@
+#+AUTHOR: Sergei Antipov
+#+DATE: Mon Apr  2 10:02:41 2018
+#+STARTUP: showall
+
+* Custom resource spec fields
+*** UID
+*** State
+*** Step
+*** StartTime
+*** FinishTime

@@ -55,7 +55,7 @@ func status(ccmd *cobra.Command, args []string) error {
 
 // Status returns status of stolon cluster(Pods state and ClusterView)
 func Status() (*cluster.Status, error) {
-	status, err := cluster.GetStatus(&clusterConfig)
+	status, err := cluster.GetStatus(clusterConfig)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}

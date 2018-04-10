@@ -31,4 +31,6 @@ const (
 
 	// ClusterName defines name of stolon cluster
 	ClusterName = "kube-stolon"
+	// CRDName defines the default name of StolonUpgradeResource
+	CRDName = "upgrade"
 )

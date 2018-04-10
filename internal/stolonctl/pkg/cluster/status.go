@@ -19,10 +19,10 @@ package cluster
 import (
 	"path/filepath"
 
-	"github.com/gravitational/rigging"
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/defaults"
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/kubernetes"
 
+	"github.com/gravitational/rigging"
 	"github.com/gravitational/stolon/pkg/cluster"
 	"github.com/gravitational/stolon/pkg/store"
 	"github.com/gravitational/trace"
@@ -30,7 +30,7 @@ import (
 )
 
 // getPods returns list of keeper and sentinel pods
-func getPods(config *Config) ([]v1.Pod, error) {
+func getPods(config Config) ([]v1.Pod, error) {
 	client, err := kubernetes.NewClient(config.KubeConfig)
 	if err != nil {
 		return nil, trace.Wrap(err)
@@ -50,7 +50,7 @@ func getPods(config *Config) ([]v1.Pod, error) {
 }
 
 // GetStatus returns status of stolon cluster
-func GetStatus(config *Config) (*Status, error) {
+func GetStatus(config Config) (*Status, error) {
 	podList, err := getPods(config)
 	if err != nil {
 		return nil, trace.Wrap(err)
