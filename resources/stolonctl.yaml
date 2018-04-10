@@ -29,11 +29,18 @@ spec:
               value: "/etc/etcd/secrets/etcd.key"
             - name: ETCD_ENDPOINTS
               value: "$(NODE_NAME):2379"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: stolon
+                  key: password
           volumeMounts:
             - name: kubectl
               mountPath: /usr/bin/kubectl
             - name: etcd-secrets
               mountPath: /etc/etcd/secrets
+            - name: data
+              mountPath: /stolon
       volumes:
         - name: kubectl
           hostPath:
@@ -41,3 +48,6 @@ spec:
         - name: etcd-secrets
           hostPath:
             path: /var/state
+        - name: data
+          hostPath:
+            path: /var/lib/data/stolon-upgrade
