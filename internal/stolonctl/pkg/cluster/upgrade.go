@@ -18,14 +18,24 @@ package cluster
 
 import (
 	"context"
+	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
 
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/crd"
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/defaults"
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/kubernetes"
+	"github.com/gravitational/stolon/common"
 
 	"github.com/gravitational/trace"
 	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+const (
+	pgDumpCommand    = "pg_dumpall"
+	pgRestoreCommand = "pg_restore"
 )
 
 func Upgrade(ctx context.Context, config Config) error {
@@ -53,12 +63,65 @@ func Upgrade(ctx context.Context, config Config) error {
 		Name:      defaults.CRDName,
 		Namespace: config.Namespace,
 	}
-	res, err := crdclient.Create(ctx, objMeta)
-	if err != nil && !trace.IsAlreadyExists(err) {
+	res, err := crdclient.CreateOrRead(objMeta)
+	if err != nil {
 		return trace.Wrap(err)
 	}
 
 	// temporary
 	log.Info(res)
+	res, err = crdclient.MarkStepCompleted(res, crd.StolonUpgradeStepInit)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	// Backup Postgres
+	res, err = crdclient.MarkStepStarted(res, crd.StolonUpgradeStepBackupPostgres)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	if err = backupPostgres(config); err != nil {
+		return trace.Wrap(err)
+	}
+	res, err = crdclient.MarkStepCompleted(res, crd.StolonUpgradeStepBackupPostgres)
+	if err != nil {
+		return trace.Wrap(err)
+	}
 	return nil
+}
+
+func backupPostgres(config Config) error {
+
+	if err := createPgPassFile(config); err != nil {
+		return trace.Wrap(err)
+	}
+	options := []string{fmt.Sprintf("-h%s", config.PostgresHost),
+		fmt.Sprintf("-p%s", config.PostgresPort),
+		fmt.Sprintf("-U%s", config.PostgresUser), "-c",
+		fmt.Sprintf("-f%s", config.PostgresBackupPath)}
+
+	_, err := exec.Command(pgDumpCommand, options...).CombinedOutput()
+	if err != nil && !isExitError(err) {
+		return trace.Wrap(err)
+	}
+
+	return nil
+}
+
+func isExitError(err error) bool {
+	if _, ok := err.(*exec.ExitError); ok {
+		return true
+	}
+	return false
+}
+
+func createPgPassFile(config Config) error {
+	content := fmt.Sprintf("%s:%s:%s:%s:%s", config.PostgresHost, config.PostgresPort,
+		"*", config.PostgresUser, config.PostgresPassword)
+
+	homeDir := os.Getenv("HOME")
+	if homeDir == "" {
+		return trace.BadParameter("$HOME environment variable are not set. Cannot write .pgpass file.")
+	}
+	return common.WriteFileAtomic(filepath.Join(homeDir, ".pgpass"), []byte(content), 0600)
 }

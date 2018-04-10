@@ -37,8 +37,13 @@ const (
 	StolonUpgradeSingular = "stolonupgrade"
 
 	// Status of stolon upgrade
-	StolonUpgradeStatusInProgress = "in-progress"
+	StolonUpgradeStatusInProgress = "In progress"
+	StolonUpgradeStatusUnstarted  = "Unstarted"
+	StolonUpgradeStatusFailed     = "Failed"
+	StolonUpgradeStatusCompleted  = "Completed"
 
 	// Steps of stolon upgrade
-	StolonUpgradeStepInit = "init"
+	StolonUpgradeStepInit           = "init"
+	StolonUpgradeStepBackupPostgres = "backup-postgres"
+	StolonUpgradeStepBackupEtcd     = "backup-etcd"
 )
