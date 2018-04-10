@@ -36,10 +36,11 @@ var (
 	ctx           context.Context
 
 	envs = map[string]string{
-		"ETCD_CERT":      "etcd-cert-file",
-		"ETCD_KEY":       "etcd-key-file",
-		"ETCD_CACERT":    "etcd-ca-file",
-		"ETCD_ENDPOINTS": "etcd-endpoints",
+		"ETCD_CERT":         "etcd-cert-file",
+		"ETCD_KEY":          "etcd-key-file",
+		"ETCD_CACERT":       "etcd-ca-file",
+		"ETCD_ENDPOINTS":    "etcd-endpoints",
+		"POSTGRES_PASSWORD": "postgres-password",
 	}
 
 	stolonctlCmd = &cobra.Command{

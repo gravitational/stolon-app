@@ -41,6 +41,17 @@ type Config struct {
 
 	// Name defines name of stolon cluster
 	Name string
+
+	// PostgresHost defines hostname for connecting to old stolon PostgreSQL
+	PostgresHost string
+	// PostgresPort defines port for connecting to old stolon PostgreSQL
+	PostgresPort string
+	// PostgresUser defines username for connecting to old stolon PostgreSQL
+	PostgresUser string
+	// PostgresPassword defines password for connecting to old stolon PostgreSQL
+	PostgresPassword string
+	// PostgresBackupPath defines path for storing backup of old PostgreSQL data
+	PostgresBackupPath string
 }
 
 // CheckConfig checks provided configuration
@@ -48,6 +59,15 @@ func (c *Config) CheckConfig() error {
 	if c.EtcdCertFile == "" || c.EtcdKeyFile == "" ||
 		c.EtcdCAFile == "" || c.EtcdEndpoints == "" {
 		return trace.BadParameter("etcd-endpoints, etcd-cert-file, etcd-key-file and etcd-ca-file are required")
+	}
+	return nil
+}
+
+// CheckPostgresParams checks provided configuration for PostgreSQL connection
+func (c *Config) CheckPostgresParams() error {
+	if c.PostgresHost == "" || c.PostgresPort == "" ||
+		c.PostgresUser == "" || c.PostgresBackupPath == "" {
+		return trace.BadParameter("postgres-host, postgres-port, postgres-user and postgres-backup-path are required")
 	}
 	return nil
 }
