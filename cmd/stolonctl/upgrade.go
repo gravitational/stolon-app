@@ -18,6 +18,7 @@ package main
 
 import (
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/cluster"
+	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/defaults"
 
 	"github.com/gravitational/trace"
 	"github.com/spf13/cobra"
@@ -33,16 +34,31 @@ var (
 
 func init() {
 	stolonctlCmd.AddCommand(upgradeCmd)
+	upgradeCmd.Flags().StringVar(&clusterConfig.Postgres.Host, "postgres-host",
+		defaults.PostgresHost, "Hostname for connection to stolon PostreSQL host")
+	upgradeCmd.Flags().StringVar(&clusterConfig.Postgres.Port, "postgres-port",
+		defaults.PostgresPort, "Port for connection to stolon PostgreSQL host")
+	upgradeCmd.Flags().StringVar(&clusterConfig.Postgres.User, "postgres-user",
+		defaults.PostgresUser, "Username for connection to stolon PostgreSQL host")
+	upgradeCmd.Flags().StringVar(&clusterConfig.Postgres.Password, "postgres-password",
+		"", "Password for connection to stolon PostgreSQL host")
+	upgradeCmd.Flags().StringVar(&clusterConfig.Postgres.BackupPath,
+		"postgres-backup-path", defaults.PostgresBackupPath,
+		"Path to store backup of stolon PostgreSQL data")
+	upgradeCmd.Flags().StringVar(&clusterConfig.Postgres.PgPassPath, "postgres-pgpass-path",
+		defaults.PostgresPgPassPath, "Path to store the password file for PostgresQL")
+
+	bindFlagEnv(upgradeCmd.Flags())
 }
 
 func upgrade(ccmd *cobra.Command, args []string) error {
-	if err := clusterConfig.CheckConfig(); err != nil {
+	if err := clusterConfig.Check(); err != nil {
 		return trace.Wrap(err)
 	}
 
 	err := cluster.Upgrade(ctx, clusterConfig)
 	if err != nil {
-		return trace.Wrap(err, "error upgrading cluster")
+		return trace.Wrap(err)
 	}
 	return nil
 }

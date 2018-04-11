@@ -33,4 +33,15 @@ const (
 	ClusterName = "kube-stolon"
 	// CRDName defines the default name of StolonUpgradeResource
 	CRDName = "upgrade"
+
+	// PostgresHost defines hostname for connecting to stolon PostgreSQL
+	PostgresHost = "stolon-postgres.default.svc"
+	// PostgresPort defines port for connecting to stolon PostgreSQL
+	PostgresPort = "5432"
+	// PostgresUser defines username for connecting to stolon PostgreSQL
+	PostgresUser = "stolon"
+	// PostgresBackupPath defines path for storing backup of PostgreSQL data
+	PostgresBackupPath = "/stolon/backup.sql"
+	// PostgresPgPassPath defines path to store the password file for PostgresQL
+	PostgresPgPassPath = "/tmp/pgpass"
 )

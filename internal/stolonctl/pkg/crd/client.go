@@ -17,7 +17,6 @@ limitations under the License.
 package crd
 
 import (
-	"context"
 	"encoding/json"
 	"time"
 
@@ -61,7 +60,7 @@ type Client struct {
 	plural    string
 }
 
-func (c *Client) Create(ctx context.Context, objMeta metav1.ObjectMeta) (*StolonUpgradeResource, error) {
+func (c *Client) CreateOrRead(objMeta metav1.ObjectMeta) (*StolonUpgradeResource, error) {
 	res := &StolonUpgradeResource{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       StolonUpgradeKind,
@@ -69,19 +68,19 @@ func (c *Client) Create(ctx context.Context, objMeta metav1.ObjectMeta) (*Stolon
 		},
 		ObjectMeta: objMeta,
 		Spec: StolonUpgradeSpec{
-			Status: StolonUpgradeStatusInProgress,
-			Phases: []StolonUpgradePhase{
-				StolonUpgradePhase{
-					Status:            StolonUpgradeStatusInProgress,
-					Name:              StolonUpgradeStepInit,
-					Description:       "Initialize update operation",
-					CreationTimestamp: time.Now().UTC(),
-				},
-			},
+			Status:            StolonUpgradeStatusInProgress,
+			Phases:            stolonUpgradePhases(time.Now().UTC()),
 			CreationTimestamp: time.Now().UTC(),
 		},
 	}
-	return c.create(res)
+	out, err := c.create(res)
+	if err == nil {
+		return out, nil
+	}
+	if !trace.IsAlreadyExists(err) {
+		return nil, trace.Wrap(err)
+	}
+	return c.get(objMeta.Name)
 }
 
 func (c *Client) create(obj *StolonUpgradeResource) (*StolonUpgradeResource, error) {
@@ -124,4 +123,96 @@ func (c *Client) List() (*StolonUpgradeList, error) {
 		return nil, trace.Wrap(err)
 	}
 	return &result, nil
+}
+
+func (c *Client) get(name string) (*StolonUpgradeResource, error) {
+	var raw runtime.Unknown
+	err := c.Client.Get().
+		Namespace(c.namespace).
+		Resource(c.plural).
+		Name(name).
+		Do().
+		Into(&raw)
+	if err != nil {
+		return nil, rigging.ConvertError(err)
+	}
+
+	var result StolonUpgradeResource
+	if err := json.Unmarshal(raw.Raw, &result); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return &result, nil
+}
+
+func (c *Client) update(obj *StolonUpgradeResource) (*StolonUpgradeResource, error) {
+	data, err := json.Marshal(obj)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	var raw runtime.Unknown
+	err = c.Client.Put().
+		Namespace(c.namespace).
+		Resource(c.plural).
+		Name(obj.Name).
+		Body(data).
+		Do().
+		Into(&raw)
+	if err != nil {
+		return nil, rigging.ConvertError(err)
+	}
+
+	var result StolonUpgradeResource
+	if err := json.Unmarshal(raw.Raw, &result); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return &result, nil
+}
+
+// MarkPhase marks phase
+func (c *Client) MarkPhase(obj *StolonUpgradeResource, phaseName string, phaseStatus string) (*StolonUpgradeResource, error) {
+	var phases []StolonUpgradePhase
+	for _, phase := range obj.Spec.Phases {
+		if phaseName == phase.Name {
+			if phaseStatus != phase.Status {
+				phase.Status = phaseStatus
+				if phaseStatus == StolonUpgradeStatusInProgress {
+					phase.CreationTimestamp = time.Now().UTC()
+				}
+				if phaseStatus == StolonUpgradeStatusCompleted {
+					phase.FinishTimestamp = time.Now().UTC()
+				}
+			}
+			break
+		}
+		phases = append(phases, phase)
+	}
+	obj.Spec.Phases = phases
+	return c.update(obj)
+}
+
+// IsPhaseCompleted checks phase for a completed status
+func (c *Client) IsPhaseCompleted(obj *StolonUpgradeResource, phaseName string) bool {
+	for _, phase := range obj.Spec.Phases {
+		if phaseName == phase.Name && phase.Status == StolonUpgradeStatusCompleted {
+			return true
+		}
+	}
+	return false
+}
+
+func stolonUpgradePhases(creationTime time.Time) []StolonUpgradePhase {
+	return []StolonUpgradePhase{
+		StolonUpgradePhase{
+			Status:            StolonUpgradeStatusInProgress,
+			Name:              StolonUpgradePhaseInit,
+			Description:       "Initialize update operation",
+			CreationTimestamp: creationTime,
+		},
+		StolonUpgradePhase{
+			Status:      StolonUpgradeStatusUnstarted,
+			Name:        StolonUpgradePhaseBackupPostgres,
+			Description: "Backup stolon PostgreSQL",
+		},
+	}
 }

@@ -18,14 +18,24 @@ package cluster
 
 import (
 	"context"
+	"fmt"
+	"os"
+	"os/exec"
 
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/crd"
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/defaults"
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/kubernetes"
+	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/utils"
+	"github.com/gravitational/stolon/common"
 
 	"github.com/gravitational/trace"
 	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+const (
+	pgDumpCommand    = "pg_dumpall"
+	pgRestoreCommand = "pg_restore"
 )
 
 func Upgrade(ctx context.Context, config Config) error {
@@ -53,12 +63,64 @@ func Upgrade(ctx context.Context, config Config) error {
 		Name:      defaults.CRDName,
 		Namespace: config.Namespace,
 	}
-	res, err := crdclient.Create(ctx, objMeta)
-	if err != nil && !trace.IsAlreadyExists(err) {
+	res, err := crdclient.CreateOrRead(objMeta)
+	if err != nil {
 		return trace.Wrap(err)
 	}
 
-	// temporary
+	// TODO delete debugging info
 	log.Info(res)
+	if !crdclient.IsPhaseCompleted(res, crd.StolonUpgradePhaseInit) {
+		res, err = crdclient.MarkPhase(res, crd.StolonUpgradePhaseInit, crd.StolonUpgradeStatusCompleted)
+		if err != nil {
+			return trace.Wrap(err)
+		}
+	}
+
+	// Backup Postgres
+	if !crdclient.IsPhaseCompleted(res, crd.StolonUpgradePhaseBackupPostgres) {
+		res, err = crdclient.MarkPhase(res, crd.StolonUpgradePhaseBackupPostgres, crd.StolonUpgradeStatusInProgress)
+		if err != nil {
+			return trace.Wrap(err)
+		}
+		if err = backupPostgres(config); err != nil {
+			return trace.Wrap(err)
+		}
+		res, err = crdclient.MarkPhase(res, crd.StolonUpgradePhaseBackupPostgres, crd.StolonUpgradeStatusCompleted)
+		if err != nil {
+			return trace.Wrap(err)
+		}
+	}
 	return nil
+}
+
+func backupPostgres(config Config) error {
+	if err := createPgPassFile(config); err != nil {
+		return trace.Wrap(err)
+	}
+	options := []string{fmt.Sprintf("-h%s", config.Postgres.Host),
+		fmt.Sprintf("-p%s", config.Postgres.Port),
+		fmt.Sprintf("-U%s", config.Postgres.User), "-c",
+		fmt.Sprintf("-f%s", config.Postgres.BackupPath)}
+
+	cmd := exec.Command(pgDumpCommand, options...)
+	env := os.Environ()
+	// Add PGPASSFILE env variable to set path to the password file
+	env = append(env, fmt.Sprintf("PGPASSFILE=%s", config.Postgres.PgPassPath))
+	cmd.Env = env
+
+	output, err := utils.Run(cmd)
+	if err != nil {
+		return trace.Wrap(err, "Command output: %v", string(output))
+	}
+	log.Infof("Backed up Postgres to %s", config.Postgres.BackupPath)
+
+	return nil
+}
+
+func createPgPassFile(config Config) error {
+	content := fmt.Sprintf("%s:%s:%s:%s:%s", config.Postgres.Host, config.Postgres.Port,
+		"*", config.Postgres.User, config.Postgres.Password)
+
+	return common.WriteFileAtomic(config.Postgres.PgPassPath, []byte(content), 0600)
 }

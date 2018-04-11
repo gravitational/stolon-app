@@ -40,7 +40,7 @@ func init() {
 }
 
 func status(ccmd *cobra.Command, args []string) error {
-	if err := clusterConfig.CheckConfig(); err != nil {
+	if err := clusterConfig.Check(); err != nil {
 		return trace.Wrap(err)
 	}
 

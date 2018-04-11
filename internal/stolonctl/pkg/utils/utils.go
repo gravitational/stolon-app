@@ -17,7 +17,10 @@ limitations under the License.
 package utils
 
 import (
+	"bytes"
 	"context"
+	"os"
+	"os/exec"
 	"time"
 
 	"github.com/gravitational/trace"
@@ -41,4 +44,16 @@ func Retry(ctx context.Context, times int, period time.Duration, fn func() error
 		err = fn()
 	}
 	return err
+}
+
+// Run runs the command cmd and returns the output.
+func Run(cmd *exec.Cmd) ([]byte, error) {
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, trace.Wrap(err)
+		}
+		return bytes.TrimSpace(output), trace.Wrap(err)
+	}
+	return nil, nil
 }
