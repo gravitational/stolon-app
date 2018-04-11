@@ -17,8 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"os"
-
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/cluster"
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/defaults"
 
@@ -36,41 +34,31 @@ var (
 
 func init() {
 	stolonctlCmd.AddCommand(upgradeCmd)
-	upgradeCmd.Flags().StringVar(&clusterConfig.PostgresHost, "postgres-host",
-		defaults.PostgresHost, "Hostname for connection to old stolon PostreSQL host")
-	upgradeCmd.Flags().StringVar(&clusterConfig.PostgresPort, "postgres-port",
-		defaults.PostgresPort, "Port for connection to old stolon PostgreSQL host")
-	upgradeCmd.Flags().StringVar(&clusterConfig.PostgresUser, "postgres-user",
-		defaults.PostgresUser, "Username for connection to old stolon PostgreSQL host")
-	upgradeCmd.Flags().StringVar(&clusterConfig.PostgresPassword, "postgres-password",
-		"", "Password for connection to ols stolon PostgreSQL host")
-	upgradeCmd.Flags().StringVar(&clusterConfig.PostgresBackupPath,
+	upgradeCmd.Flags().StringVar(&clusterConfig.Postgres.Host, "postgres-host",
+		defaults.PostgresHost, "Hostname for connection to stolon PostreSQL host")
+	upgradeCmd.Flags().StringVar(&clusterConfig.Postgres.Port, "postgres-port",
+		defaults.PostgresPort, "Port for connection to stolon PostgreSQL host")
+	upgradeCmd.Flags().StringVar(&clusterConfig.Postgres.User, "postgres-user",
+		defaults.PostgresUser, "Username for connection to stolon PostgreSQL host")
+	upgradeCmd.Flags().StringVar(&clusterConfig.Postgres.Password, "postgres-password",
+		"", "Password for connection to stolon PostgreSQL host")
+	upgradeCmd.Flags().StringVar(&clusterConfig.Postgres.BackupPath,
 		"postgres-backup-path", defaults.PostgresBackupPath,
-		"Path to store backup of old stolon PostgreSQL data")
+		"Path to store backup of stolon PostgreSQL data")
+	upgradeCmd.Flags().StringVar(&clusterConfig.Postgres.PgPassPath, "postgres-pgpass-path",
+		defaults.PostgresPgPassPath, "Path to store the password file for PostgresQL")
 
-	for env, flag := range envs {
-		cmdFlag := upgradeCmd.Flags().Lookup(flag)
-		if value := os.Getenv(env); value != "" {
-			if cmdFlag != nil {
-				cmdFlag.Value.Set(value)
-			}
-		}
-	}
-
+	bindFlagEnv(upgradeCmd.Flags())
 }
 
 func upgrade(ccmd *cobra.Command, args []string) error {
-	if err := clusterConfig.CheckConfig(); err != nil {
-		return trace.Wrap(err)
-	}
-
-	if err := clusterConfig.CheckPostgresParams(); err != nil {
+	if err := clusterConfig.Check(); err != nil {
 		return trace.Wrap(err)
 	}
 
 	err := cluster.Upgrade(ctx, clusterConfig)
 	if err != nil {
-		return trace.Wrap(err, "error upgrading cluster")
+		return trace.Wrap(err)
 	}
 	return nil
 }

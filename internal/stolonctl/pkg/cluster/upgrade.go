@@ -21,11 +21,11 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/crd"
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/defaults"
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/kubernetes"
+	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/utils"
 	"github.com/gravitational/stolon/common"
 
 	"github.com/gravitational/trace"
@@ -68,7 +68,7 @@ func Upgrade(ctx context.Context, config Config) error {
 		return trace.Wrap(err)
 	}
 
-	// temporary
+	// TODO delete debugging info
 	log.Info(res)
 	res, err = crdclient.MarkStep(res, crd.StolonUpgradePhaseInit, crd.StolonUpgradeStatusCompleted)
 	if err != nil {
@@ -91,37 +91,32 @@ func Upgrade(ctx context.Context, config Config) error {
 }
 
 func backupPostgres(config Config) error {
-
 	if err := createPgPassFile(config); err != nil {
 		return trace.Wrap(err)
 	}
-	options := []string{fmt.Sprintf("-h%s", config.PostgresHost),
-		fmt.Sprintf("-p%s", config.PostgresPort),
-		fmt.Sprintf("-U%s", config.PostgresUser), "-c",
-		fmt.Sprintf("-f%s", config.PostgresBackupPath)}
+	options := []string{fmt.Sprintf("-h%s", config.Postgres.Host),
+		fmt.Sprintf("-p%s", config.Postgres.Port),
+		fmt.Sprintf("-U%s", config.Postgres.User), "-c",
+		fmt.Sprintf("-f%s", config.Postgres.BackupPath)}
 
-	_, err := exec.Command(pgDumpCommand, options...).CombinedOutput()
-	if err != nil && !isExitError(err) {
-		return trace.Wrap(err)
+	cmd := exec.Command(pgDumpCommand, options...)
+	env := os.Environ()
+	// Add PGPASSFILE env variable to set path to the password file
+	env = append(env, fmt.Sprintf("PGPASSFILE=%s", config.Postgres.PgPassPath))
+	cmd.Env = env
+
+	output, err := utils.Run(cmd)
+	if err != nil {
+		return trace.Wrap(err, "Command output: %v", string(output))
 	}
+	log.Infof("Backup of Postgres created and stored in %s", config.Postgres.BackupPath)
 
 	return nil
 }
 
-func isExitError(err error) bool {
-	if _, ok := err.(*exec.ExitError); ok {
-		return true
-	}
-	return false
-}
-
 func createPgPassFile(config Config) error {
-	content := fmt.Sprintf("%s:%s:%s:%s:%s", config.PostgresHost, config.PostgresPort,
-		"*", config.PostgresUser, config.PostgresPassword)
+	content := fmt.Sprintf("%s:%s:%s:%s:%s", config.Postgres.Host, config.Postgres.Port,
+		"*", config.Postgres.User, config.Postgres.Password)
 
-	homeDir := os.Getenv("HOME")
-	if homeDir == "" {
-		return trace.BadParameter("$HOME environment variable are not set. Cannot write .pgpass file.")
-	}
-	return common.WriteFileAtomic(filepath.Join(homeDir, ".pgpass"), []byte(content), 0600)
+	return common.WriteFileAtomic(config.Postgres.PgPassPath, []byte(content), 0600)
 }

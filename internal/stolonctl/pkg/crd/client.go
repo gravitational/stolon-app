@@ -69,7 +69,7 @@ func (c *Client) CreateOrRead(objMeta metav1.ObjectMeta) (*StolonUpgradeResource
 		ObjectMeta: objMeta,
 		Spec: StolonUpgradeSpec{
 			Status:            StolonUpgradeStatusInProgress,
-			Phases:            stolonUpgradePhases(),
+			Phases:            stolonUpgradePhases(time.Now().UTC()),
 			CreationTimestamp: time.Now().UTC(),
 		},
 	}
@@ -188,13 +188,13 @@ func (c *Client) MarkStep(obj *StolonUpgradeResource, phaseName string, phaseSta
 	return c.update(obj)
 }
 
-func stolonUpgradePhases() []StolonUpgradePhase {
+func stolonUpgradePhases(creationTime time.Time) []StolonUpgradePhase {
 	return []StolonUpgradePhase{
 		StolonUpgradePhase{
 			Status:            StolonUpgradeStatusInProgress,
 			Name:              StolonUpgradePhaseInit,
 			Description:       "Initialize update operation",
-			CreationTimestamp: time.Now().UTC(),
+			CreationTimestamp: creationTime,
 		},
 		StolonUpgradePhase{
 			Status:      StolonUpgradeStatusUnstarted,

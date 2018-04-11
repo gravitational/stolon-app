@@ -29,6 +29,7 @@ import (
 	"github.com/gravitational/trace"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	flag "github.com/spf13/pflag"
 )
 
 var (
@@ -79,14 +80,7 @@ func init() {
 	stolonctlCmd.PersistentFlags().StringVar(&clusterConfig.Name, "cluster-name",
 		defaults.ClusterName, "Stolon cluster name")
 
-	for env, flag := range envs {
-		cmdFlag := stolonctlCmd.PersistentFlags().Lookup(flag)
-		if value := os.Getenv(env); value != "" {
-			if cmdFlag != nil {
-				cmdFlag.Value.Set(value)
-			}
-		}
-	}
+	bindFlagEnv(stolonctlCmd.PersistentFlags())
 
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithCancel(context.TODO())
@@ -101,6 +95,18 @@ func init() {
 		}
 	}()
 
+}
+
+// bindFlagEnv binds environment variables to command flags
+func bindFlagEnv(flagSet *flag.FlagSet) {
+	for env, flag := range envs {
+		cmdFlag := flagSet.Lookup(flag)
+		if cmdFlag != nil {
+			if value := os.Getenv(env); value != "" {
+				cmdFlag.Value.Set(value)
+			}
+		}
+	}
 }
 
 // printError prints the error message to the console

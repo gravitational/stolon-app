@@ -42,32 +42,64 @@ type Config struct {
 	// Name defines name of stolon cluster
 	Name string
 
-	// PostgresHost defines hostname for connecting to old stolon PostgreSQL
-	PostgresHost string
-	// PostgresPort defines port for connecting to old stolon PostgreSQL
-	PostgresPort string
-	// PostgresUser defines username for connecting to old stolon PostgreSQL
-	PostgresUser string
-	// PostgresPassword defines password for connecting to old stolon PostgreSQL
-	PostgresPassword string
-	// PostgresBackupPath defines path for storing backup of old PostgreSQL data
-	PostgresBackupPath string
+	// Postgres stores configuration of PostgreSQL-related parameters
+	Postgres PostgresConfig
 }
 
-// CheckConfig checks provided configuration
-func (c *Config) CheckConfig() error {
-	if c.EtcdCertFile == "" || c.EtcdKeyFile == "" ||
-		c.EtcdCAFile == "" || c.EtcdEndpoints == "" {
-		return trace.BadParameter("etcd-endpoints, etcd-cert-file, etcd-key-file and etcd-ca-file are required")
-	}
-	return nil
+// PostgresConfig stores configuration of PostgreSQL-related parameters
+type PostgresConfig struct {
+	// Host defines hostname for connecting to stolon PostgreSQL
+	Host string
+	// Port defines port for connecting to stolon PostgreSQL
+	Port string
+	// User defines username for connecting to stolon PostgreSQL
+	User string
+	// Password defines password for connecting to stolon PostgreSQL
+	Password string
+	// BackupPath defines path for storing backup of PostgreSQL data
+	BackupPath string
+	// PgPassPath defines path to the password file
+	PgPassPath string
 }
 
-// CheckPostgresParams checks provided configuration for PostgreSQL connection
-func (c *Config) CheckPostgresParams() error {
-	if c.PostgresHost == "" || c.PostgresPort == "" ||
-		c.PostgresUser == "" || c.PostgresBackupPath == "" {
-		return trace.BadParameter("postgres-host, postgres-port, postgres-user and postgres-backup-path are required")
+// Check checks provided configuration
+func (c *Config) Check() error {
+	var errors []error
+	if c.EtcdCertFile == "" {
+		errors = append(errors, trace.BadParameter("etcd-cert-file (env 'ETCD_CERT') is required"))
 	}
-	return nil
+	if c.EtcdKeyFile == "" {
+		errors = append(errors, trace.BadParameter("etcd-key-file (env 'ETCD_KEY') is required"))
+	}
+	if c.EtcdCAFile == "" {
+		errors = append(errors, trace.BadParameter("etcd-ca-file (env 'ETCD_CACERT') is required"))
+	}
+	if c.EtcdEndpoints == "" {
+		errors = append(errors, trace.BadParameter("etcd-endpoints (env 'ETCD_ENDPOINTS') is required"))
+	}
+	if err := c.Postgres.Check(); err != nil {
+		errors = append(errors, err)
+	}
+	return trace.NewAggregate(errors...)
+}
+
+// Check checks provided configuration for PostgreSQL parameters
+func (c *PostgresConfig) Check() error {
+	var errors []error
+	if c.Host == "" {
+		errors = append(errors, trace.BadParameter("postgres-host is required"))
+	}
+	if c.Port == "" {
+		errors = append(errors, trace.BadParameter("postgres-port is required"))
+	}
+	if c.User == "" {
+		errors = append(errors, trace.BadParameter("postgres-user is required"))
+	}
+	if c.BackupPath == "" {
+		errors = append(errors, trace.BadParameter("postgres-backup-path is required"))
+	}
+	if c.PgPassPath == "" {
+		errors = append(errors, trace.BadParameter("postgres-pgpass-path is required"))
+	}
+	return trace.NewAggregate(errors...)
 }
