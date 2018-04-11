@@ -42,8 +42,8 @@ const (
 	StolonUpgradeStatusFailed     = "Failed"
 	StolonUpgradeStatusCompleted  = "Completed"
 
-	// Steps of stolon upgrade
-	StolonUpgradeStepInit           = "init"
-	StolonUpgradeStepBackupPostgres = "backup-postgres"
-	StolonUpgradeStepBackupEtcd     = "backup-etcd"
+	// Phases of stolon upgrade
+	StolonUpgradePhaseInit           = "init"
+	StolonUpgradePhaseBackupPostgres = "backup-postgres"
+	StolonUpgradePhaseBackupEtcd     = "backup-etcd"
 )

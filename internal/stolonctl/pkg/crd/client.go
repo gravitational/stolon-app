@@ -169,40 +169,18 @@ func (c *Client) update(obj *StolonUpgradeResource) (*StolonUpgradeResource, err
 	return &result, nil
 }
 
-// MarkStepCompleted marks phase as completed
-func (c *Client) MarkStepCompleted(obj *StolonUpgradeResource, phaseName string) (*StolonUpgradeResource, error) {
+// MarkStep marks phase
+func (c *Client) MarkStep(obj *StolonUpgradeResource, phaseName string, phaseStatus string) (*StolonUpgradeResource, error) {
 	var phases []StolonUpgradePhase
 	for _, phase := range obj.Spec.Phases {
 		if phaseName == phase.Name {
-			phase.Status = StolonUpgradeStatusCompleted
-			phase.FinishTimestamp = time.Now().UTC()
-		}
-		phases = append(phases, phase)
-	}
-	obj.Spec.Phases = phases
-	return c.update(obj)
-}
-
-// MarkStepFailed marks phase as failed
-func (c *Client) MarkStepFailed(obj *StolonUpgradeResource, phaseName string) (*StolonUpgradeResource, error) {
-	var phases []StolonUpgradePhase
-	for _, phase := range obj.Spec.Phases {
-		if phaseName == phase.Name {
-			phase.Status = StolonUpgradeStatusFailed
-		}
-		phases = append(phases, phase)
-	}
-	obj.Spec.Phases = phases
-	return c.update(obj)
-}
-
-// MarkStepStarted marks phase as started
-func (c *Client) MarkStepStarted(obj *StolonUpgradeResource, phaseName string) (*StolonUpgradeResource, error) {
-	var phases []StolonUpgradePhase
-	for _, phase := range obj.Spec.Phases {
-		if phaseName == phase.Name {
-			phase.Status = StolonUpgradeStatusInProgress
-			phase.CreationTimestamp = time.Now().UTC()
+			phase.Status = phaseStatus
+			if phaseStatus == StolonUpgradeStatusInProgress {
+				phase.CreationTimestamp = time.Now().UTC()
+			}
+			if phaseStatus == StolonUpgradeStatusCompleted {
+				phase.FinishTimestamp = time.Now().UTC()
+			}
 		}
 		phases = append(phases, phase)
 	}
@@ -214,13 +192,13 @@ func stolonUpgradePhases() []StolonUpgradePhase {
 	return []StolonUpgradePhase{
 		StolonUpgradePhase{
 			Status:            StolonUpgradeStatusInProgress,
-			Name:              StolonUpgradeStepInit,
+			Name:              StolonUpgradePhaseInit,
 			Description:       "Initialize update operation",
 			CreationTimestamp: time.Now().UTC(),
 		},
 		StolonUpgradePhase{
 			Status:      StolonUpgradeStatusUnstarted,
-			Name:        StolonUpgradeStepBackupPostgres,
+			Name:        StolonUpgradePhaseBackupPostgres,
 			Description: "Backup stolon PostgreSQL",
 		},
 	}

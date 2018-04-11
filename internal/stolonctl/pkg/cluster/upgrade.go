@@ -70,20 +70,20 @@ func Upgrade(ctx context.Context, config Config) error {
 
 	// temporary
 	log.Info(res)
-	res, err = crdclient.MarkStepCompleted(res, crd.StolonUpgradeStepInit)
+	res, err = crdclient.MarkStep(res, crd.StolonUpgradePhaseInit, crd.StolonUpgradeStatusCompleted)
 	if err != nil {
 		return trace.Wrap(err)
 	}
 
 	// Backup Postgres
-	res, err = crdclient.MarkStepStarted(res, crd.StolonUpgradeStepBackupPostgres)
+	res, err = crdclient.MarkStep(res, crd.StolonUpgradePhaseBackupPostgres, crd.StolonUpgradeStatusInProgress)
 	if err != nil {
 		return trace.Wrap(err)
 	}
 	if err = backupPostgres(config); err != nil {
 		return trace.Wrap(err)
 	}
-	res, err = crdclient.MarkStepCompleted(res, crd.StolonUpgradeStepBackupPostgres)
+	res, err = crdclient.MarkStep(res, crd.StolonUpgradePhaseBackupPostgres, crd.StolonUpgradeStatusCompleted)
 	if err != nil {
 		return trace.Wrap(err)
 	}
