@@ -51,9 +51,9 @@ func Run(cmd *exec.Cmd) ([]byte, error) {
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, err
+			return nil, trace.Wrap(err)
 		}
-		return bytes.TrimSpace(output), err
+		return bytes.TrimSpace(output), trace.Wrap(err)
 	}
 	return nil, nil
 }

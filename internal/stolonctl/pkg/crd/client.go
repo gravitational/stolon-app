@@ -169,23 +169,36 @@ func (c *Client) update(obj *StolonUpgradeResource) (*StolonUpgradeResource, err
 	return &result, nil
 }
 
-// MarkStep marks phase
-func (c *Client) MarkStep(obj *StolonUpgradeResource, phaseName string, phaseStatus string) (*StolonUpgradeResource, error) {
+// MarkPhase marks phase
+func (c *Client) MarkPhase(obj *StolonUpgradeResource, phaseName string, phaseStatus string) (*StolonUpgradeResource, error) {
 	var phases []StolonUpgradePhase
 	for _, phase := range obj.Spec.Phases {
 		if phaseName == phase.Name {
-			phase.Status = phaseStatus
-			if phaseStatus == StolonUpgradeStatusInProgress {
-				phase.CreationTimestamp = time.Now().UTC()
+			if phaseStatus != phase.Status {
+				phase.Status = phaseStatus
+				if phaseStatus == StolonUpgradeStatusInProgress {
+					phase.CreationTimestamp = time.Now().UTC()
+				}
+				if phaseStatus == StolonUpgradeStatusCompleted {
+					phase.FinishTimestamp = time.Now().UTC()
+				}
 			}
-			if phaseStatus == StolonUpgradeStatusCompleted {
-				phase.FinishTimestamp = time.Now().UTC()
-			}
+			break
 		}
 		phases = append(phases, phase)
 	}
 	obj.Spec.Phases = phases
 	return c.update(obj)
+}
+
+// IsPhaseCompleted checks phase for a completed status
+func (c *Client) IsPhaseCompleted(obj *StolonUpgradeResource, phaseName string) bool {
+	for _, phase := range obj.Spec.Phases {
+		if phaseName == phase.Name && phase.Status == StolonUpgradeStatusCompleted {
+			return true
+		}
+	}
+	return false
 }
 
 func stolonUpgradePhases(creationTime time.Time) []StolonUpgradePhase {

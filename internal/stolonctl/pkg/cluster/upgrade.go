@@ -70,22 +70,26 @@ func Upgrade(ctx context.Context, config Config) error {
 
 	// TODO delete debugging info
 	log.Info(res)
-	res, err = crdclient.MarkStep(res, crd.StolonUpgradePhaseInit, crd.StolonUpgradeStatusCompleted)
-	if err != nil {
-		return trace.Wrap(err)
+	if !crdclient.IsPhaseCompleted(res, crd.StolonUpgradePhaseInit) {
+		res, err = crdclient.MarkPhase(res, crd.StolonUpgradePhaseInit, crd.StolonUpgradeStatusCompleted)
+		if err != nil {
+			return trace.Wrap(err)
+		}
 	}
 
 	// Backup Postgres
-	res, err = crdclient.MarkStep(res, crd.StolonUpgradePhaseBackupPostgres, crd.StolonUpgradeStatusInProgress)
-	if err != nil {
-		return trace.Wrap(err)
-	}
-	if err = backupPostgres(config); err != nil {
-		return trace.Wrap(err)
-	}
-	res, err = crdclient.MarkStep(res, crd.StolonUpgradePhaseBackupPostgres, crd.StolonUpgradeStatusCompleted)
-	if err != nil {
-		return trace.Wrap(err)
+	if !crdclient.IsPhaseCompleted(res, crd.StolonUpgradePhaseBackupPostgres) {
+		res, err = crdclient.MarkPhase(res, crd.StolonUpgradePhaseBackupPostgres, crd.StolonUpgradeStatusInProgress)
+		if err != nil {
+			return trace.Wrap(err)
+		}
+		if err = backupPostgres(config); err != nil {
+			return trace.Wrap(err)
+		}
+		res, err = crdclient.MarkPhase(res, crd.StolonUpgradePhaseBackupPostgres, crd.StolonUpgradeStatusCompleted)
+		if err != nil {
+			return trace.Wrap(err)
+		}
 	}
 	return nil
 }
@@ -109,7 +113,7 @@ func backupPostgres(config Config) error {
 	if err != nil {
 		return trace.Wrap(err, "Command output: %v", string(output))
 	}
-	log.Infof("Backup of Postgres created and stored in %s", config.Postgres.BackupPath)
+	log.Infof("Backed up Postgres to %s", config.Postgres.BackupPath)
 
 	return nil
 }
