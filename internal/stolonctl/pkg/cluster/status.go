@@ -103,3 +103,30 @@ type Status struct {
 	// State of the cluster received from etcd
 	ClusterData *cluster.ClusterData
 }
+
+func (s *Status) getMasterStatus() (*MasterStatus, error) {
+	for _, keeperState := range s.ClusterData.KeepersState {
+		if keeperState.PGState.Role.String() == "master" {
+			for _, pod := range s.PodsStatus {
+				if pod.PodIP == keeperState.ListenAddress {
+					return &MasterStatus{
+						PodName: pod.Name,
+						Healthy: keeperState.Healthy,
+						HostIP:  pod.HostIP,
+					}, nil
+				}
+			}
+		}
+	}
+	return nil, trace.NotFound("stolon keeper master not exists")
+}
+
+// MasterStatus stores information about stolon master
+type MasterStatus struct {
+	// PodName defines name of the stolon-keeper master pod
+	PodName string
+	// Healthy represents information about health of stolon-keeper master PostgreSQL
+	Healthy bool
+	// HostIP defines IP address of host to which the stolon-keeper master pod is assigned
+	HostIP string
+}
