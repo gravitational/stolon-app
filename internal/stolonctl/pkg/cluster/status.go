@@ -29,6 +29,8 @@ import (
 	"k8s.io/api/core/v1"
 )
 
+const stolonKeeperMaster = "master"
+
 // getPods returns list of keeper and sentinel pods
 func getPods(config Config) ([]v1.Pod, error) {
 	client, err := kubernetes.NewClient(config.KubeConfig)
@@ -106,7 +108,7 @@ type Status struct {
 
 func (s *Status) getMasterStatus() (*MasterStatus, error) {
 	for _, keeperState := range s.ClusterData.KeepersState {
-		if keeperState.PGState.Role.String() == "master" {
+		if keeperState.PGState.Role.String() == stolonKeeperMaster {
 			for _, pod := range s.PodsStatus {
 				if pod.PodIP == keeperState.ListenAddress {
 					return &MasterStatus{
@@ -118,15 +120,15 @@ func (s *Status) getMasterStatus() (*MasterStatus, error) {
 			}
 		}
 	}
-	return nil, trace.NotFound("stolon keeper master not exists")
+	return nil, trace.NotFound("stolon keeper master not found")
 }
 
 // MasterStatus stores information about stolon master
 type MasterStatus struct {
 	// PodName defines name of the stolon-keeper master pod
 	PodName string
-	// Healthy represents information about health of stolon-keeper master PostgreSQL
+	// Healthy indicates whether the postgres master is healthy
 	Healthy bool
-	// HostIP defines IP address of host to which the stolon-keeper master pod is assigned
+	// HostIP identifies the node where master pod has been scheduled
 	HostIP string
 }

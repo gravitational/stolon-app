@@ -38,6 +38,7 @@ const (
 	pgRestoreCommand = "pg_restore"
 )
 
+// Upgrade upgrades stolon cluster
 func Upgrade(ctx context.Context, config Config) error {
 	status, err := GetStatus(config)
 	if err != nil {
@@ -45,10 +46,10 @@ func Upgrade(ctx context.Context, config Config) error {
 	}
 	masterStatus, err := status.getMasterStatus()
 	if err != nil {
-		return trace.Wrap(err, "Cannot start upgrade.")
+		return trace.Wrap(err, "cannot start upgrade")
 	}
 	if !masterStatus.Healthy {
-		return trace.Errorf("Cannot start upgrade. Keeper master %s is unhealthy.",
+		return trace.BadParameter("cannot start upgrade, keeper master %s is unhealthy.",
 			masterStatus.PodName)
 	}
 	log.Infof("Keeper master: pod=%s, healthy=%v, host=%s", masterStatus.PodName,
