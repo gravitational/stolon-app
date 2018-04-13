@@ -51,6 +51,8 @@ func Upgrade(ctx context.Context, config Config) error {
 		return trace.Errorf("Cannot start upgrade. Keeper master %s is unhealthy.",
 			masterStatus.PodName)
 	}
+	log.Infof("Keeper master: pod=%s, healthy=%v, host=%s", masterStatus.PodName,
+		masterStatus.Healthy, masterStatus.HostIP)
 
 	client, err := kubernetes.NewClient(config.KubeConfig)
 	if err != nil {
