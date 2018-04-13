@@ -38,7 +38,23 @@ const (
 	pgRestoreCommand = "pg_restore"
 )
 
+// Upgrade upgrades stolon cluster
 func Upgrade(ctx context.Context, config Config) error {
+	status, err := GetStatus(config)
+	if err != nil {
+		return trace.Wrap(err)
+	}
+	masterStatus, err := status.getMasterStatus()
+	if err != nil {
+		return trace.Wrap(err, "cannot start upgrade")
+	}
+	if !masterStatus.Healthy {
+		return trace.BadParameter("cannot start upgrade, keeper master %s is unhealthy.",
+			masterStatus.PodName)
+	}
+	log.Infof("Keeper master: pod=%s, healthy=%v, host=%s", masterStatus.PodName,
+		masterStatus.Healthy, masterStatus.HostIP)
+
 	client, err := kubernetes.NewClient(config.KubeConfig)
 	if err != nil {
 		return trace.Wrap(err)
