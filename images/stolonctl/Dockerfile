@@ -1,7 +1,13 @@
 FROM quay.io/gravitational/debian-grande:0.0.1
 
+ARG CHANGESET
+ARG VERSION
+
 ENV DEBIAN_FRONTEND=noninteractive \
-    TERM=xterm
+    TERM=xterm \
+    RIG_CHANGESET=$CHANGESET \
+    APP_VERSION=$VERSION
+
 
 RUN apt-get update && \
     echo "deb http://deb.debian.org/debian jessie-backports main contrib non-free" > /etc/apt/sources.list.d/jessie-backports.list && \

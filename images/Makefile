@@ -44,7 +44,7 @@ $(STOLONCTL_BINS):
 
 .PHONY: stolonctl
 stolonctl: $(STOLONCTL_BINS)
-	docker build --pull -t $(STOLONCTL_TAG) $(PWD)/stolonctl
+	docker build --pull --build-arg CHANGESET=$(CHANGESET) --build-arg VERSION=$(VERSION) -t $(STOLONCTL_TAG) $(PWD)/stolonctl
 
 .PHONY: uninstall
 uninstall:
