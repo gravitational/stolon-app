@@ -107,17 +107,13 @@ type Status struct {
 }
 
 func (s *Status) getMasterStatus() (*MasterStatus, error) {
-	for _, keeperState := range s.ClusterData.KeepersState {
-		if keeperState.PGState.Role.String() == stolonKeeperMaster {
-			for _, pod := range s.PodsStatus {
-				if pod.PodIP == keeperState.ListenAddress {
-					return &MasterStatus{
-						PodName: pod.Name,
-						Healthy: keeperState.Healthy,
-						HostIP:  pod.HostIP,
-					}, nil
-				}
-			}
+	for _, pod := range s.PodsStatus {
+		if pod.PodIP == s.ClusterData.KeepersState[s.ClusterData.ClusterView.Master].ListenAddress {
+			return &MasterStatus{
+				PodName: pod.Name,
+				Healthy: s.ClusterData.KeepersState[s.ClusterData.ClusterView.Master].Healthy,
+				HostIP:  pod.HostIP,
+			}, nil
 		}
 	}
 	return nil, trace.NotFound("stolon keeper master not found")

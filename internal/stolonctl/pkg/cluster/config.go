@@ -16,7 +16,11 @@ limitations under the License.
 
 package cluster
 
-import "github.com/gravitational/trace"
+import (
+	"strings"
+
+	"github.com/gravitational/trace"
+)
 
 // Config represents configuration of stolon cluster
 type Config struct {
@@ -41,6 +45,10 @@ type Config struct {
 
 	// Name defines name of stolon cluster
 	Name string
+	// NewAppVersion defines new version of application
+	NewAppVersion string
+	// Changeset defines changeset for upgrade
+	Changeset string
 
 	// Postgres stores configuration of PostgreSQL-related parameters
 	Postgres PostgresConfig
@@ -81,6 +89,17 @@ func (c *Config) Check() error {
 		errors = append(errors, err)
 	}
 	return trace.NewAggregate(errors...)
+}
+
+// CheckAndSetDefaultsUpgrade checks configuration for upgrade and set defaults for parameters
+func (c *Config) CheckAndSetDefaultsUpgrade() error {
+	if c.NewAppVersion == "" {
+		return trace.BadParameter("app-version (env 'APP_VERSION') is required for upgrade")
+	}
+	if c.Changeset == "" {
+		c.Changeset = strings.Replace(c.NewAppVersion, ".", "", -1)
+	}
+	return nil
 }
 
 // Check checks provided configuration for PostgreSQL parameters

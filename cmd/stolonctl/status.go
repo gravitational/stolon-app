@@ -30,9 +30,10 @@ import (
 )
 
 var statusCmd = &cobra.Command{
-	Use:   "status",
-	Short: "Show status of PostgreSQL cluster",
-	RunE:  status,
+	Use:          "status",
+	Short:        "Show status of PostgreSQL cluster",
+	SilenceUsage: true,
+	RunE:         status,
 }
 
 func init() {
@@ -84,7 +85,7 @@ func PrintStatus(status *cluster.Status) {
 				keeperID = keeperState.ID
 			}
 		}
-		if keeperID != "" {
+		if keeperID != "" && status.ClusterData.KeepersState[keeperID].PGState != nil {
 			fmt.Fprintf(w, "%s\t%v/%v\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n", pod.Name,
 				pod.ReadyContainers, pod.TotalContainers, pod.Status, pod.PodIP, pod.HostIP,
 				translateTimestamp(*pod.CreationTimestamp), keeperID,

@@ -21,6 +21,8 @@ import (
 	"time"
 
 	"github.com/gravitational/rigging"
+	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/kubernetes"
+	"github.com/gravitational/stolon/pkg/cluster"
 	"github.com/gravitational/trace"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -183,11 +185,17 @@ func (c *Client) MarkPhase(obj *StolonUpgradeResource, phaseName string, phaseSt
 					phase.FinishTimestamp = time.Now().UTC()
 				}
 			}
-			break
 		}
 		phases = append(phases, phase)
 	}
 	obj.Spec.Phases = phases
+	return c.update(obj)
+}
+
+// UpdateClusterInfo updates information about stolon cluster
+func (c *Client) UpdateClusterInfo(obj *StolonUpgradeResource, clusterData cluster.ClusterData, podsStatus []kubernetes.PodStatus) (*StolonUpgradeResource, error) {
+	obj.Spec.ClusterData = clusterData
+	obj.Spec.PodsStatus = podsStatus
 	return c.update(obj)
 }
 
@@ -201,18 +209,45 @@ func (c *Client) IsPhaseCompleted(obj *StolonUpgradeResource, phaseName string) 
 	return false
 }
 
+// CompleteUpgrade marks upgrade as completed
+func (c *Client) CompleteUpgrade(obj *StolonUpgradeResource) (*StolonUpgradeResource, error) {
+	obj.Spec.Status = StolonUpgradeStatusCompleted
+	obj.Spec.FinishTimestamp = time.Now().UTC()
+	return c.update(obj)
+}
+
 func stolonUpgradePhases(creationTime time.Time) []StolonUpgradePhase {
 	return []StolonUpgradePhase{
 		StolonUpgradePhase{
 			Status:            StolonUpgradeStatusInProgress,
 			Name:              StolonUpgradePhaseInit,
-			Description:       "Initialize update operation",
+			Description:       "Initialize upgrade operation",
 			CreationTimestamp: creationTime,
+		},
+		StolonUpgradePhase{
+			Status:      StolonUpgradeStatusUnstarted,
+			Name:        StolonUpgradePhaseChecks,
+			Description: "Checks status of cluster before starting upgrade",
 		},
 		StolonUpgradePhase{
 			Status:      StolonUpgradeStatusUnstarted,
 			Name:        StolonUpgradePhaseBackupPostgres,
 			Description: "Backup stolon PostgreSQL",
+		},
+		StolonUpgradePhase{
+			Status:      StolonUpgradeStatusUnstarted,
+			Name:        StolonUpgradePhaseDeleteDeployment,
+			Description: "Delete stolon-sentinel deployment",
+		},
+		StolonUpgradePhase{
+			Status:      StolonUpgradeStatusUnstarted,
+			Name:        StolonUpgradePhaseDeleteDaemonset,
+			Description: "Delete stolon-keeper daemonset",
+		},
+		StolonUpgradePhase{
+			Status:      StolonUpgradeStatusUnstarted,
+			Name:        StolonUpgradePhaseUpgradePostgresSchema,
+			Description: "Upgrade PostgreSQL schema on master pod",
 		},
 	}
 }

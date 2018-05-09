@@ -42,6 +42,8 @@ var (
 		"ETCD_CACERT":       "etcd-ca-file",
 		"ETCD_ENDPOINTS":    "etcd-endpoints",
 		"POSTGRES_PASSWORD": "postgres-password",
+		"APP_VERSION":       "app-version",
+		"RIG_CHANGESET":     "changeset",
 	}
 
 	stolonctlCmd = &cobra.Command{

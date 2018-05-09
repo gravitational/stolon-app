@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/kubernetes"
+	"github.com/gravitational/stolon/pkg/cluster"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -58,6 +60,10 @@ func (cr *StolonUpgradeResource) String() string {
 type StolonUpgradeSpec struct {
 	// Status is a status of stolon upgrade
 	Status string `json:"status"`
+	// ClusterData is an information about the cluster received from etcd
+	ClusterData cluster.ClusterData `json:"clusterData"`
+	// PodsStatus represents information about stolon pods
+	PodsStatus []kubernetes.PodStatus `json:"podStatus"`
 	// Phases is a list of phases to upgrade stolon
 	Phases []StolonUpgradePhase `json:"phases"`
 	// CreationTimestamp is a starting time of upgrade

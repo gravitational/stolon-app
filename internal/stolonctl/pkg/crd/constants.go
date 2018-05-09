@@ -43,7 +43,10 @@ const (
 	StolonUpgradeStatusCompleted  = "Completed"
 
 	// Phases of stolon upgrade
-	StolonUpgradePhaseInit           = "init"
-	StolonUpgradePhaseBackupPostgres = "backup-postgres"
-	StolonUpgradePhaseBackupEtcd     = "backup-etcd"
+	StolonUpgradePhaseInit                  = "init"
+	StolonUpgradePhaseChecks                = "checks"
+	StolonUpgradePhaseBackupPostgres        = "backup-postgres"
+	StolonUpgradePhaseDeleteDeployment      = "delete-deployment"
+	StolonUpgradePhaseDeleteDaemonset       = "delete-daemonset"
+	StolonUpgradePhaseUpgradePostgresSchema = "upgrade-postgres-schema"
 )
