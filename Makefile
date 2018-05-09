@@ -32,14 +32,8 @@ IMPORT_OPTIONS := --vendor \
 		--name=$(NAME) \
 		--version=$(VERSION) \
 		--glob=**/*.yaml \
-		--exclude="build" \
-		--exclude=".git" \
-		--exclude="cmd" \
-		--exclude="vendor" \
-		--exclude="Makefile" \
-		--exclude="images" \
-		--exclude="gravity.log" \
-		--ignore=images \
+		--include="resources" \
+		--include="registry" \
 		$(IMPORT_IMAGE_OPTIONS)
 
 TELE_BUILD_OPTIONS := --insecure \
@@ -50,7 +44,7 @@ TELE_BUILD_OPTIONS := --insecure \
                 --ignore=".git" \
                 --ignore="images" \
                 --ignore="cmd" \
-                --ignore="vendor" \
+                --ignore="vendor/**/*.yaml" \
                 $(IMPORT_IMAGE_OPTIONS)
 
 BUILD_DIR := build
