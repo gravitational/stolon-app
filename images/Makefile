@@ -8,7 +8,7 @@ JOBS_TAG := stolon-jobs:$(VERSION)
 STOLON_TAG := stolon:$(VERSION)
 TELEGRAF_TAG := stolon-telegraf:$(VERSION)
 TELEGRAF_NODE_TAG := stolon-telegraf-node:$(VERSION)
-STOLONCTL_TAG := quay.io/gravitational/stolonctl:latest
+STOLONCTL_TAG := stolonctl:$(VERSION)
 
 .PHONY: images
 images: bootstrap \
@@ -17,7 +17,8 @@ images: bootstrap \
 		telegraf \
 		telegraf-node \
 		hook \
-		jobs
+		jobs \
+		stolonctl
 	docker tag $(BOOTSTRAP_TAG) stolon-bootstrap:latest
 	docker tag $(UNINSTALL_TAG) stolon-uninstall:latest
 	docker tag $(STOLON_TAG) stolon:latest
@@ -25,6 +26,7 @@ images: bootstrap \
 	docker tag $(JOBS_TAG) stolon-jobs:latest
 	docker tag $(TELEGRAF_TAG) stolon-telegraf:latest
 	docker tag $(TELEGRAF_NODE_TAG) stolon-telegraf-node:latest
+	docker tag $(STOLONCTL_TAG) stolonctl:latest
 
 STOLONBOOT_BINS := bootstrap/bin
 $(STOLONBOOT_BINS):

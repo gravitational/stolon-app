@@ -24,7 +24,7 @@ spec:
         runAsUser: 0
       containers:
         - name: stolonctl
-          image: quay.io/gravitational/stolonctl:latest
+          image: stolonctl:latest
           imagePullPolicy: Always
           env:
             - name: NODE_NAME
