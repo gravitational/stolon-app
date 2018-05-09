@@ -3,12 +3,22 @@ apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
   name: stolonctl
+  namespace: default
+  labels:
+    app: stolon
+    component: stolonctl
 spec:
+  selector:
+    matchLabels:
+      app: stolon
+      component: stolonctl
   replicas: 1
   template:
     metadata:
+      namespace: default
       labels:
-        app: stolonctl
+        app: stolon
+        component: stolonctl
     spec:
       securityContext:
         runAsUser: 0

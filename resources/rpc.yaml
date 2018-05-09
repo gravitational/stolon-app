@@ -83,6 +83,10 @@ metadata:
   name: stolon-rpc
   namespace: default
 spec:
+  selector:
+    matchLabels:
+      name: stolon-rpc
+      stolon-rpc: "yes"
   replicas: 1
   template:
     metadata:

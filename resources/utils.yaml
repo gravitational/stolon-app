@@ -64,6 +64,10 @@ metadata:
   name: stolon-utils
   namespace: default
 spec:
+  selector:
+    matchLabels:
+      name: stolon-utils
+      stolon-utils: "yes"
   replicas: 1
   template:
     metadata:
