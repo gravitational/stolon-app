@@ -36,6 +36,7 @@ IMPORT_OPTIONS := --vendor \
 		--glob=**/*.yaml \
 		--include="resources" \
 		--include="registry" \
+		--registry-url=leader.telekube.local:5000 \
 		$(IMPORT_IMAGE_OPTIONS)
 
 TELE_BUILD_OPTIONS := --insecure \

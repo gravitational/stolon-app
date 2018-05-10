@@ -74,7 +74,7 @@ spec:
       serviceAccountName: stolon-backup
       containers:
       - name: backup
-        image: apiserver:5000/stolon:latest
+        image: stolon:latest
         args: ["db", "backup", "{{STOLON_BACKUP_DB}}", "/backups"]
         env:
           - name: CTL
