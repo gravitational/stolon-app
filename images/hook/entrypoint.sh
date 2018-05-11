@@ -9,6 +9,7 @@ if [ $1 = "update" ]; then
     rig cs delete --force -c cs/$RIG_CHANGESET
 
     echo "Upgrade keeper postgres schema"
+    rig delete deployments/stolonctl --force
     rig upsert -f /var/lib/gravity/resources/stolonctl.yaml --debug
 
     while ! kubectl get pod | grep stolonctl | grep -q Running
