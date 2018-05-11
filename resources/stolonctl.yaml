@@ -1,5 +1,5 @@
 ---
-apiVersion: apps/v1beta1
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: stolonctl
@@ -25,7 +25,6 @@ spec:
       containers:
         - name: stolonctl
           image: stolonctl:latest
-          imagePullPolicy: Always
           env:
             - name: NODE_NAME
               valueFrom:
