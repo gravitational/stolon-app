@@ -21,8 +21,6 @@ import (
 	"time"
 
 	"github.com/gravitational/rigging"
-	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/kubernetes"
-	"github.com/gravitational/stolon/pkg/cluster"
 	"github.com/gravitational/trace"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -193,9 +191,8 @@ func (c *Client) MarkPhase(obj *StolonUpgradeResource, phaseName string, phaseSt
 }
 
 // UpdateClusterInfo updates information about stolon cluster
-func (c *Client) UpdateClusterInfo(obj *StolonUpgradeResource, clusterData cluster.ClusterData, podsStatus []kubernetes.PodStatus) (*StolonUpgradeResource, error) {
-	obj.Spec.ClusterData = clusterData
-	obj.Spec.PodsStatus = podsStatus
+func (c *Client) UpdateClusterInfo(obj *StolonUpgradeResource, clusterInfo ClusterInfo) (*StolonUpgradeResource, error) {
+	obj.Spec.ClusterInfo = clusterInfo
 	return c.update(obj)
 }
 

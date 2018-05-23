@@ -36,6 +36,8 @@ IMPORT_OPTIONS := --vendor \
 		--glob=**/*.yaml \
 		--include="resources" \
 		--include="registry" \
+		--ignore="images" \
+		--ignore="vendor/**/*.yaml" \
 		--registry-url=leader.telekube.local:5000 \
 		$(IMPORT_IMAGE_OPTIONS)
 

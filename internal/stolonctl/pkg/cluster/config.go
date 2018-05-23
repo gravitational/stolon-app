@@ -45,13 +45,11 @@ type Config struct {
 
 	// Name defines name of stolon cluster
 	Name string
-	// NewAppVersion defines new version of application
-	NewAppVersion string
-	// Changeset defines changeset for upgrade
-	Changeset string
 
 	// Postgres stores configuration of PostgreSQL-related parameters
 	Postgres PostgresConfig
+	// Upgrade stores configuration for upgrading the cluster
+	Upgrade UpgradeConfig
 }
 
 // PostgresConfig stores configuration of PostgreSQL-related parameters
@@ -70,8 +68,16 @@ type PostgresConfig struct {
 	PgPassPath string
 }
 
-// Check checks provided configuration
-func (c *Config) Check() error {
+// UpgradeConfig defines configuration used for upgrade
+type UpgradeConfig struct {
+	// NewAppVersion defines new version of application
+	NewAppVersion string
+	// Changeset defines the name of the changeset for upgrade as used by rig
+	Changeset string
+}
+
+// CheckAndSetDefaults validates this configuration object and sets defaults
+func (c *Config) CheckAndSetDefaults() error {
 	var errors []error
 	if c.EtcdCertFile == "" {
 		errors = append(errors, trace.BadParameter("etcd-cert-file (env 'ETCD_CERT') is required"))
@@ -88,11 +94,17 @@ func (c *Config) Check() error {
 	if err := c.Postgres.Check(); err != nil {
 		errors = append(errors, err)
 	}
+	if err := c.Upgrade.CheckAndSetDefaults(); err != nil {
+		errors = append(errors, err)
+	}
 	return trace.NewAggregate(errors...)
 }
 
-// CheckAndSetDefaultsUpgrade checks configuration for upgrade and set defaults for parameters
-func (c *Config) CheckAndSetDefaultsUpgrade() error {
+// CheckAndSetDefaults validates this configuration object and sets defaults
+func (c *UpgradeConfig) CheckAndSetDefaults() error {
+	if c == nil {
+		return nil
+	}
 	if c.NewAppVersion == "" {
 		return trace.BadParameter("app-version (env 'APP_VERSION') is required for upgrade")
 	}
@@ -104,6 +116,9 @@ func (c *Config) CheckAndSetDefaultsUpgrade() error {
 
 // Check checks provided configuration for PostgreSQL parameters
 func (c *PostgresConfig) Check() error {
+	if c == nil {
+		return nil
+	}
 	var errors []error
 	if c.Host == "" {
 		errors = append(errors, trace.BadParameter("postgres-host is required"))

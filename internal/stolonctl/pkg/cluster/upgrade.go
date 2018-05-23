@@ -43,6 +43,8 @@ const (
 	stolonKeeperDaemonset     = "stolon-keeper"
 	stolonSentinelDeployment  = "stolon-sentinel"
 	jobTimeout                = 600 // 10 minutes
+	jobCompletionCheckPeriod  = 10 * time.Second
+	jobCompletionCheckTimes   = 60 // 10 minutes with checks every 10 seconds
 	volumeData                = "data"
 	volumeDataHostPath        = "/var/lib/data/stolon"
 	volumeDataMountPath       = "/stolon-data"
@@ -52,6 +54,8 @@ const (
 	volumeDefaultSSLMountPath = "/etc/ssl/cluster-default"
 	pgMaster                  = "master"
 	pgStandby                 = "standby"
+	pgUpgrade                 = "upgrade"
+	pgRollback                = "rollback"
 )
 
 // upgradeControl defines configuration for upgrade
@@ -105,7 +109,7 @@ func Upgrade(ctx context.Context, config Config) error {
 		}
 	}
 	// Check status of cluster
-	res, err = upgradeControl.checkStatus(res, crd.StolonUpgradePhaseChecks)
+	res, err = upgradeControl.checkClusterStatus(res, crd.StolonUpgradePhaseChecks)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -138,14 +142,12 @@ func Upgrade(ctx context.Context, config Config) error {
 
 	// Create job to upgrade PostgreSQL schema on keeper master
 	res, err = upgradeControl.executePhase(res, crd.StolonUpgradePhaseUpgradePostgresSchema, func() error {
-		var masterNodeName string
+		masterNodeName := res.Spec.ClusterInfo.MasterStatus.HostIP
 		standbyNodeNames := make(map[string]string)
-		for _, pod := range res.Spec.PodsStatus {
-			if pod.PodIP == res.Spec.ClusterData.KeepersState[res.Spec.ClusterData.ClusterView.Master].ListenAddress {
-				masterNodeName = pod.HostIP
-			} else {
-				for _, keeperState := range res.Spec.ClusterData.KeepersState {
-					if pod.PodIP == keeperState.ListenAddress {
+		for _, pod := range res.Spec.ClusterInfo.PodsStatus {
+			if pod.PodIP != res.Spec.ClusterInfo.MasterStatus.PodIP {
+				for _, keeperState := range res.Spec.ClusterInfo.ClusterData.KeepersState {
+					if pod.PodIP != "" && pod.PodIP == keeperState.ListenAddress {
 						standbyNodeNames[keeperState.ID] = pod.HostIP
 					}
 				}
@@ -153,12 +155,12 @@ func Upgrade(ctx context.Context, config Config) error {
 		}
 
 		log.Infof("master: %s, standbys: %v\n", masterNodeName, standbyNodeNames)
-		if masterNodeName == "" {
-			return trace.BadParameter("IP address of keeper master pod is empty")
-		}
 		err := upgradeControl.upgradePostgresSchema(ctx, pgMaster, masterNodeName, "")
 		if err != nil {
-			return trace.Wrap(err)
+			err = upgradeControl.rollbackPostgresSchema(ctx, pgMaster, masterNodeName, "")
+			if err != nil {
+				return trace.Wrap(err)
+			}
 		}
 		for id, standbyNodeName := range standbyNodeNames {
 			err = upgradeControl.upgradePostgresSchema(ctx, pgStandby, standbyNodeName, id)
@@ -180,56 +182,65 @@ func Upgrade(ctx context.Context, config Config) error {
 }
 
 func (u *upgradeControl) executePhase(res *crd.StolonUpgradeResource, phase string, fn func() error) (*crd.StolonUpgradeResource, error) {
+	if u.crdClient.IsPhaseCompleted(res, phase) {
+		return res, nil
+	}
+
 	var err error
-	if !u.crdClient.IsPhaseCompleted(res, phase) {
-		res, err = u.crdClient.MarkPhase(res, phase, crd.StolonUpgradeStatusInProgress)
-		if err != nil {
-			return nil, trace.Wrap(err)
-		}
-		if err := fn(); err != nil {
-			return nil, trace.Wrap(err)
-		}
-		res, err = u.crdClient.MarkPhase(res, phase, crd.StolonUpgradeStatusCompleted)
-		if err != nil {
-			return nil, trace.Wrap(err)
-		}
+	res, err = u.crdClient.MarkPhase(res, phase, crd.StolonUpgradeStatusInProgress)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	if err := fn(); err != nil {
+		return nil, trace.Wrap(err)
+	}
+	res, err = u.crdClient.MarkPhase(res, phase, crd.StolonUpgradeStatusCompleted)
+	if err != nil {
+		return nil, trace.Wrap(err)
 	}
 	return res, nil
 }
 
-func (u *upgradeControl) checkStatus(res *crd.StolonUpgradeResource, phase string) (*crd.StolonUpgradeResource, error) {
+func (u *upgradeControl) checkClusterStatus(res *crd.StolonUpgradeResource, phase string) (*crd.StolonUpgradeResource, error) {
+	if u.crdClient.IsPhaseCompleted(res, phase) {
+		return res, nil
+	}
+
 	var err error
-	if !u.crdClient.IsPhaseCompleted(res, phase) {
-		res, err = u.crdClient.MarkPhase(res, phase, crd.StolonUpgradeStatusInProgress)
-		if err != nil {
-			return nil, trace.Wrap(err)
-		}
+	res, err = u.crdClient.MarkPhase(res, phase, crd.StolonUpgradeStatusInProgress)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
 
-		status, err := GetStatus(u.config)
-		if err != nil {
-			return nil, trace.Wrap(err)
-		}
-		masterStatus, err := status.getMasterStatus()
-		if err != nil {
-			return nil, trace.Wrap(err, "cannot start upgrade")
-		}
+	status, err := GetStatus(u.config)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	masterStatus, err := status.getMasterStatus()
+	if err != nil {
+		return nil, trace.Wrap(err, "cannot start upgrade")
+	}
 
-		if !masterStatus.Healthy {
-			return nil, trace.BadParameter("cannot start upgrade, keeper master %s is unhealthy.",
-				masterStatus.PodName)
-		}
-		log.Infof("Keeper master: pod=%s, healthy=%v, host=%s", masterStatus.PodName,
-			masterStatus.Healthy, masterStatus.HostIP)
+	if !masterStatus.Healthy {
+		return nil, trace.BadParameter("cannot start upgrade, keeper master %s is unhealthy.",
+			masterStatus.PodName)
+	}
+	log.Infof("Keeper master: pod=%s, healthy=%v, host=%s", masterStatus.PodName,
+		masterStatus.Healthy, masterStatus.HostIP)
 
-		res, err = u.crdClient.UpdateClusterInfo(res, *status.ClusterData, status.PodsStatus)
-		if err != nil {
-			return nil, trace.Wrap(err)
-		}
+	clusterInfo := crd.ClusterInfo{
+		ClusterData:  *status.ClusterData,
+		PodsStatus:   status.PodsStatus,
+		MasterStatus: *masterStatus,
+	}
+	res, err = u.crdClient.UpdateClusterInfo(res, clusterInfo)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
 
-		res, err = u.crdClient.MarkPhase(res, phase, crd.StolonUpgradeStatusCompleted)
-		if err != nil {
-			return nil, trace.Wrap(err)
-		}
+	res, err = u.crdClient.MarkPhase(res, phase, crd.StolonUpgradeStatusCompleted)
+	if err != nil {
+		return nil, trace.Wrap(err)
 	}
 	return res, nil
 }
@@ -273,7 +284,7 @@ func (u *upgradeControl) deleteDeployment(name string) error {
 		PropagationPolicy: &deletePolicy,
 	})
 	if err != nil {
-		return trace.Wrap(err, "cannot delete stolon-sentinel deployment")
+		return rigging.ConvertErrorWithContext(err, "cannot delete stolon-sentinel deployment")
 	}
 	return nil
 }
@@ -286,13 +297,45 @@ func (u *upgradeControl) deleteDaemonset(name string) error {
 		PropagationPolicy: &deletePolicy,
 	})
 	if err != nil {
-		return trace.Wrap(err, "cannot delete stolon-keeper daemonset")
+		return rigging.ConvertErrorWithContext(err, "cannot delete stolon-keeper daemonset")
 	}
 	return nil
 }
 
 func (u *upgradeControl) upgradePostgresSchema(ctx context.Context, pgRole, nodeName, id string) error {
-	jobControl, err := rigging.NewJobControl(rigging.JobConfig{u.generateJob(pgRole, nodeName, id), u.kubeClient.Client})
+	jobCfg := jobConfig{
+		id:           id,
+		nodeName:     nodeName,
+		postgresRole: pgRole,
+		command:      pgUpgrade,
+	}
+	jobControl, err := rigging.NewJobControl(
+		rigging.JobConfig{
+			Job:       u.generateJob(jobCfg),
+			Clientset: u.kubeClient.Client,
+		})
+	if err != nil {
+		return trace.Wrap(err)
+	}
+
+	if err := jobControl.Upsert(ctx); err != nil {
+		return trace.Wrap(err)
+	}
+	// wait 5 minutes for completed status of Job
+	return utils.Retry(ctx, jobCompletionCheckTimes, jobCompletionCheckPeriod, func() error {
+		err := jobControl.Status()
+		return err
+	})
+}
+
+func (u *upgradeControl) rollbackPostgresSchema(ctx context.Context, pgRole, nodeName, id string) error {
+	jobCfg := jobConfig{
+		id:           id,
+		nodeName:     nodeName,
+		postgresRole: pgRole,
+		command:      pgRollback,
+	}
+	jobControl, err := rigging.NewJobControl(rigging.JobConfig{u.generateJob(jobCfg), u.kubeClient.Client})
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -300,23 +343,27 @@ func (u *upgradeControl) upgradePostgresSchema(ctx context.Context, pgRole, node
 		return trace.Wrap(err)
 	}
 	// wait 5 minutes for completed status of Job
-	return utils.Retry(ctx, 300, time.Second, func() error {
+	return utils.Retry(ctx, jobCompletionCheckTimes, jobCompletionCheckPeriod, func() error {
 		err := jobControl.Status()
 		return err
 	})
 }
 
-func (u *upgradeControl) generateJob(pgRole, nodeName, id string) *batchv1.Job {
+func (u *upgradeControl) generateJob(jobConfig jobConfig) *batchv1.Job {
 	var jobName string
-	if pgRole == pgMaster {
-		jobName = fmt.Sprintf("stolon-keeper-schema-upgrade-%s-%s", pgRole, u.config.Changeset)
-	} else {
-		jobName = fmt.Sprintf("stolon-keeper-schema-upgrade-%s-%s-%s", pgRole, id, u.config.Changeset)
-	}
 	command := "/usr/local/bin/keeper-upgrade.sh"
-	if pgRole == pgStandby {
+	if jobConfig.postgresRole == pgMaster {
+		if jobConfig.command == pgUpgrade {
+			jobName = fmt.Sprintf("stolon-keeper-schema-upgrade-%s-%s", jobConfig.postgresRole, u.config.Upgrade.Changeset)
+		} else {
+			jobName = fmt.Sprintf("stolon-keeper-schema-rollback-%s-%s", jobConfig.postgresRole, u.config.Upgrade.Changeset)
+			command = "/usr/local/bin/move-postgres-data.sh"
+		}
+	} else {
+		jobName = fmt.Sprintf("stolon-keeper-schema-upgrade-%s-%s-%s", jobConfig.postgresRole, jobConfig.id, u.config.Upgrade.Changeset)
 		command = "/usr/local/bin/clean-postgres-data.sh"
 	}
+
 	return &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      jobName,
@@ -359,7 +406,7 @@ func (u *upgradeControl) generateJob(pgRole, nodeName, id string) *batchv1.Job {
 						},
 					},
 					RestartPolicy: apiv1.RestartPolicyNever,
-					NodeName:      nodeName,
+					NodeName:      jobConfig.nodeName,
 					SecurityContext: &apiv1.PodSecurityContext{
 						RunAsUser: int64Ptr(0),
 					},
@@ -367,7 +414,7 @@ func (u *upgradeControl) generateJob(pgRole, nodeName, id string) *batchv1.Job {
 					Containers: []apiv1.Container{
 						{
 							Name:    "upgrade",
-							Image:   fmt.Sprintf("leader.telekube.local:5000/stolon-jobs:%s", u.config.NewAppVersion),
+							Image:   fmt.Sprintf("leader.telekube.local:5000/stolon-jobs:%s", u.config.Upgrade.NewAppVersion),
 							Command: []string{command},
 							VolumeMounts: []apiv1.VolumeMount{
 								{
@@ -389,6 +436,17 @@ func (u *upgradeControl) generateJob(pgRole, nodeName, id string) *batchv1.Job {
 			},
 		},
 	}
+}
+
+type jobConfig struct {
+	// id represents identification number of job
+	id string
+	// nodeName represents kubernetes node where job will be execute
+	nodeName string
+	// postgresRole represents postgresql role
+	postgresRole string
+	// command defines custom command for container
+	command string
 }
 
 func int64Ptr(i int64) *int64 { return &i }

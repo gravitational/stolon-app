@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
 echo "Assuming changeset from the envrionment: $RIG_CHANGESET"
@@ -8,16 +8,17 @@ if [ $1 = "update" ]; then
     echo "Starting update, changeset: $RIG_CHANGESET"
     rig cs delete --force -c cs/$RIG_CHANGESET
 
-    echo "Upgrade keeper postgres schema"
+    echo "Upgrade keeper database schema"
     rig delete deployments/stolonctl --force
     rig upsert -f /var/lib/gravity/resources/stolonctl.yaml --debug
 
-    while ! kubectl get pod | grep stolonctl | grep -q Running
+    while [ ! $(kubectl get pod -l app=stolon,component=stolonctl -o jsonpath='{.items[0].status.phase}') == "Running" ]
     do
-        echo "waiting starting of stolonctl pod"
+        echo "waiting for stolonctl Pod to start"
     done
+
     stolonctl_pod=$(kubectl get pod -l app=stolon,component=stolonctl -o jsonpath='{.items[0].metadata.name}')
-    kubectl exec $stolonctl_pod -- stolonctl upgrade
+    if ! kubectl exec $stolonctl_pod -- stolonctl upgrade; then exit 1; fi
 
     echo "Delete old resources"
     rig delete ds/stolon-keeper --force

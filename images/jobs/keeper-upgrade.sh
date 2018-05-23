@@ -2,13 +2,22 @@
 # -*- mode: sh; -*-
 
 # File: entrypoint.sh
-# Time-stamp: <2018-05-08 19:31:35>
-# Copyright (C) 2018 Sergei Antipov
+# Time-stamp: <2018-05-22 17:05:45>
+# Copyright (C) 2018 Gravitational Inc
 # Description:
 
 set -o xtrace
 set -o nounset
 set -o errexit
+
+# delete old versions of data directories
+for dir in $(ls -d /stolon-data/postgres-old-* 2>/dev/null)
+do
+    if [ -f $dir/PG_VERSION ] && [ $(cat $dir/PG_VERSION) != $PG_VERSION_OLD ] && [ $(cat $dir/PG_VERSION) != $PG_VERSION_NEW ]
+    then
+        rm -rf $dir
+    fi
+done
 
 # fix permissions for ssl
 cp -R /etc/ssl/cluster-default /etc/ssl/cluster-default-postgres
@@ -25,6 +34,7 @@ if [ ! -f /stolon-data/upgrade-state/delete_old_cluster.sh ]; then
     gosu stolon cp /stolon-data/postgres/pg_hba.conf /stolon-data/postgres-new/pg_hba.conf
     gosu stolon rsync -av /stolon-data/postgres/conf.d /stolon-data/postgres-new/
     gosu stolon rsync -av /stolon-data/postgres/postgresql-base.conf /stolon-data/postgres-new/
-    gosu stolon mv /stolon-data/postgres /stolon-data/postgres-old
+    if [ -d /stolon-data/postgres-old-$PG_VERSION_OLD ]; then rm -rf /stolon-data/postgres-old-$PG_VERSION_OLD; fi
+    gosu stolon mv /stolon-data/postgres /stolon-data/postgres-old-$PG_VERSION_OLD
     gosu stolon mv /stolon-data/postgres-new /stolon-data/postgres
 fi
