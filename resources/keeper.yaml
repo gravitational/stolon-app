@@ -109,7 +109,7 @@ spec:
         stolon-keeper: "yes"
       containers:
         - name: telegraf
-          image: apiserver:5000/stolon-telegraf-node:latest
+          image: stolon-telegraf-node:latest
           env:
             - name: STOLON_USERNAME
               value: "stolon"
@@ -131,7 +131,7 @@ spec:
             - name: gravity-log
               mountPath: /var/log
         - name: proxy
-          image: apiserver:5000/stolon:latest
+          image: stolon:latest
           ports:
             - containerPort: 5434
           readinessProbe:
@@ -180,7 +180,7 @@ spec:
                 fieldRef:
                   fieldPath: spec.nodeName
         - name: keeper
-          image: apiserver:5000/stolon:latest
+          image: stolon:latest
           ports:
             - containerPort: 5431
             - containerPort: 5432

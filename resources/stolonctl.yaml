@@ -1,21 +1,30 @@
 ---
-apiVersion: apps/v1beta1
+apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: stolonctl
+  namespace: default
+  labels:
+    app: stolon
+    component: stolonctl
 spec:
+  selector:
+    matchLabels:
+      app: stolon
+      component: stolonctl
   replicas: 1
   template:
     metadata:
+      namespace: default
       labels:
-        app: stolonctl
+        app: stolon
+        component: stolonctl
     spec:
       securityContext:
         runAsUser: 0
       containers:
         - name: stolonctl
-          image: quay.io/gravitational/stolonctl:latest
-          imagePullPolicy: Always
+          image: stolonctl:latest
           env:
             - name: NODE_NAME
               valueFrom:

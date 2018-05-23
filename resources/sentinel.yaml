@@ -64,6 +64,10 @@ metadata:
   name: stolon-sentinel
   namespace: default
 spec:
+  selector:
+    matchLabels:
+      name: stolon-sentinel
+      stolon-sentinel: "yes"
   replicas: 1
   template:
     metadata:
@@ -83,7 +87,7 @@ spec:
         stolon-keeper: "yes"
       containers:
       - name: sentinel
-        image: apiserver:5000/stolon:latest
+        image: stolon:latest
         env:
           - name: SENTINEL
             value: "true"

@@ -26,9 +26,10 @@ import (
 
 var (
 	upgradeCmd = &cobra.Command{
-		Use:   "upgrade",
-		Short: "Upgrade stolon application",
-		RunE:  upgrade,
+		Use:          "upgrade",
+		Short:        "Upgrade stolon application",
+		SilenceUsage: true,
+		RunE:         upgrade,
 	}
 )
 
@@ -47,12 +48,16 @@ func init() {
 		"Path to store backup of stolon PostgreSQL data")
 	upgradeCmd.Flags().StringVar(&clusterConfig.Postgres.PgPassPath, "postgres-pgpass-path",
 		defaults.PostgresPgPassPath, "Path to store the password file for PostgresQL")
+	upgradeCmd.Flags().StringVar(&clusterConfig.Upgrade.NewAppVersion, "app-version",
+		"", "Version of application to upgrade to")
+	upgradeCmd.Flags().StringVar(&clusterConfig.Upgrade.Changeset, "changeset",
+		"", "Changeset of upgrade")
 
 	bindFlagEnv(upgradeCmd.Flags())
 }
 
 func upgrade(ccmd *cobra.Command, args []string) error {
-	if err := clusterConfig.Check(); err != nil {
+	if err := clusterConfig.CheckAndSetDefaults(); err != nil {
 		return trace.Wrap(err)
 	}
 

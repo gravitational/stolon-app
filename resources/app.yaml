@@ -114,6 +114,9 @@ hooks:
               - name: varstate
                 hostPath:
                   path: /var/state
+              - name: backup
+                hostPath:
+                  path: /var/lib/data/stolon-backup
             containers:
               - name: hook
                 image: stolon-hook:latest
@@ -127,11 +130,20 @@ hooks:
                     value: "/var/state/etcd.key"
                   - name: ETCDCTL_PEERS
                     value: "https://127.0.0.1:2379"
+                  - name: ETCD_ENDPOINTS
+                    value: "127.0.0.1:2379"
+                  - name: POSTGRES_PASSWORD
+                    valueFrom:
+                      secretKeyRef:
+                        name: stolon
+                        key: password
                 volumeMounts:
                   - name: etcdctl
                     mountPath: /usr/bin/etcdctl
                   - name: varstate
                     mountPath: /var/state
+                  - name: backup
+                    mountPath: /stolon
   rollback:
     job: |
       apiVersion: batch/v1

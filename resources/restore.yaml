@@ -76,7 +76,7 @@ spec:
         stolon-keeper: "yes"
       containers:
       - name: restore
-        image: apiserver:5000/stolon:latest
+        image: stolon:latest
         args: ["db", "restore", "{{STOLON_BACKUP_FILE}}"]
         env:
           - name: CTL

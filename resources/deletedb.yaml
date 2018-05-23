@@ -74,7 +74,7 @@ spec:
         runAsUser: 0
       containers:
       - name: deletedb
-        image: apiserver:5000/stolon:latest
+        image: stolon:latest
         args: ["db", "delete", "{{STOLON_DELETE_DB}}"]
         env:
           - name: CTL

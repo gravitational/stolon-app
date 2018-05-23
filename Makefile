@@ -15,7 +15,8 @@ CONTAINERS := stolon-bootstrap:$(VERSION) \
 			  stolon-jobs:$(VERSION) \
 			  stolon:$(VERSION) \
 			  stolon-telegraf:$(VERSION) \
-			  stolon-telegraf-node:$(VERSION)
+			  stolon-telegraf-node:$(VERSION) \
+			  stolonctl:$(VERSION)
 
 IMPORT_IMAGE_OPTIONS := --set-image=stolon-bootstrap:$(VERSION) \
 	--set-image=stolon-uninstall:$(VERSION) \
@@ -23,7 +24,8 @@ IMPORT_IMAGE_OPTIONS := --set-image=stolon-bootstrap:$(VERSION) \
 	--set-image=stolon-jobs:$(VERSION) \
 	--set-image=stolon:$(VERSION) \
 	--set-image=stolon-telegraf:$(VERSION) \
-	--set-image=stolon-telegraf-node:$(VERSION)
+	--set-image=stolon-telegraf-node:$(VERSION) \
+	--set-image=stolonctl:$(VERSION)
 
 IMPORT_OPTIONS := --vendor \
 		--ops-url=$(OPS_URL) \
@@ -32,14 +34,11 @@ IMPORT_OPTIONS := --vendor \
 		--name=$(NAME) \
 		--version=$(VERSION) \
 		--glob=**/*.yaml \
-		--exclude="build" \
-		--exclude=".git" \
-		--exclude="cmd" \
-		--exclude="vendor" \
-		--exclude="Makefile" \
-		--exclude="images" \
-		--exclude="gravity.log" \
-		--ignore=images \
+		--include="resources" \
+		--include="registry" \
+		--ignore="images" \
+		--ignore="vendor/**/*.yaml" \
+		--registry-url=leader.telekube.local:5000 \
 		$(IMPORT_IMAGE_OPTIONS)
 
 TELE_BUILD_OPTIONS := --insecure \
@@ -50,7 +49,7 @@ TELE_BUILD_OPTIONS := --insecure \
                 --ignore=".git" \
                 --ignore="images" \
                 --ignore="cmd" \
-                --ignore="vendor" \
+                --ignore="vendor/**/*.yaml" \
                 $(IMPORT_IMAGE_OPTIONS)
 
 BUILD_DIR := build

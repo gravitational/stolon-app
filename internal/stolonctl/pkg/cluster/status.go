@@ -19,6 +19,7 @@ package cluster
 import (
 	"path/filepath"
 
+	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/crd"
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/defaults"
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/kubernetes"
 
@@ -106,29 +107,18 @@ type Status struct {
 	ClusterData *cluster.ClusterData
 }
 
-func (s *Status) getMasterStatus() (*MasterStatus, error) {
-	for _, keeperState := range s.ClusterData.KeepersState {
-		if keeperState.PGState.Role.String() == stolonKeeperMaster {
-			for _, pod := range s.PodsStatus {
-				if pod.PodIP == keeperState.ListenAddress {
-					return &MasterStatus{
-						PodName: pod.Name,
-						Healthy: keeperState.Healthy,
-						HostIP:  pod.HostIP,
-					}, nil
-				}
+func (s *Status) getMasterStatus() (*crd.MasterStatus, error) {
+	for _, pod := range s.PodsStatus {
+		if master := s.ClusterData.KeepersState[s.ClusterData.ClusterView.Master]; master != nil {
+			if pod.PodIP == master.ListenAddress {
+				return &crd.MasterStatus{
+					PodName: pod.Name,
+					Healthy: master.Healthy,
+					HostIP:  pod.HostIP,
+					PodIP:   pod.PodIP,
+				}, nil
 			}
 		}
 	}
 	return nil, trace.NotFound("stolon keeper master not found")
-}
-
-// MasterStatus stores information about stolon master
-type MasterStatus struct {
-	// PodName defines name of the stolon-keeper master pod
-	PodName string
-	// Healthy indicates whether the postgres master is healthy
-	Healthy bool
-	// HostIP identifies the node where master pod has been scheduled
-	HostIP string
 }

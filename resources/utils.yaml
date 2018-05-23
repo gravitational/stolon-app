@@ -64,6 +64,10 @@ metadata:
   name: stolon-utils
   namespace: default
 spec:
+  selector:
+    matchLabels:
+      name: stolon-utils
+      stolon-utils: "yes"
   replicas: 1
   template:
     metadata:
@@ -83,7 +87,7 @@ spec:
         stolon-keeper: "yes"
       containers:
       - name: utils
-        image: apiserver:5000/stolon-telegraf:latest
+        image: stolon-telegraf:latest
         env:
           - name: STOLON_USERNAME
             value: "stolon"

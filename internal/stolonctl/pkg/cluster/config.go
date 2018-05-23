@@ -16,7 +16,11 @@ limitations under the License.
 
 package cluster
 
-import "github.com/gravitational/trace"
+import (
+	"strings"
+
+	"github.com/gravitational/trace"
+)
 
 // Config represents configuration of stolon cluster
 type Config struct {
@@ -44,6 +48,8 @@ type Config struct {
 
 	// Postgres stores configuration of PostgreSQL-related parameters
 	Postgres PostgresConfig
+	// Upgrade stores configuration for upgrading the cluster
+	Upgrade UpgradeConfig
 }
 
 // PostgresConfig stores configuration of PostgreSQL-related parameters
@@ -62,8 +68,16 @@ type PostgresConfig struct {
 	PgPassPath string
 }
 
-// Check checks provided configuration
-func (c *Config) Check() error {
+// UpgradeConfig defines configuration used for upgrade
+type UpgradeConfig struct {
+	// NewAppVersion defines new version of application
+	NewAppVersion string
+	// Changeset defines the name of the changeset for upgrade as used by rig
+	Changeset string
+}
+
+// CheckAndSetDefaults validates this configuration object and sets defaults
+func (c *Config) CheckAndSetDefaults() error {
 	var errors []error
 	if c.EtcdCertFile == "" {
 		errors = append(errors, trace.BadParameter("etcd-cert-file (env 'ETCD_CERT') is required"))
@@ -80,11 +94,31 @@ func (c *Config) Check() error {
 	if err := c.Postgres.Check(); err != nil {
 		errors = append(errors, err)
 	}
+	if err := c.Upgrade.CheckAndSetDefaults(); err != nil {
+		errors = append(errors, err)
+	}
 	return trace.NewAggregate(errors...)
+}
+
+// CheckAndSetDefaults validates this configuration object and sets defaults
+func (c *UpgradeConfig) CheckAndSetDefaults() error {
+	if c == nil {
+		return nil
+	}
+	if c.NewAppVersion == "" {
+		return trace.BadParameter("app-version (env 'APP_VERSION') is required for upgrade")
+	}
+	if c.Changeset == "" {
+		c.Changeset = strings.Replace(c.NewAppVersion, ".", "", -1)
+	}
+	return nil
 }
 
 // Check checks provided configuration for PostgreSQL parameters
 func (c *PostgresConfig) Check() error {
+	if c == nil {
+		return nil
+	}
 	var errors []error
 	if c.Host == "" {
 		errors = append(errors, trace.BadParameter("postgres-host is required"))

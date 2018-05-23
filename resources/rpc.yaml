@@ -83,6 +83,10 @@ metadata:
   name: stolon-rpc
   namespace: default
 spec:
+  selector:
+    matchLabels:
+      name: stolon-rpc
+      stolon-rpc: "yes"
   replicas: 1
   template:
     metadata:
@@ -102,7 +106,7 @@ spec:
         stolon-keeper: "yes"
       containers:
       - name: rpc
-        image: apiserver:5000/stolon:latest
+        image: stolon:latest
         volumeMounts:
           - mountPath: /usr/local/bin/kubectl
             name: kubectl

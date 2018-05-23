@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/kubernetes"
+	"github.com/gravitational/stolon/pkg/cluster"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -58,6 +60,8 @@ func (cr *StolonUpgradeResource) String() string {
 type StolonUpgradeSpec struct {
 	// Status is a status of stolon upgrade
 	Status string `json:"status"`
+	// ClusterInfo represents information about stolon cluster
+	ClusterInfo ClusterInfo `json:"clusterInfo"`
 	// Phases is a list of phases to upgrade stolon
 	Phases []StolonUpgradePhase `json:"phases"`
 	// CreationTimestamp is a starting time of upgrade
@@ -78,4 +82,26 @@ type StolonUpgradePhase struct {
 	CreationTimestamp time.Time `json:"startTime"`
 	// FinishTimestamp is a time when upgrade step finished
 	FinishTimestamp time.Time `json:"finishTime"`
+}
+
+// MasterStatus stores information about stolon master
+type MasterStatus struct {
+	// PodName defines name of the stolon-keeper master pod
+	PodName string
+	// Healthy indicates whether the postgres master is healthy
+	Healthy bool
+	// HostIP identifies the node where master pod has been scheduled
+	HostIP string
+	// PodIP identifies ip address of stolon master pod
+	PodIP string
+}
+
+// ClusterInfo represents information about stolon cluster
+type ClusterInfo struct {
+	// ClusterData is an information about the cluster received from etcd
+	ClusterData cluster.ClusterData `json:"clusterData"`
+	// PodsStatus represents information about stolon pods
+	PodsStatus []kubernetes.PodStatus `json:"podStatus"`
+	// MasterStatus stores information about stolon master
+	MasterStatus MasterStatus `json:"masterStatus"`
 }

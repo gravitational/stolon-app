@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
 echo "Assuming changeset from the envrionment: $RIG_CHANGESET"
@@ -8,16 +8,27 @@ if [ $1 = "update" ]; then
     echo "Starting update, changeset: $RIG_CHANGESET"
     rig cs delete --force -c cs/$RIG_CHANGESET
 
+    echo "Upgrade keeper database schema"
+    rig delete deployments/stolonctl --force
+    rig upsert -f /var/lib/gravity/resources/stolonctl.yaml --debug
+
+    while [ ! $(kubectl get pod -l app=stolon,component=stolonctl -o jsonpath='{.items[0].status.phase}') == "Running" ]
+    do
+        echo "waiting for stolonctl Pod to start"
+    done
+
+    stolonctl_pod=$(kubectl get pod -l app=stolon,component=stolonctl -o jsonpath='{.items[0].metadata.name}')
+    if ! kubectl exec $stolonctl_pod -- stolonctl upgrade; then exit 1; fi
+
     echo "Delete old resources"
     rig delete ds/stolon-keeper --force
     rig delete deployments/stolon-proxy --force
     rig delete deployments/stolon-rpc --force
     rig delete deployments/stolon-sentinel --force
     rig delete deployments/stolon-utils --force
-    kubectl create -f /var/lib/gravity/resources/delete-backup-bucket.yaml
 
     # wait for keeper pods to go away
-    while kubectl get pods --show-all|grep -q stolon-keeper
+    while kubectl get pods --show-all|grep -v stolon-keeper-schema|grep -q stolon-keeper
     do
     echo "waiting for keeper pods to go away..."
         sleep 5
@@ -48,7 +59,6 @@ elif [ $1 = "rollback" ]; then
     echo "Reverting changeset $RIG_CHANGESET"
     rig revert
 
-    kubectl create -f /var/lib/gravity/resources/create-backup-bucket.yaml
     if [ $(kubectl get nodes -l stolon-keeper=yes -o name | wc -l) -ge 3 ]
     then
         kubectl scale --replicas=3 deployment stolon-sentinel
