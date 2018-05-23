@@ -109,11 +109,11 @@ type Status struct {
 
 func (s *Status) getMasterStatus() (*crd.MasterStatus, error) {
 	for _, pod := range s.PodsStatus {
-		if _, ok := s.ClusterData.KeepersState[s.ClusterData.ClusterView.Master]; ok {
-			if pod.PodIP == s.ClusterData.KeepersState[s.ClusterData.ClusterView.Master].ListenAddress {
+		if master := s.ClusterData.KeepersState[s.ClusterData.ClusterView.Master]; master != nil {
+			if pod.PodIP == master.ListenAddress {
 				return &crd.MasterStatus{
 					PodName: pod.Name,
-					Healthy: s.ClusterData.KeepersState[s.ClusterData.ClusterView.Master].Healthy,
+					Healthy: master.Healthy,
 					HostIP:  pod.HostIP,
 					PodIP:   pod.PodIP,
 				}, nil
