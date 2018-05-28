@@ -44,6 +44,7 @@ var (
 		"POSTGRES_PASSWORD": "postgres-password",
 		"APP_VERSION":       "app-version",
 		"RIG_CHANGESET":     "changeset",
+		"NODE_NAME":         "nodename",
 	}
 
 	stolonctlCmd = &cobra.Command{

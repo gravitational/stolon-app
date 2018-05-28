@@ -19,8 +19,11 @@ package utils
 import (
 	"bytes"
 	"context"
+	"fmt"
+	"io"
 	"os"
 	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/gravitational/trace"
@@ -56,4 +59,14 @@ func Run(cmd *exec.Cmd) ([]byte, error) {
 		return bytes.TrimSpace(output), trace.Wrap(err)
 	}
 	return nil, nil
+}
+
+// PrintTableHeader prints header of a table
+func PrintTableHeader(w io.Writer, cols []string) {
+	dots := make([]string, len(cols))
+	for i := range dots {
+		dots[i] = strings.Repeat("-", len(cols[i]))
+	}
+	fmt.Fprint(w, strings.Join(cols, "\t")+"\n")
+	fmt.Fprint(w, strings.Join(dots, "\t")+"\n")
 }

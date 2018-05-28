@@ -62,6 +62,8 @@ type StolonUpgradeSpec struct {
 	Status string `json:"status"`
 	// ClusterInfo represents information about stolon cluster
 	ClusterInfo ClusterInfo `json:"clusterInfo"`
+	// BackupNode represents node where backup is stored
+	BackupNode string `json:"backupNode"`
 	// Phases is a list of phases to upgrade stolon
 	Phases []StolonUpgradePhase `json:"phases"`
 	// CreationTimestamp is a starting time of upgrade
@@ -80,8 +82,8 @@ type StolonUpgradePhase struct {
 	Description string `json:"description"`
 	// CreationTimestamp is a starting time of upgrade step
 	CreationTimestamp time.Time `json:"startTime"`
-	// FinishTimestamp is a time when upgrade step finished
-	FinishTimestamp time.Time `json:"finishTime"`
+	// UpdatedTimestamp is a time when upgrade step updated
+	UpdatedTimestamp time.Time `json:"updatedTime"`
 }
 
 // MasterStatus stores information about stolon master
