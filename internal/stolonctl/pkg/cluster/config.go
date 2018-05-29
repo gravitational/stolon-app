@@ -76,6 +76,8 @@ type UpgradeConfig struct {
 	Changeset string
 	// NodeName defines the name of kubernetes node where stolonctl pod is started
 	NodeName string
+	// Force allows to force phase execution
+	Force bool
 }
 
 // CheckAndSetDefaults validates this configuration object and sets defaults

@@ -83,6 +83,7 @@ func printPhase(w io.Writer, phase crd.StolonUpgradePhase) {
 		phase.Name,
 		phase.Description,
 		formatStatus(phase.Status),
+		formatNodeName(phase.NodeName),
 		formatTimestamp(phase.UpdatedTimestamp))
 }
 
@@ -106,4 +107,11 @@ func formatTimestamp(t time.Time) string {
 		return "-"
 	}
 	return t.Format(time.UnixDate)
+}
+
+func formatNodeName(name string) string {
+	if name == "" {
+		return "-"
+	}
+	return name
 }

@@ -206,9 +206,16 @@ func (c *Client) UpdateClusterInfo(obj *StolonUpgradeResource, clusterInfo Clust
 	return c.update(obj)
 }
 
-// UpdateBackupNode updates information about node where backup is stored
-func (c *Client) UpdateBackupNode(obj *StolonUpgradeResource, backupNode string) (*StolonUpgradeResource, error) {
-	obj.Spec.BackupNode = backupNode
+// SetNodeName updates information about node where phase is executed
+func (c *Client) SetNodeName(obj *StolonUpgradeResource, phaseName, nodeName string) (*StolonUpgradeResource, error) {
+	var phases []StolonUpgradePhase
+	for _, phase := range obj.Spec.Phases {
+		if phaseName == phase.Name {
+			phase.NodeName = nodeName
+		}
+		phases = append(phases, phase)
+	}
+	obj.Spec.Phases = phases
 	return c.update(obj)
 }
 
@@ -216,6 +223,16 @@ func (c *Client) UpdateBackupNode(obj *StolonUpgradeResource, backupNode string)
 func (c *Client) IsPhaseCompleted(obj *StolonUpgradeResource, phaseName string) bool {
 	for _, phase := range obj.Spec.Phases {
 		if phaseName == phase.Name && phase.Status == StolonUpgradeStatusCompleted {
+			return true
+		}
+	}
+	return false
+}
+
+// IsPhaseInProgress checks phase for a in progress status
+func (c *Client) IsPhaseInProgress(obj *StolonUpgradeResource, phaseName string) bool {
+	for _, phase := range obj.Spec.Phases {
+		if phaseName == phase.Name && phase.Status == StolonUpgradeStatusInProgress {
 			return true
 		}
 	}
