@@ -114,9 +114,6 @@ hooks:
               - name: varstate
                 hostPath:
                   path: /var/state
-              - name: backup
-                hostPath:
-                  path: /var/lib/data/stolon-backup
             containers:
               - name: hook
                 image: stolon-hook:latest
@@ -142,8 +139,6 @@ hooks:
                     mountPath: /usr/bin/etcdctl
                   - name: varstate
                     mountPath: /var/state
-                  - name: backup
-                    mountPath: /stolon
   rollback:
     job: |
       apiVersion: batch/v1
