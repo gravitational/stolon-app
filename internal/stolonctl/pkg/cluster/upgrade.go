@@ -25,7 +25,6 @@ import (
 
 	"github.com/gravitational/rigging"
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/crd"
-	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/defaults"
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/kubernetes"
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/utils"
 	"github.com/gravitational/stolon/common"
@@ -93,7 +92,7 @@ func Upgrade(ctx context.Context, config Config) error {
 		return trace.Wrap(err)
 	}
 
-	resourceName := fmt.Sprintf("%s-%s", defaults.CRDName, config.Upgrade.Changeset)
+	resourceName := ResourceName(config)
 	res, err := crdclient.CreateOrRead(resourceName)
 	if err != nil {
 		return trace.Wrap(err)

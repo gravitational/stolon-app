@@ -24,7 +24,6 @@ import (
 	"time"
 
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/crd"
-	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/defaults"
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/kubernetes"
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/utils"
 
@@ -44,7 +43,7 @@ func Plan(config Config) error {
 		return trace.Wrap(err)
 	}
 
-	resourceName := fmt.Sprintf("%s-%s", defaults.CRDName, config.Upgrade.Changeset)
+	resourceName := ResourceName(config)
 	res, err := crdclient.Get(resourceName)
 	if trace.IsNotFound(err) {
 		log.Infof("Stolon upgrade %s is not started yet. Check with 'kubectl get stolonupgrades'", resourceName)
