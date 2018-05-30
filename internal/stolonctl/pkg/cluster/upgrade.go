@@ -486,7 +486,4 @@ type jobConfig struct {
 	command string
 }
 
-type upgradePostgresSchemaConfig struct {
-}
-
 func int64Ptr(i int64) *int64 { return &i }
