@@ -74,6 +74,8 @@ type UpgradeConfig struct {
 	NewAppVersion string
 	// Changeset defines the name of the changeset for upgrade as used by rig
 	Changeset string
+	// NodeName defines the name of kubernetes node where stolonctl pod is started
+	NodeName string
 }
 
 // CheckAndSetDefaults validates this configuration object and sets defaults
@@ -107,6 +109,9 @@ func (c *UpgradeConfig) CheckAndSetDefaults() error {
 	}
 	if c.NewAppVersion == "" {
 		return trace.BadParameter("app-version (env 'APP_VERSION') is required for upgrade")
+	}
+	if c.NodeName == "" {
+		return trace.BadParameter("nodename (env 'NODE_NAME') is required for upgrade")
 	}
 	if c.Changeset == "" {
 		c.Changeset = strings.Replace(c.NewAppVersion, ".", "", -1)

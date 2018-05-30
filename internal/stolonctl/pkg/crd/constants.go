@@ -37,10 +37,10 @@ const (
 	StolonUpgradeSingular = "stolonupgrade"
 
 	// Status of stolon upgrade
-	StolonUpgradeStatusInProgress = "In progress"
-	StolonUpgradeStatusUnstarted  = "Unstarted"
-	StolonUpgradeStatusFailed     = "Failed"
-	StolonUpgradeStatusCompleted  = "Completed"
+	StolonUpgradeStatusInProgress = "in-progress"
+	StolonUpgradeStatusUnstarted  = "unstarted"
+	StolonUpgradeStatusFailed     = "failed"
+	StolonUpgradeStatusCompleted  = "completed"
 
 	// Phases of stolon upgrade
 	StolonUpgradePhaseInit                  = "init"

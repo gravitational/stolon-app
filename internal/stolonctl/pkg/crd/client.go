@@ -60,13 +60,17 @@ type Client struct {
 	plural    string
 }
 
-func (c *Client) CreateOrRead(objMeta metav1.ObjectMeta) (*StolonUpgradeResource, error) {
+// CreateOrRead creates resource or reads it if exists
+func (c *Client) CreateOrRead(resourceName string) (*StolonUpgradeResource, error) {
 	res := &StolonUpgradeResource{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       StolonUpgradeKind,
 			APIVersion: StolonUpgradeAPIVersion,
 		},
-		ObjectMeta: objMeta,
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      resourceName,
+			Namespace: c.namespace,
+		},
 		Spec: StolonUpgradeSpec{
 			Status:            StolonUpgradeStatusInProgress,
 			Phases:            stolonUpgradePhases(time.Now().UTC()),
@@ -80,7 +84,12 @@ func (c *Client) CreateOrRead(objMeta metav1.ObjectMeta) (*StolonUpgradeResource
 	if !trace.IsAlreadyExists(err) {
 		return nil, trace.Wrap(err)
 	}
-	return c.get(objMeta.Name)
+	return c.get(resourceName)
+}
+
+// Get reads custom resource
+func (c *Client) Get(resourceName string) (*StolonUpgradeResource, error) {
+	return c.get(resourceName)
 }
 
 func (c *Client) create(obj *StolonUpgradeResource) (*StolonUpgradeResource, error) {
@@ -107,6 +116,7 @@ func (c *Client) create(obj *StolonUpgradeResource) (*StolonUpgradeResource, err
 	return &result, nil
 }
 
+// List shows list of custom resources
 func (c *Client) List() (*StolonUpgradeList, error) {
 	var raw runtime.Unknown
 	err := c.Client.Get().
@@ -180,7 +190,7 @@ func (c *Client) MarkPhase(obj *StolonUpgradeResource, phaseName string, phaseSt
 					phase.CreationTimestamp = time.Now().UTC()
 				}
 				if phaseStatus == StolonUpgradeStatusCompleted {
-					phase.FinishTimestamp = time.Now().UTC()
+					phase.UpdatedTimestamp = time.Now().UTC()
 				}
 			}
 		}
@@ -193,6 +203,12 @@ func (c *Client) MarkPhase(obj *StolonUpgradeResource, phaseName string, phaseSt
 // UpdateClusterInfo updates information about stolon cluster
 func (c *Client) UpdateClusterInfo(obj *StolonUpgradeResource, clusterInfo ClusterInfo) (*StolonUpgradeResource, error) {
 	obj.Spec.ClusterInfo = clusterInfo
+	return c.update(obj)
+}
+
+// UpdateBackupNode updates information about node where backup is stored
+func (c *Client) UpdateBackupNode(obj *StolonUpgradeResource, backupNode string) (*StolonUpgradeResource, error) {
+	obj.Spec.BackupNode = backupNode
 	return c.update(obj)
 }
 

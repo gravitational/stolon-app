@@ -52,6 +52,8 @@ func init() {
 		"", "Version of application to upgrade to")
 	upgradeCmd.Flags().StringVar(&clusterConfig.Upgrade.Changeset, "changeset",
 		"", "Changeset of upgrade")
+	upgradeCmd.PersistentFlags().StringVar(&clusterConfig.Upgrade.NodeName, "nodename", "",
+		"Node name where pod is started")
 
 	bindFlagEnv(upgradeCmd.Flags())
 }

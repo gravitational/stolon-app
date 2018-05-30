@@ -93,11 +93,8 @@ func Upgrade(ctx context.Context, config Config) error {
 		return trace.Wrap(err)
 	}
 
-	objMeta := metav1.ObjectMeta{
-		Name:      defaults.CRDName,
-		Namespace: config.Namespace,
-	}
-	res, err := crdclient.CreateOrRead(objMeta)
+	resourceName := fmt.Sprintf("%s-%s", defaults.CRDName, config.Upgrade.Changeset)
+	res, err := crdclient.CreateOrRead(resourceName)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -245,9 +242,19 @@ func (u *upgradeControl) checkClusterStatus(res *crd.StolonUpgradeResource, phas
 	return res, nil
 }
 
-func (u *upgradeControl) backupPostgres() error {
+func (u *upgradeControl) backupPostgres(res *crd.StolonUpgradeResource, phase string) (*crd.StolonUpgradeResource, error) {
+	if u.crdClient.IsPhaseCompleted(res, phase) {
+		return res, nil
+	}
+
+	var err error
+	res, err = u.crdClient.MarkPhase(res, phase, crd.StolonUpgradeStatusInProgress)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
 	if err := u.createPgPassFile(); err != nil {
-		return trace.Wrap(err)
+		return nil, trace.Wrap(err)
 	}
 	options := []string{fmt.Sprintf("-h%s", u.config.Postgres.Host),
 		fmt.Sprintf("-p%s", u.config.Postgres.Port),
@@ -262,11 +269,20 @@ func (u *upgradeControl) backupPostgres() error {
 
 	output, err := utils.Run(cmd)
 	if err != nil {
-		return trace.Wrap(err, "Command output: %v", string(output))
+		return nil, trace.Wrap(err, "Command output: %v", string(output))
 	}
 	log.Infof("Backed up Postgres to %s", u.config.Postgres.BackupPath)
 
-	return nil
+	res, err = u.crdClient.UpdateBackupNode(res, u.config.Upgrade.NodeName)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	res, err = u.crdClient.MarkPhase(res, phase, crd.StolonUpgradeStatusCompleted)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return res, nil
 }
 
 func (u *upgradeControl) createPgPassFile() error {
