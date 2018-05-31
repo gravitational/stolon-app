@@ -62,8 +62,6 @@ type StolonUpgradeSpec struct {
 	Status string `json:"status"`
 	// ClusterInfo represents information about stolon cluster
 	ClusterInfo ClusterInfo `json:"clusterInfo"`
-	// BackupNode represents node where backup is stored
-	BackupNode string `json:"backupNode"`
 	// Phases is a list of phases to upgrade stolon
 	Phases []StolonUpgradePhase `json:"phases"`
 	// CreationTimestamp is a starting time of upgrade
@@ -78,6 +76,8 @@ type StolonUpgradePhase struct {
 	Status string `json:"status"`
 	// Name is a name of upgrade step
 	Name string `json:"name"`
+	// NodeName represents node where phase is executed
+	NodeName string `json:"nodeName"`
 	// Description is a small description of upgrade step
 	Description string `json:"description"`
 	// CreationTimestamp is a starting time of upgrade step

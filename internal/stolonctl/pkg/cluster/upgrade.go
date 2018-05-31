@@ -25,7 +25,6 @@ import (
 
 	"github.com/gravitational/rigging"
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/crd"
-	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/defaults"
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/kubernetes"
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/utils"
 	"github.com/gravitational/stolon/common"
@@ -93,7 +92,7 @@ func Upgrade(ctx context.Context, config Config) error {
 		return trace.Wrap(err)
 	}
 
-	resourceName := fmt.Sprintf("%s-%s", defaults.CRDName, config.Upgrade.Changeset)
+	resourceName := ResourceName(config)
 	res, err := crdclient.CreateOrRead(resourceName)
 	if err != nil {
 		return trace.Wrap(err)
@@ -112,10 +111,7 @@ func Upgrade(ctx context.Context, config Config) error {
 	}
 
 	// Backup Postgres
-	res, err = upgradeControl.executePhase(res, crd.StolonUpgradePhaseBackupPostgres, func() error {
-		err := upgradeControl.backupPostgres()
-		return err
-	})
+	res, err = upgradeControl.backupPostgres(res, crd.StolonUpgradePhaseBackupPostgres)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -137,37 +133,8 @@ func Upgrade(ctx context.Context, config Config) error {
 		return trace.Wrap(err)
 	}
 
-	// Create job to upgrade PostgreSQL schema on keeper master
-	res, err = upgradeControl.executePhase(res, crd.StolonUpgradePhaseUpgradePostgresSchema, func() error {
-		masterNodeName := res.Spec.ClusterInfo.MasterStatus.HostIP
-		standbyNodeNames := make(map[string]string)
-		for _, pod := range res.Spec.ClusterInfo.PodsStatus {
-			if pod.PodIP != res.Spec.ClusterInfo.MasterStatus.PodIP {
-				for _, keeperState := range res.Spec.ClusterInfo.ClusterData.KeepersState {
-					if pod.PodIP != "" && pod.PodIP == keeperState.ListenAddress {
-						standbyNodeNames[keeperState.ID] = pod.HostIP
-					}
-				}
-			}
-		}
-
-		log.Infof("master: %s, standbys: %v\n", masterNodeName, standbyNodeNames)
-		err := upgradeControl.upgradePostgresSchema(ctx, pgMaster, masterNodeName, "")
-		if err != nil {
-			err = upgradeControl.rollbackPostgresSchema(ctx, pgMaster, masterNodeName, "")
-			if err != nil {
-				return trace.Wrap(err)
-			}
-		}
-		for id, standbyNodeName := range standbyNodeNames {
-			err = upgradeControl.upgradePostgresSchema(ctx, pgStandby, standbyNodeName, id)
-			if err != nil {
-				return trace.Wrap(err)
-			}
-		}
-		return nil
-
-	})
+	// Upgrade postgresql database schema
+	res, err = upgradeControl.upgradePostgresSchemaPhase(ctx, res, crd.StolonUpgradePhaseUpgradePostgresSchema)
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -182,13 +149,16 @@ func (u *upgradeControl) executePhase(res *crd.StolonUpgradeResource, phase stri
 	if u.crdClient.IsPhaseCompleted(res, phase) {
 		return res, nil
 	}
+	if u.crdClient.IsPhaseInProgress(res, phase) && !u.config.Upgrade.Force {
+		return res, trace.BadParameter("Phase '%s' is in progress, use '--force' flag to resume the step.", phase)
+	}
 
 	var err error
 	res, err = u.crdClient.MarkPhase(res, phase, crd.StolonUpgradeStatusInProgress)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
-	if err := fn(); err != nil {
+	if err = fn(); err != nil {
 		return nil, trace.Wrap(err)
 	}
 	res, err = u.crdClient.MarkPhase(res, phase, crd.StolonUpgradeStatusCompleted)
@@ -273,7 +243,7 @@ func (u *upgradeControl) backupPostgres(res *crd.StolonUpgradeResource, phase st
 	}
 	log.Infof("Backed up Postgres to %s", u.config.Postgres.BackupPath)
 
-	res, err = u.crdClient.UpdateBackupNode(res, u.config.Upgrade.NodeName)
+	res, err = u.crdClient.SetNodeName(res, phase, u.config.Upgrade.NodeName)
 	if err != nil {
 		return nil, trace.Wrap(err)
 	}
@@ -299,7 +269,7 @@ func (u *upgradeControl) deleteDeployment(name string) error {
 	err := dsClient.Delete(name, &metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
 	})
-	if err != nil {
+	if err != nil && !trace.IsNotFound(err) {
 		return rigging.ConvertErrorWithContext(err, "cannot delete stolon-sentinel deployment")
 	}
 	return nil
@@ -312,10 +282,61 @@ func (u *upgradeControl) deleteDaemonset(name string) error {
 	err := dsClient.Delete(name, &metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
 	})
-	if err != nil {
+	if err != nil && !trace.IsNotFound(err) {
 		return rigging.ConvertErrorWithContext(err, "cannot delete stolon-keeper daemonset")
 	}
 	return nil
+}
+
+func (u *upgradeControl) upgradePostgresSchemaPhase(ctx context.Context, res *crd.StolonUpgradeResource, phase string) (*crd.StolonUpgradeResource, error) {
+	if u.crdClient.IsPhaseCompleted(res, phase) {
+		return res, nil
+	}
+
+	var err error
+	res, err = u.crdClient.MarkPhase(res, phase, crd.StolonUpgradeStatusInProgress)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	masterNodeName := res.Spec.ClusterInfo.MasterStatus.HostIP
+	standbyNodeNames := make(map[string]string)
+	for _, pod := range res.Spec.ClusterInfo.PodsStatus {
+		if pod.PodIP != res.Spec.ClusterInfo.MasterStatus.PodIP {
+			for _, keeperState := range res.Spec.ClusterInfo.ClusterData.KeepersState {
+				if pod.PodIP != "" && pod.PodIP == keeperState.ListenAddress {
+					standbyNodeNames[keeperState.ID] = pod.HostIP
+				}
+			}
+		}
+	}
+
+	log.Infof("master: %s, standbys: %v\n", masterNodeName, standbyNodeNames)
+	err = u.upgradePostgresSchema(ctx, pgMaster, masterNodeName, "")
+	if err != nil {
+		err = u.rollbackPostgresSchema(ctx, pgMaster, masterNodeName, "")
+		if err != nil {
+			return nil, trace.Wrap(err)
+		}
+	}
+	res, err = u.crdClient.SetNodeName(res, phase, masterNodeName)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+
+	// delete data directories on standby nodes to recreate them from scratch
+	for id, standbyNodeName := range standbyNodeNames {
+		err = u.upgradePostgresSchema(ctx, pgStandby, standbyNodeName, id)
+		if err != nil {
+			return nil, trace.Wrap(err)
+		}
+	}
+
+	res, err = u.crdClient.MarkPhase(res, phase, crd.StolonUpgradeStatusCompleted)
+	if err != nil {
+		return nil, trace.Wrap(err)
+	}
+	return res, nil
 }
 
 func (u *upgradeControl) upgradePostgresSchema(ctx context.Context, pgRole, nodeName, id string) error {

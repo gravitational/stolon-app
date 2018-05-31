@@ -34,10 +34,6 @@ if [ $1 = "update" ]; then
         sleep 5
     done
 
-	etcdctl get /stolon/cluster/kube-stolon/clusterdata > clusterdata.json
-	sed -i 's/"archive_mode":"on"/"archive_mode":"off"/g' clusterdata.json
-	etcdctl set /stolon/cluster/kube-stolon/clusterdata "$(cat clusterdata.json)"
-
     echo "Creating or updating resources"
     rig upsert -f /var/lib/gravity/resources/keeper.yaml --debug
     rig upsert -f /var/lib/gravity/resources/rpc.yaml --debug
