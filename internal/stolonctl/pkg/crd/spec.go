@@ -77,7 +77,7 @@ type StolonUpgradePhase struct {
 	// Name is a name of upgrade step
 	Name string `json:"name"`
 	// NodeName represents node where phase is executed
-	NodeName string `json:"NodeName"`
+	NodeName string `json:"nodeName"`
 	// Description is a small description of upgrade step
 	Description string `json:"description"`
 	// CreationTimestamp is a starting time of upgrade step
