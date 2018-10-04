@@ -79,6 +79,7 @@ spec:
         stolon-sentinel: "yes"
         app: stolon
         component: sentinel
+        product: stolon
     spec:
       serviceAccountName: stolon-sentinel
       securityContext:

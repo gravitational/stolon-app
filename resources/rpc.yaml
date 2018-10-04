@@ -67,6 +67,7 @@ metadata:
   namespace: default
   labels:
     stolon-rpc: "yes"
+    product: stolon
 spec:
   type: ClusterIP
   ports:
@@ -97,6 +98,7 @@ spec:
         stolon-rpc: "yes"
         app: stolon
         component: rpc
+        product: stolon
     spec:
       serviceAccountName: stolon-rpc
       securityContext:
