@@ -96,7 +96,6 @@ spec:
         namespace: default
         stolon-cluster: "kube-stolon"
         stolon-rpc: "yes"
-        app: stolon
         component: rpc
         product: stolon
     spec:

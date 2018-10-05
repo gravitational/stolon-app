@@ -100,7 +100,6 @@ spec:
         stolon-cluster: "kube-stolon"
         stolon-keeper: "yes"
         stolon-proxy: "yes"
-        app: stolon
         component: keeper
         product: stolon
     spec:
