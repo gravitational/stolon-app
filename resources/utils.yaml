@@ -77,8 +77,8 @@ spec:
         namespace: default
         stolon-cluster: "kube-stolon"
         stolon-utils: "yes"
-        app: stolon
         component: utils
+        product: stolon
     spec:
       serviceAccountName: stolon-utils
       securityContext:

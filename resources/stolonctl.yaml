@@ -5,8 +5,8 @@ metadata:
   name: stolonctl
   namespace: default
   labels:
-    app: stolon
     component: stolonctl
+    product: stolon
 spec:
   selector:
     matchLabels:
@@ -17,8 +17,8 @@ spec:
     metadata:
       namespace: default
       labels:
-        app: stolon
         component: stolonctl
+        product: stolon
     spec:
       securityContext:
         runAsUser: 0

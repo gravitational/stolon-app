@@ -67,6 +67,7 @@ metadata:
   namespace: default
   labels:
     stolon-postgres: "yes"
+    product: stolon
 spec:
   type: ClusterIP
   ports:
@@ -84,6 +85,7 @@ metadata:
   labels:
     stolon-proxy: "yes"
     stolon-keeper: "yes"
+    product: stolon
 spec:
   selector:
     matchLabels:
@@ -98,8 +100,8 @@ spec:
         stolon-cluster: "kube-stolon"
         stolon-keeper: "yes"
         stolon-proxy: "yes"
-        app: stolon
         component: keeper
+        product: stolon
     spec:
       serviceAccountName: stolon-keeper
       securityContext:

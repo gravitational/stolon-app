@@ -12,12 +12,12 @@ if [ $1 = "update" ]; then
     rig delete deployments/stolonctl --force
     rig upsert -f /var/lib/gravity/resources/stolonctl.yaml --debug
 
-    while [ ! $(kubectl get pod -l app=stolon,component=stolonctl -o jsonpath='{.items[0].status.phase}') == "Running" ]
+    while [ ! $(kubectl get pod -l product=stolon,component=stolonctl -o jsonpath='{.items[0].status.phase}') == "Running" ]
     do
         echo "waiting for stolonctl Pod to start"
     done
 
-    stolonctl_pod=$(kubectl get pod -l app=stolon,component=stolonctl -o jsonpath='{.items[0].metadata.name}')
+    stolonctl_pod=$(kubectl get pod -l product=stolon,component=stolonctl -o jsonpath='{.items[0].metadata.name}')
     if ! kubectl exec $stolonctl_pod -- stolonctl upgrade; then exit 1; fi
 
     echo "Delete old resources"
