@@ -442,11 +442,8 @@ func (u *upgradeControl) generateJob(jobConfig jobConfig) *batchv1.Job {
 							},
 						},
 					},
-					RestartPolicy: apiv1.RestartPolicyNever,
-					NodeName:      jobConfig.nodeName,
-					SecurityContext: &apiv1.PodSecurityContext{
-						RunAsUser: int64Ptr(0),
-					},
+					RestartPolicy:      apiv1.RestartPolicyNever,
+					NodeName:           jobConfig.nodeName,
 					ServiceAccountName: "stolon-keeper",
 					Containers: []apiv1.Container{
 						{

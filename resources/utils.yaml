@@ -81,8 +81,6 @@ spec:
         product: stolon
     spec:
       serviceAccountName: stolon-utils
-      securityContext:
-        runAsUser: 0
       nodeSelector:
         stolon-keeper: "yes"
       containers:

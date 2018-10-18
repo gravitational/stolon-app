@@ -32,35 +32,6 @@ function setup_cluster_ca() {
 	fi
 }
 
-function chmod_keys() {
-	cp -R /etc/ssl/cluster-default /etc/ssl/cluster-default-postgres
-	chown -R stolon /etc/ssl/cluster-default-postgres
-	chmod 0600 /etc/ssl/cluster-default-postgres/default-server-key.pem
-}
-
-function setup_etcd_keys() {
-    cp -R /etc/etcd/secrets /etc/etcd/secrets-rw
-    chown -R stolon /etc/etcd/secrets-rw
-}
-
-# TODO: find how to map ENV vars which is populated by k8s services for discovery to vars, which utilities uses
-function setup_stolonctl() {
-	announce_step 'Setup stolon CLI'
-
-	_create_pg_pass "$STOLON_POSTGRES_SERVICE_HOST" \
-				   "$STOLON_POSTGRES_SERVICE_PORT" \
-				   "*" \
-				   "$STOLONCTL_DB_USERNAME" \
-				   "$STOLON_DB_PASSWORD"
-
-	cat > /usr/local/bin/stolonctl-cluster <<'EOF'
-	export STOLONCTL_DB_HOST=$STOLON_POSTGRES_SERVICE_HOST
-	export STOLONCTL_DB_PORT=$STOLON_POSTGRES_SERVICE_PORT
-	stolonctl "$@"
-EOF
-	chmod +x /usr/local/bin/stolonctl-cluster
-}
-
 function setup_stolonrpc() {
 	announce_step 'Setup stolon RPC'
 
@@ -70,12 +41,12 @@ function setup_stolonrpc() {
 				   "$STOLONRPC_DB_USERNAME" \
 				   "$STOLON_DB_PASSWORD"
 
-	cat > /usr/local/bin/stolonrpc-cluster <<'EOF'
+	cat > /home/stolon/bin/stolonrpc-cluster <<EOF
 	export STOLONRPC_DB_HOST=$STOLON_POSTGRES_SERVICE_HOST
 	export STOLONRPC_DB_PORT=$STOLON_POSTGRES_SERVICE_PORT
 	stolonrpc "$@"
 EOF
-	chmod +x /usr/local/bin/stolonrpc-cluster
+	chmod +x /home/stolon/bin/stolonrpc-cluster
 }
 
 function _create_pg_pass() {
@@ -104,7 +75,7 @@ function launch_keeper() {
 	export STKEEPER_LISTEN_ADDRESS=$POD_IP
 	export STKEEPER_PG_LISTEN_ADDRESS=$POD_IP
 
-	su stolon -c "stolon-keeper --data-dir /stolon-data"
+	stolon-keeper --data-dir /stolon-data
 }
 
 function launch_sentinel() {
@@ -121,30 +92,19 @@ function launch_proxy() {
 	stolon-proxy
 }
 
-function launch_ctl() {
-	announce_step 'Launching stolon CLI'
-
-	stolonctl-cluster "$@"
-}
-
 function launch_rpc() {
 	announce_step 'Launching stolon RPC'
 
-	stolonrpc-cluster
+	/home/stolon/bin/stolonrpc-cluster
 }
 
 function main() {
 	announce_step 'Start'
 
-	announce_step 'Dump environment variables'
-	env
-
-	setup_cluster_ca
+#	setup_cluster_ca
 
 	announce_step 'Select which component to start'
 	if [[ "${KEEPER}" == "true" ]]; then
-		chmod_keys
-		setup_etcd_keys
 		launch_keeper
 		exit 0
 	fi
@@ -155,15 +115,7 @@ function main() {
 	fi
 
 	if [[ "${PROXY}" == "true" ]]; then
-		chmod_keys
-		setup_etcd_keys
 		launch_proxy
-		exit 0
-	fi
-
-	if [[ "${CTL}" == "true" ]]; then
-		setup_stolonctl
-		launch_ctl "$@"
 		exit 0
 	fi
 

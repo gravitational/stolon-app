@@ -104,10 +104,21 @@ spec:
         product: stolon
     spec:
       serviceAccountName: stolon-keeper
-      securityContext:
-        runAsUser: 0
       nodeSelector:
         stolon-keeper: "yes"
+      initContainers:
+        - name: fix-secrets
+          image: stolon:latest
+          command: ["/usr/bin/dumb-init", "--", "/usr/local/bin/fix-certificates.sh"]
+          volumeMounts:
+            - name: etcd-secrets
+              mountPath: /etc/secrets/etcd
+            - name: cluster-ca
+              mountPath: /etc/secrets/cluster-ca
+            - name: cluster-default-ssl
+              mountPath: /etc/secrets/cluster-default
+            - name: stolon-secrets
+              mountPath: /home/stolon/secrets
       containers:
         - name: telegraf
           image: stolon-telegraf-node:latest
@@ -129,8 +140,6 @@ spec:
           volumeMounts:
             - name: stolon
               mountPath: /etc/secrets/stolon
-            - name: gravity-log
-              mountPath: /var/log
         - name: proxy
           image: stolon:latest
           ports:
@@ -141,12 +150,8 @@ spec:
             initialDelaySeconds: 10
             timeoutSeconds: 5
           volumeMounts:
-            - name: etcd-secrets
-              mountPath: /etc/etcd/secrets
-            - name: cluster-ca
-              mountPath: /etc/ssl/cluster-ca
-            - name: cluster-default-ssl
-              mountPath: /etc/ssl/cluster-default
+            - name: stolon-secrets
+              mountPath: /home/stolon/secrets
           env:
             - name: PROXY
               value: "true"
@@ -155,11 +160,11 @@ spec:
             - name: STPROXY_STORE_BACKEND
               value: "etcd"
             - name: STPROXY_STORE_CACERT
-              value: "/etc/etcd/secrets-rw/root.cert"
+              value: "/home/stolon/secrets/etcd/root.cert"
             - name: STPROXY_STORE_CERT
-              value: "/etc/etcd/secrets-rw/etcd.cert"
+              value: "/home/stolon/secrets/etcd/etcd.cert"
             - name: STPROXY_STORE_KEY
-              value: "/etc/etcd/secrets-rw/etcd.key"
+              value: "/home/stolon/secrets/etcd/etcd.key"
             - name: STPROXY_DEBUG
               value: "false"
             - name: STPROXY_PORT
@@ -167,11 +172,11 @@ spec:
             - name: STPROXY_PG_SSL_REPLICATION
               value: "true"
             - name: STPROXY_PG_SSL_CERT_FILE
-              value: /etc/ssl/cluster-default-postgres/default-server.pem
+              value: "/home/stolon/secrets/cluster-default/default-server.pem"
             - name: STPROXY_PG_SSL_KEY_FILE
-              value: /etc/ssl/cluster-default-postgres/default-server-key.pem
+              value: "/home/stolon/secrets/cluster-default/default-server-key.pem"
             - name: STPROXY_PG_SSL_CA_FILE
-              value: /etc/ssl/cluster-ca/ca.pem
+              value: "/home/stolon/secrets/cluster-ca/ca.pem"
             - name: POD_IP
               valueFrom:
                 fieldRef:
@@ -186,18 +191,12 @@ spec:
             - containerPort: 5431
             - containerPort: 5432
           volumeMounts:
+            - name: stolon-secrets
+              mountPath: /home/stolon/secrets
             - name: data
               mountPath: /stolon-data
             - name: stolon
               mountPath: /etc/secrets/stolon
-            - name: gravity-log
-              mountPath: /var/log
-            - name: etcd-secrets
-              mountPath: /etc/etcd/secrets
-            - name: cluster-ca
-              mountPath: /etc/ssl/cluster-ca
-            - name: cluster-default-ssl
-              mountPath: /etc/ssl/cluster-default
           env:
             - name: KEEPER
               value: "true"
@@ -206,11 +205,11 @@ spec:
             - name: STKEEPER_STORE_BACKEND
               value: "etcd"
             - name: STKEEPER_STORE_CACERT
-              value: "/etc/etcd/secrets-rw/root.cert"
+              value: "/home/stolon/secrets/etcd/root.cert"
             - name: STKEEPER_STORE_CERT
-              value: "/etc/etcd/secrets-rw/etcd.cert"
+              value: "/home/stolon/secrets/etcd/etcd.cert"
             - name: STKEEPER_STORE_KEY
-              value: "/etc/etcd/secrets-rw/etcd.key"
+              value: "/home/stolon/secrets/etcd/etcd.key"
             - name: STKEEPER_PG_REPL_USERNAME
               value: "repluser"
             - name: STKEEPER_PG_REPL_PASSWORD
@@ -230,11 +229,11 @@ spec:
             - name: STKEEPER_PG_SSL_REPLICATION
               value: "true"
             - name: STKEEPER_PG_SSL_CERT_FILE
-              value: /etc/ssl/cluster-default-postgres/default-server.pem
+              value: "/home/stolon/secrets/cluster-default/default-server.pem"
             - name: STKEEPER_PG_SSL_KEY_FILE
-              value: /etc/ssl/cluster-default-postgres/default-server-key.pem
+              value: "/home/stolon/secrets/cluster-default/default-server-key.pem"
             - name: STKEEPER_PG_SSL_CA_FILE
-              value: /etc/ssl/cluster-ca/ca.pem
+              value: "/home/stolon/secrets/cluster-ca/ca.pem"
             - name: STKEEPER_PG_SSL_CIPHERS
               value: >-
                 ECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA256:
@@ -251,9 +250,8 @@ spec:
                 fieldRef:
                   fieldPath: spec.nodeName
       volumes:
-        - name: gravity-log
-          hostPath:
-            path: /var/log/gravity
+        - name: stolon-secrets
+          emptyDir: {}
         - name: data
           hostPath:
             path: /var/lib/data/stolon
