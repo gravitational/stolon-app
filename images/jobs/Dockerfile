@@ -1,7 +1,6 @@
 FROM quay.io/gravitational/debian-grande:0.0.1
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG GOSU_VERSION=1.10
 
 ENV TERM=xterm \
     PGBINOLD=/usr/lib/postgresql/9.4/bin \
@@ -22,9 +21,6 @@ RUN echo "deb http://deb.debian.org/debian jessie-backports main contrib non-fre
         postgresql-contrib-9.6 \
         s3cmd && \
     apt-get clean && \
-    curl -LO https://github.com/tianon/gosu/releases/download/${GOSU_VERSION}/gosu-amd64 && \
-    mv gosu-amd64 /usr/bin/gosu && \
-    chmod +x /usr/bin/gosu && \
     rm -rf \
         /var/lib/apt/lists/* \
         ~/.bashrc \
