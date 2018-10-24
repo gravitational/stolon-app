@@ -110,6 +110,8 @@ spec:
         - name: fix-secrets
           image: stolon:latest
           command: ["/usr/bin/dumb-init", "--", "/usr/local/bin/fix-certificates.sh"]
+          securityContext:
+            runAsUser: 0
           volumeMounts:
             - name: etcd-secrets
               mountPath: /etc/secrets/etcd

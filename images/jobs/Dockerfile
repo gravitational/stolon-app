@@ -38,4 +38,5 @@ RUN chmod +x /usr/local/bin/keeper-upgrade.sh && \
     chmod +x /usr/local/bin/clean-postgres-data.sh && \
     chmod +x /usr/local/bin/move-postgres-data.sh
 
+USER stolon
 ENTRYPOINT ["dumb-init", "/entrypoint.sh"]

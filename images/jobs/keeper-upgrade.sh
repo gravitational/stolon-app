@@ -2,7 +2,7 @@
 # -*- mode: sh; -*-
 
 # File: entrypoint.sh
-# Time-stamp: <2018-10-19 12:56:49>
+# Time-stamp: <2018-10-24 10:37:32>
 # Copyright (C) 2018 Gravitational Inc
 # Description:
 
@@ -19,22 +19,20 @@ do
     fi
 done
 
-# fix permissions for ssl
-cp -R /etc/ssl/cluster-default /etc/ssl/cluster-default-postgres
-chown -R stolon /etc/ssl/cluster-default-postgres
-chmod 0600 /etc/ssl/cluster-default-postgres/default-server-key.pem
-
-mkdir -p /stolon-data/postgres-new /stolon-data/upgrade-state
-cd /stolon-data/upgrade-state
-if [ ! -f /stolon-data/postgres-new/postgresql.conf ]; then
-    PGDATA=/stolon-data/postgres-new ${PGBINNEW}/initdb
-fi
-if [ ! -f /stolon-data/upgrade-state/delete_old_cluster.sh ]; then
-    ${PGBINNEW}/pg_upgrade -d /stolon-data/postgres -D /stolon-data/postgres-new
-    cp /stolon-data/postgres/pg_hba.conf /stolon-data/postgres-new/pg_hba.conf
-    rsync -av /stolon-data/postgres/conf.d /stolon-data/postgres-new/
-    rsync -av /stolon-data/postgres/postgresql-base.conf /stolon-data/postgres-new/
-    if [ -d /stolon-data/postgres-old-$PG_VERSION_OLD ]; then rm -rf /stolon-data/postgres-old-$PG_VERSION_OLD; fi
-    mv /stolon-data/postgres /stolon-data/postgres-old-$PG_VERSION_OLD
-    mv /stolon-data/postgres-new /stolon-data/postgres
+if [ $(cat postgres/PG_VERSION) != $PG_VERSION_NEW ]
+then
+    mkdir -p /stolon-data/postgres-new /stolon-data/upgrade-state
+    cd /stolon-data/upgrade-state
+    if [ ! -f /stolon-data/postgres-new/postgresql.conf ]; then
+        PGDATA=/stolon-data/postgres-new ${PGBINNEW}/initdb
+    fi
+    if [ ! -f /stolon-data/upgrade-state/delete_old_cluster.sh ]; then
+        ${PGBINNEW}/pg_upgrade -d /stolon-data/postgres -D /stolon-data/postgres-new
+        cp /stolon-data/postgres/pg_hba.conf /stolon-data/postgres-new/pg_hba.conf
+        rsync -av /stolon-data/postgres/conf.d /stolon-data/postgres-new/
+        rsync -av /stolon-data/postgres/postgresql-base.conf /stolon-data/postgres-new/
+        if [ -d /stolon-data/postgres-old-$PG_VERSION_OLD ]; then rm -rf /stolon-data/postgres-old-$PG_VERSION_OLD; fi
+        mv /stolon-data/postgres /stolon-data/postgres-old-$PG_VERSION_OLD
+        mv /stolon-data/postgres-new /stolon-data/postgres
+    fi
 fi

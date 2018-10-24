@@ -41,7 +41,7 @@ const (
 	// PostgresUser defines username for connecting to stolon PostgreSQL
 	PostgresUser = "stolon"
 	// PostgresBackupPath defines path for storing backup of PostgreSQL data
-	PostgresBackupPath = "/stolon/backup.sql"
+	PostgresBackupPath = "/stolon/backup/backup.sql"
 	// PostgresPgPassPath defines path to store the password file for PostgresQL
 	PostgresPgPassPath = "/tmp/pgpass"
 )
