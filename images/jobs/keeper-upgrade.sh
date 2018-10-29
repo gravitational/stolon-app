@@ -2,7 +2,7 @@
 # -*- mode: sh; -*-
 
 # File: entrypoint.sh
-# Time-stamp: <2018-10-24 10:37:32>
+# Time-stamp: <2018-10-29 16:12:30>
 # Copyright (C) 2018 Gravitational Inc
 # Description:
 
@@ -19,7 +19,7 @@ do
     fi
 done
 
-if [ $(cat postgres/PG_VERSION) != $PG_VERSION_NEW ]
+if [ $(cat /stolon-data/postgres/PG_VERSION) != $PG_VERSION_NEW ]
 then
     mkdir -p /stolon-data/postgres-new /stolon-data/upgrade-state
     cd /stolon-data/upgrade-state
