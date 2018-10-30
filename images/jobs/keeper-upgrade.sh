@@ -2,7 +2,7 @@
 # -*- mode: sh; -*-
 
 # File: entrypoint.sh
-# Time-stamp: <2018-10-29 16:12:30>
+# Time-stamp: <2018-10-30 13:23:15>
 # Copyright (C) 2018 Gravitational Inc
 # Description:
 
@@ -19,6 +19,9 @@ do
     fi
 done
 
+sed -i -e "s#\(ssl_cert_file = '\).*#\1/home/stolon/secrets/cluster-default/default-server.pem'#" /stolon-data/postgres/postgresql.conf
+sed -i -e "s#\(ssl_key_file = '\).*#\1/home/stolon/secrets/cluster-default/default-server-key.pem'#" /stolon-data/postgres/postgresql.conf
+sed -i -e "s#\(ssl_ca_file = '\).*#\1/home/stolon/secrets/cluster-ca/ca.pem'#" /stolon-data/postgres/postgresql.conf
 if [ $(cat /stolon-data/postgres/PG_VERSION) != $PG_VERSION_NEW ]
 then
     mkdir -p /stolon-data/postgres-new /stolon-data/upgrade-state

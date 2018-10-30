@@ -48,9 +48,11 @@ const (
 	volumeDataHostPath        = "/var/lib/data/stolon"
 	volumeDataMountPath       = "/stolon-data"
 	volumeClusterCA           = "cluster-ca"
-	volumeClusterCAMountPath  = "/etc/ssl/cluster-ca"
+	volumeClusterCAMountPath  = "/etc/secrets/cluster-ca"
 	volumeDefaultSSL          = "cluster-default-ssl"
-	volumeDefaultSSLMountPath = "/etc/ssl/cluster-default"
+	volumeDefaultSSLMountPath = "/etc/secrets/cluster-default"
+	volumeSecrets             = "stolon-secrets"
+	volumeSecretsMountPath    = "/home/stolon/secrets"
 	pgMaster                  = "master"
 	pgStandby                 = "standby"
 	pgUpgrade                 = "upgrade"
@@ -401,6 +403,8 @@ func (u *upgradeControl) generateJob(jobConfig jobConfig) *batchv1.Job {
 		command = "/usr/local/bin/clean-postgres-data.sh"
 	}
 
+	fixCertificatesCommand := "/usr/local/bin/fix-certificates.sh"
+
 	return &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      jobName,
@@ -426,6 +430,13 @@ func (u *upgradeControl) generateJob(jobConfig jobConfig) *batchv1.Job {
 							},
 						},
 						{
+							Name: volumeSecrets,
+							VolumeSource: apiv1.VolumeSource{
+								EmptyDir: nil,
+							},
+						},
+
+						{
 							Name: volumeClusterCA,
 							VolumeSource: apiv1.VolumeSource{
 								Secret: &apiv1.SecretVolumeSource{
@@ -445,6 +456,27 @@ func (u *upgradeControl) generateJob(jobConfig jobConfig) *batchv1.Job {
 					RestartPolicy:      apiv1.RestartPolicyNever,
 					NodeName:           jobConfig.nodeName,
 					ServiceAccountName: "stolon-keeper",
+					InitContainers: []apiv1.Container{
+						{
+							Name:    "fix-certificates",
+							Image:   fmt.Sprintf("leader.telekube.local:5000/stolon:%s", u.config.Upgrade.NewAppVersion),
+							Command: []string{fixCertificatesCommand},
+							VolumeMounts: []apiv1.VolumeMount{
+								{
+									Name:      volumeClusterCA,
+									MountPath: volumeClusterCAMountPath,
+								},
+								{
+									Name:      volumeDefaultSSL,
+									MountPath: volumeDefaultSSLMountPath,
+								},
+								{
+									Name:      volumeSecrets,
+									MountPath: volumeSecretsMountPath,
+								},
+							},
+						},
+					},
 					Containers: []apiv1.Container{
 						{
 							Name:    "upgrade",
@@ -456,12 +488,8 @@ func (u *upgradeControl) generateJob(jobConfig jobConfig) *batchv1.Job {
 									MountPath: volumeDataMountPath,
 								},
 								{
-									Name:      volumeClusterCA,
-									MountPath: volumeClusterCAMountPath,
-								},
-								{
-									Name:      volumeDefaultSSL,
-									MountPath: volumeDefaultSSLMountPath,
+									Name:      volumeSecrets,
+									MountPath: volumeSecretsMountPath,
 								},
 							},
 						},
