@@ -127,8 +127,6 @@ spec:
           env:
             - name: STOLON_USERNAME
               value: "stolon"
-            - name: STOLON_PASSWORDFILE
-              value: "/etc/secrets/stolon/password"
             - name: INFLUXDB_TELEGRAF_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -139,9 +137,6 @@ spec:
                 secretKeyRef:
                   name: telegraf-influxdb-creds
                   key: password
-          volumeMounts:
-            - name: stolon
-              mountPath: /etc/secrets/stolon
         - name: proxy
           image: stolon:latest
           ports:
