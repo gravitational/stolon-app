@@ -25,9 +25,11 @@ RUN apt-get update && \
         /usr/share/man/ \
         /tmp/*
 
-ADD bin/stolonctl /usr/bin/stolonctl
-ADD entrypoint.sh /usr/bin/entrypoint.sh
+ADD bin/stolonctl entrypoint.sh fix-permissions.sh /usr/bin/
 RUN chmod +x /usr/bin/stolonctl && \
-    chmod +x /usr/bin/entrypoint.sh
+    chmod +x /usr/bin/entrypoint.sh && \
+    chmod +x /usr/bin/fix-permissions.sh && \
+    useradd -ms /bin/bash stolon
 
+USER stolon
 ENTRYPOINT ["/usr/bin/entrypoint.sh"]

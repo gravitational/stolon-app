@@ -70,8 +70,6 @@ spec:
       namespace: default
     spec:
       serviceAccount: stolon-deletedb
-      securityContext:
-        runAsUser: 0
       containers:
       - name: deletedb
         image: stolon:latest

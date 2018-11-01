@@ -81,8 +81,6 @@ spec:
         product: stolon
     spec:
       serviceAccountName: stolon-utils
-      securityContext:
-        runAsUser: 0
       nodeSelector:
         stolon-keeper: "yes"
       containers:
@@ -91,8 +89,11 @@ spec:
         env:
           - name: STOLON_USERNAME
             value: "stolon"
-          - name: STOLON_PASSWORDFILE
-            value: "/etc/secrets/stolon/password"
+          - name: STOLON_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: stolon
+                key: password
           - name: INFLUXDB_TELEGRAF_USERNAME
             valueFrom:
               secretKeyRef:
@@ -104,14 +105,9 @@ spec:
                 name: telegraf-influxdb-creds
                 key: password
         volumeMounts:
-          - name: secrets
-            mountPath: /etc/secrets/stolon
           - name: gravity-log
             mountPath: /var/log
       volumes:
         - name: gravity-log
           hostPath:
             path: /var/log/gravity
-        - name: secrets
-          secret:
-            secretName: stolon
