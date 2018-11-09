@@ -403,7 +403,7 @@ func (u *upgradeControl) generateJob(jobConfig jobConfig) *batchv1.Job {
 		command = "/usr/local/bin/clean-postgres-data.sh"
 	}
 
-	fixCertificatesCommand := "/usr/local/bin/fix-certificates.sh"
+	fixCertificatesCommand := "/usr/local/bin/init-container.sh"
 
 	return &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
@@ -458,7 +458,7 @@ func (u *upgradeControl) generateJob(jobConfig jobConfig) *batchv1.Job {
 					ServiceAccountName: "stolon-keeper",
 					InitContainers: []apiv1.Container{
 						{
-							Name:    "fix-certificates",
+							Name:    "fix-secrets",
 							Image:   fmt.Sprintf("leader.telekube.local:5000/stolon:%s", u.config.Upgrade.NewAppVersion),
 							Command: []string{fixCertificatesCommand},
 							VolumeMounts: []apiv1.VolumeMount{

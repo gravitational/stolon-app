@@ -109,7 +109,7 @@ spec:
       initContainers:
         - name: fix-secrets
           image: stolon:latest
-          command: ["/usr/bin/dumb-init", "--", "/usr/local/bin/fix-certificates.sh"]
+          command: ["/usr/bin/dumb-init", "--", "/usr/local/bin/init-container.sh"]
           securityContext:
             runAsUser: 0
           volumeMounts:
@@ -121,6 +121,8 @@ spec:
               mountPath: /etc/secrets/cluster-default
             - name: stolon-secrets
               mountPath: /home/stolon/secrets
+            - name: data
+              mountPath: /stolon-data
       containers:
         - name: telegraf
           image: stolon-telegraf-node:latest

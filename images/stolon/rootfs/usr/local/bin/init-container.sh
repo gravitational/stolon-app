@@ -2,7 +2,7 @@
 # -*- mode: sh; -*-
 
 # File: fix-permissions.sh
-# Time-stamp: <2018-10-17 22:40:08>
+# Time-stamp: <2018-11-09 11:55:07>
 # Copyright (C) 2018 Gravitational Inc.
 # Description:
 
@@ -30,3 +30,8 @@ then
     cp -R /etc/secrets/etcd /home/stolon/secrets/etcd
     chown -R stolon /home/stolon/secrets/etcd
 fi
+
+if [[ ! -f /stolon-data/dummy.file ]]; then
+    fallocate -l 300MB /stolon-data/dummy.file
+fi
+chown -R stolon:stolon /stolon-data
