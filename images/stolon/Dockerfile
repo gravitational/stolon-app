@@ -13,7 +13,7 @@ ADD bin/ /usr/local/bin/
 ADD rootfs/ /
 
 RUN chmod a+rx /usr/local/bin/run.sh && \
-    chmod a+rx /usr/local/bin/fix-certificates.sh
+    chmod a+rx /usr/local/bin/init-container.sh
 RUN useradd -ms /bin/bash stolon && \
     mkdir -p /home/stolon/bin && \
     mkdir -p /home/stolon/secrets && \
