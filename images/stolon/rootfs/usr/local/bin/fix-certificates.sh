@@ -2,7 +2,7 @@
 # -*- mode: sh; -*-
 
 # File: fix-permissions.sh
-# Time-stamp: <2018-11-09 09:33:27>
+# Time-stamp: <2018-11-09 11:55:07>
 # Copyright (C) 2018 Gravitational Inc.
 # Description:
 
@@ -29,11 +29,6 @@ if [ -d /etc/secrets/etcd ]
 then
     cp -R /etc/secrets/etcd /home/stolon/secrets/etcd
     chown -R stolon /home/stolon/secrets/etcd
-fi
-
-if [[ ! -e /stolon-data ]]; then
-	echo "stolon data doesn't exist, data won't be persistent!"
-	mkdir /stolon-data
 fi
 
 if [[ ! -f /stolon-data/dummy.file ]]; then

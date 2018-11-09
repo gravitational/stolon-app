@@ -121,6 +121,8 @@ spec:
               mountPath: /etc/secrets/cluster-default
             - name: stolon-secrets
               mountPath: /home/stolon/secrets
+            - name: data
+              mountPath: /stolon-data
       containers:
         - name: telegraf
           image: stolon-telegraf-node:latest
