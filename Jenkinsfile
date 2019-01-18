@@ -43,7 +43,7 @@ pipeline {
         APP_VERSION = sh(script: 'make what-version', returnStdout: true).trim()
         stage('Generate installer tarball') {
             environment {
-                PATH = "$(pwd)/bin:$PATH"
+                PATH = "\$(pwd)/bin:\$PATH"
             }
             lock("installer-${BRANCH}") {
                 print "Building stolon-app installer tarball version $APP_VERSION"
