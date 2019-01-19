@@ -1,13 +1,5 @@
 #!/usr/bin/env groovy
-properties([
-               parameters([
-                              string(
-                              name: 'GRAVITY_VERSION',
-                              defaultValue: '5.0.28',
-                              description: 'Version of gravity/tele binaries'
-                              ),
-                          ])
-           ])
+
 // --> Constants
 ANSIBLE_VERSION='2.7.4'
 TERRAFORM_VERSION='0.11.11'
@@ -21,6 +13,14 @@ pipeline {
         ansiColor(colorMapName: 'XTerm')
         disableConcurrentBuilds()
         timestamps()
+    }
+
+    parameters {
+        string(
+        name: 'GRAVITY_VERSION',
+        defaultValue: '5.0.28',
+        description: 'Version of gravity/tele binaries'
+        )
     }
     stages {
         stage('Checkout source') {
@@ -49,10 +49,14 @@ pipeline {
                 PATH = "\$(pwd)/bin:\$PATH"
                 APP_VERSION = sh(script: 'make what-version', returnStdout: true).trim()
             }
-            lock("installer-${BRANCH}") {
-                print "Building stolon-app installer tarball version $APP_VERSION"
-                def installerTarballFileName = getInstallerTarballFileName()
-                createInstallerTarball(installerTarballFileName)
+            steps {
+                lock("installer-${BRANCH}") {
+                    print "Building stolon-app installer tarball version $APP_VERSION"
+                    script {
+                        installerTarballFileName = getInstallerTarballFileName()
+                        createInstallerTarball(installerTarballFileName)
+                    }
+                }
             }
         }
     }
