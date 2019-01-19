@@ -1,5 +1,5 @@
-ARG ANSIBLE_VERSION=2.7.4
 FROM debian:jessie
+ARG ANSIBLE_VERSION=2.7.4
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN echo "===> Installing python and supporting tools..." && \

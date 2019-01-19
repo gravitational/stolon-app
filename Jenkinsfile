@@ -22,6 +22,11 @@ pipeline {
         description: 'Version of gravity/tele binaries'
         )
     }
+
+    environment {
+        ANSIBLE_VERSION = "${ANSIBLE_VERSION}"
+        GRAVITY_VERSION = "${GRAVITY_VERSION}"
+    }
     stages {
         stage('Checkout source') {
             steps {
