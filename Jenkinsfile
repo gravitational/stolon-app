@@ -16,7 +16,7 @@ TERRAFORM_VERSION='0.11.11'
 BRANCH = env.BRANCH_NAME
 
 pipeline {
-    agents any
+    agent any
     options {
         ansiColor(colorMapName: 'XTerm')
         disableConcurrentBuilds()
@@ -24,7 +24,9 @@ pipeline {
     }
     stages {
         stage('Checkout source') {
-            checkout scm
+            steps {
+                checkout scm
+            }
         }
 
         stage('Build docker image for Ansible') {
@@ -36,14 +38,16 @@ pipeline {
         }
 
         stage('Download gravity and tele binaries') {
-            print "Downloading tele and gravity version $GRAVITY_VERSION"
-            downloadBinaries($GRAVITY_VERSION)
+            steps {
+                print "Downloading tele and gravity version $GRAVITY_VERSION"
+                downloadBinaries($GRAVITY_VERSION)
+            }
         }
 
-        APP_VERSION = sh(script: 'make what-version', returnStdout: true).trim()
         stage('Generate installer tarball') {
             environment {
                 PATH = "\$(pwd)/bin:\$PATH"
+                APP_VERSION = sh(script: 'make what-version', returnStdout: true).trim()
             }
             lock("installer-${BRANCH}") {
                 print "Building stolon-app installer tarball version $APP_VERSION"
