@@ -20,6 +20,11 @@ pipeline {
         name: 'GRAVITY_VERSION',
         defaultValue: '5.0.28',
         description: 'Version of gravity/tele binaries'
+        ),
+        string(
+        name: 'CLUSTER_SSL_APP_VERSION',
+        defaultValue: 'master',
+        description: 'Version of cluster-ssl-app'
         )
     }
 
@@ -45,20 +50,19 @@ pipeline {
         stage('Download gravity and tele binaries') {
             steps {
                 print "Downloading tele and gravity version $GRAVITY_VERSION"
-                downloadBinaries($GRAVITY_VERSION)
+                downloadBinaries(GRAVITY_VERSION)
             }
         }
 
         stage('Generate installer tarball') {
             environment {
-                PATH = "\$(pwd)/bin:\$PATH"
                 APP_VERSION = sh(script: 'make what-version', returnStdout: true).trim()
             }
             steps {
-                lock("installer-${BRANCH}") {
-                    print "Building stolon-app installer tarball version $APP_VERSION"
+                withEnv(['PATH+LOCAL=./bin']) {
+                    print "Building stolon-app installer tarball version ${env.APP_VERSION}"
                     script {
-                        installerTarballFileName = getInstallerTarballFileName()
+                        installerTarballFileName = getInstallerTarballFileName(env.APP_VERSION)
                         createInstallerTarball(installerTarballFileName)
                     }
                 }
@@ -76,8 +80,8 @@ def downloadBinaries(version) {
 }
 
 // returns installer tarball name based on application version
-def getInstallerTarballFileName() {
-  return "stolon-app-${APP_VERSION}-installer.tar.gz"
+def getInstallerTarballFileName(appVersion) {
+    return "stolon-app-${appVersion}-installer.tar.gz"
 }
 
 def createInstallerTarball(installerTarballFileName) {
