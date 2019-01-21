@@ -2,12 +2,15 @@ export VERSION ?= $(shell ./version.sh)
 REPOSITORY := gravitational.io
 NAME := stolon-app
 OPS_URL ?= https://opscenter.localhost.localdomain:33009
+TELE ?= $(shell which tele)
 
 SRCDIR=/go/src/github.com/gravitational/stolon-app
 DOCKERFLAGS=--rm=true -v $(PWD):$(SRCDIR) -w $(SRCDIR)
 BUILDIMAGE=golang:1.9
 
 EXTRA_GRAVITY_OPTIONS ?=
+STATE_DIR ?=
+BUILD_DIR := build
 
 CONTAINERS := stolon-bootstrap:$(VERSION) \
 			  stolon-uninstall:$(VERSION) \
@@ -42,18 +45,16 @@ IMPORT_OPTIONS := --vendor \
 		$(IMPORT_IMAGE_OPTIONS)
 
 TELE_BUILD_OPTIONS := --insecure \
-                --repository=$(OPS_URL) \
-                --name=$(NAME) \
-                --version=$(VERSION) \
-                --glob=**/*.yaml \
-                --ignore=".git" \
-                --ignore="images" \
-                --ignore="cmd" \
-                --ignore="vendor/**/*.yaml" \
-                $(IMPORT_IMAGE_OPTIONS)
-
-BUILD_DIR := build
-TARBALL := $(BUILD_DIR)/stolon-app.tar.gz
+		--state-dir=$(STATE_DIR) \
+		--repository=$(OPS_URL) \
+		--name=$(NAME) \
+		--version=$(VERSION) \
+		--glob=**/*.yaml \
+		--ignore=".git" \
+		--ignore="images" \
+		--ignore="cmd" \
+		--ignore="vendor/**/*.yaml" \
+		$(IMPORT_IMAGE_OPTIONS)
 
 .PHONY: all
 all: clean images
@@ -76,13 +77,12 @@ export: $(TARBALL)
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
-
-$(TARBALL): import $(BUILD_DIR)
-	gravity package export $(REPOSITORY)/$(NAME):$(VERSION) $(TARBALL) $(EXTRA_GRAVITY_OPTIONS)
+$(STATE_DIR):
+	mkdir -p $(STATE_DIR)
 
 .PHONY: build-app
-build-app: clean images
-	tele build -o $(BUILD_DIR)/installer.tar $(TELE_BUILD_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) resources/app.yaml
+build-app: images
+	$(TELE) build -o $(BUILD_DIR)/installer.tar $(TELE_BUILD_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) resources/app.yaml
 
 .PHONY: build-stolonboot
 build-stolonboot: $(BUILD_DIR)
@@ -101,6 +101,7 @@ build/stolonctl:
 .PHONY: clean
 clean:
 	rm -rf $(BUILD_DIR)
+	rm -rf $(STATE_DIR)
 	cd images && $(MAKE) clean
 
 $(GOMETALINTER):

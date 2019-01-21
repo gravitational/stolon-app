@@ -31,6 +31,7 @@ pipeline {
     environment {
         ANSIBLE_VERSION = "${ANSIBLE_VERSION}"
         GRAVITY_VERSION = "${GRAVITY_VERSION}"
+        STATE_DIR = sh(script: '$(pwd)/state', returnStdout: true).trim()
     }
     stages {
         stage('Checkout source') {
@@ -51,6 +52,28 @@ pipeline {
             steps {
                 print "Downloading tele and gravity version $GRAVITY_VERSION"
                 downloadBinaries(GRAVITY_VERSION)
+            }
+        }
+
+        stage('Create state directory') {
+            steps {
+                sh "mkdir ${env.STATE_DIR}"
+            }
+        }
+
+        stage('Import dependencies') {
+            stages {
+                stage('Import cluster-ssl-all') {
+                    steps {
+                        print "Cloning cluster-ssl-app"
+                        dir('dependencies') {
+                            sh "git clone https://github.com/gravitational/cluster-ssl-app.git"
+                            dir('cluster-ssl-app') {
+                                sh "make import OPS_URL= STATE_DIR=${env.STATE_DIR}"
+                            }
+                        }
+                    }
+                }
             }
         }
 
