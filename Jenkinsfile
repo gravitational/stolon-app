@@ -20,7 +20,7 @@ pipeline {
         name: 'GRAVITY_VERSION',
         defaultValue: '5.0.28',
         description: 'Version of gravity/tele binaries'
-        ),
+        )
         string(
         name: 'CLUSTER_SSL_APP_VERSION',
         defaultValue: 'master',
