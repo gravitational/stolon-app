@@ -63,7 +63,7 @@ pipeline {
 
         stage('Import dependencies') {
             stages {
-                stage('Import cluster-ssl-all') {
+                stage('Import cluster-ssl-app') {
                     steps {
                         print "Cloning cluster-ssl-app"
                         dir('dependencies') {
