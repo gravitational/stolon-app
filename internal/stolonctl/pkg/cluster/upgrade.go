@@ -474,6 +474,10 @@ func (u *upgradeControl) generateJob(jobConfig jobConfig) *batchv1.Job {
 									Name:      volumeSecrets,
 									MountPath: volumeSecretsMountPath,
 								},
+								{
+									Name:      volumeData,
+									MountPath: volumeDataMountPath,
+								},
 							},
 						},
 					},
