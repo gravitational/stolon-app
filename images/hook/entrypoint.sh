@@ -26,6 +26,8 @@ if [ $1 = "update" ]; then
     rig delete deployments/stolon-rpc --force
     rig delete deployments/stolon-sentinel --force
     rig delete deployments/stolon-utils --force
+    rig delete configmaps/stolon-telegraf --force
+    rig delete configmaps/stolon-telegraf-node --force
 
     # wait for keeper pods to go away
     while kubectl get pods --show-all|grep -v stolon-keeper-schema|grep -q stolon-keeper
@@ -35,8 +37,9 @@ if [ $1 = "update" ]; then
     done
 
     echo "Creating or updating resources"
+    rig upsert -f /var/lib/gravity/resources/security.yaml --debug
+    rig upsert -f /var/lib/gravity/resources/telegraf.yaml --debug
     rig upsert -f /var/lib/gravity/resources/keeper.yaml --debug
-    rig upsert -f /var/lib/gravity/resources/rpc.yaml --debug
     rig upsert -f /var/lib/gravity/resources/sentinel.yaml --debug
     rig upsert -f /var/lib/gravity/resources/utils.yaml --debug
     rig upsert -f /var/lib/gravity/resources/alerts.yaml --debug

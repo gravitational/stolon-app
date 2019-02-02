@@ -7,7 +7,6 @@ HOOK_TAG := stolon-hook:$(VERSION)
 JOBS_TAG := stolon-jobs:$(VERSION)
 STOLON_TAG := stolon:$(VERSION)
 TELEGRAF_TAG := stolon-telegraf:$(VERSION)
-TELEGRAF_NODE_TAG := stolon-telegraf-node:$(VERSION)
 STOLONCTL_TAG := stolonctl:$(VERSION)
 
 .PHONY: images
@@ -15,7 +14,6 @@ images: bootstrap \
 		uninstall \
 		stolon \
 		telegraf \
-		telegraf-node \
 		hook \
 		jobs \
 		stolonctl
@@ -25,7 +23,6 @@ images: bootstrap \
 	docker tag $(HOOK_TAG) stolon-hook:latest
 	docker tag $(JOBS_TAG) stolon-jobs:latest
 	docker tag $(TELEGRAF_TAG) stolon-telegraf:latest
-	docker tag $(TELEGRAF_NODE_TAG) stolon-telegraf-node:latest
 	docker tag $(STOLONCTL_TAG) stolonctl:latest
 
 STOLONBOOT_BINS := bootstrap/bin
@@ -76,10 +73,6 @@ stolon: $(STOLON_BINS)
 .PHONY: telegraf
 telegraf:
 	docker build --pull -t $(TELEGRAF_TAG) $(PWD)/telegraf
-
-.PHONY: telegraf-node
-telegraf-node:
-	docker build --pull -t $(TELEGRAF_NODE_TAG) $(PWD)/telegraf-node
 
 .PHONY: jobs
 jobs:

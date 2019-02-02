@@ -1,6 +1,6 @@
-FROM quay.io/gravitational/debian-grande:0.0.1
+FROM quay.io/gravitational/debian-grande:stretch
+ARG TELEGRAF_VERSION=1.9.3
 
-ARG TELEGRAF_VERSION=1.5.2
 ENV DEBIAN_FRONTEND=noninteractive \
     TERM=xterm
 
@@ -19,9 +19,8 @@ RUN apt-get update && \
         /telegraf.tar.gz \
         /etc/telegraf/*
 
-ADD rootfs/ /
-
-RUN chmod a+rx /usr/local/bin/run.sh
+ADD run.sh /usr/local/bin/run.sh
+RUN chmod +x /usr/local/bin/run.sh
 
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 CMD ["/usr/local/bin/run.sh"]

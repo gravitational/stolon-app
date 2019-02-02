@@ -6,7 +6,6 @@ export STORE_ENDPOINTS=$NODE_NAME:2379
 export STSENTINEL_STORE_ENDPOINTS=$STORE_ENDPOINTS
 export STKEEPER_STORE_ENDPOINTS=$STORE_ENDPOINTS
 export STPROXY_STORE_ENDPOINTS=$STORE_ENDPOINTS
-export STOLONCTL_STORE_ENDPOINTS=$STORE_ENDPOINTS
 
 function die() {
     echo "ERROR: $*" >&2
@@ -41,41 +40,6 @@ function chmod_keys() {
 function setup_etcd_keys() {
     cp -R /etc/etcd/secrets /etc/etcd/secrets-rw
     chown -R stolon /etc/etcd/secrets-rw
-}
-
-# TODO: find how to map ENV vars which is populated by k8s services for discovery to vars, which utilities uses
-function setup_stolonctl() {
-	announce_step 'Setup stolon CLI'
-
-	_create_pg_pass "$STOLON_POSTGRES_SERVICE_HOST" \
-				   "$STOLON_POSTGRES_SERVICE_PORT" \
-				   "*" \
-				   "$STOLONCTL_DB_USERNAME" \
-				   "$STOLON_DB_PASSWORD"
-
-	cat > /usr/local/bin/stolonctl-cluster <<'EOF'
-	export STOLONCTL_DB_HOST=$STOLON_POSTGRES_SERVICE_HOST
-	export STOLONCTL_DB_PORT=$STOLON_POSTGRES_SERVICE_PORT
-	stolonctl "$@"
-EOF
-	chmod +x /usr/local/bin/stolonctl-cluster
-}
-
-function setup_stolonrpc() {
-	announce_step 'Setup stolon RPC'
-
-	_create_pg_pass "$STOLON_POSTGRES_SERVICE_HOST" \
-				   "$STOLON_POSTGRES_SERVICE_PORT" \
-				   "*" \
-				   "$STOLONRPC_DB_USERNAME" \
-				   "$STOLON_DB_PASSWORD"
-
-	cat > /usr/local/bin/stolonrpc-cluster <<'EOF'
-	export STOLONRPC_DB_HOST=$STOLON_POSTGRES_SERVICE_HOST
-	export STOLONRPC_DB_PORT=$STOLON_POSTGRES_SERVICE_PORT
-	stolonrpc "$@"
-EOF
-	chmod +x /usr/local/bin/stolonrpc-cluster
 }
 
 function _create_pg_pass() {
@@ -121,18 +85,6 @@ function launch_proxy() {
 	stolon-proxy
 }
 
-function launch_ctl() {
-	announce_step 'Launching stolon CLI'
-
-	stolonctl-cluster "$@"
-}
-
-function launch_rpc() {
-	announce_step 'Launching stolon RPC'
-
-	stolonrpc-cluster
-}
-
 function main() {
 	announce_step 'Start'
 
@@ -158,18 +110,6 @@ function main() {
 		chmod_keys
 		setup_etcd_keys
 		launch_proxy
-		exit 0
-	fi
-
-	if [[ "${CTL}" == "true" ]]; then
-		setup_stolonctl
-		launch_ctl "$@"
-		exit 0
-	fi
-
-	if [[ "${RPC}" == "true" ]]; then
-		setup_stolonrpc
-		launch_rpc
 		exit 0
 	fi
 

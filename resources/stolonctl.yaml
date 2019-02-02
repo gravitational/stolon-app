@@ -20,6 +20,7 @@ spec:
         component: stolonctl
         product: stolon
     spec:
+      serviceAccountName: stolon
       securityContext:
         runAsUser: 0
       containers:

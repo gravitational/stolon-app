@@ -1,4 +1,4 @@
-FROM quay.io/gravitational/debian-grande:0.0.1
+FROM quay.io/gravitational/debian-grande:stretch
 
 ARG CHANGESET
 ARG VERSION
@@ -10,9 +10,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 
 RUN apt-get update && \
-    echo "deb http://deb.debian.org/debian jessie-backports main contrib non-free" > /etc/apt/sources.list.d/jessie-backports.list && \
-    apt-get update && \
-    apt-get install --yes --no-install-recommends -t jessie-backports \
+    apt-get install --yes --no-install-recommends \
         postgresql-9.6 \
         postgresql-client-9.6 \
         postgresql-contrib-9.6 && \

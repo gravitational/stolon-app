@@ -1,11 +1,13 @@
-export VERSION ?= $(shell git describe --long --tags --always|awk -F'[.-]' '{print $$1 "." $$2 "." $$4}')
+export VERSION ?= $(shell ./version.sh)
 REPOSITORY := gravitational.io
 NAME := stolon-app
-OPS_URL ?= https://opscenter.localhost.localdomain:33009
+OPS_URL ?=
+
+RUNTIME_VERSION := $(shell tele version | awk '/version:/ {print $$2}')
 
 SRCDIR=/go/src/github.com/gravitational/stolon-app
 DOCKERFLAGS=--rm=true -v $(PWD):$(SRCDIR) -w $(SRCDIR)
-BUILDIMAGE=golang:1.9
+BUILDIMAGE=golang:1.11
 
 EXTRA_GRAVITY_OPTIONS ?=
 
@@ -15,17 +17,15 @@ CONTAINERS := stolon-bootstrap:$(VERSION) \
 			  stolon-jobs:$(VERSION) \
 			  stolon:$(VERSION) \
 			  stolon-telegraf:$(VERSION) \
-			  stolon-telegraf-node:$(VERSION) \
 			  stolonctl:$(VERSION)
 
 IMPORT_IMAGE_OPTIONS := --set-image=stolon-bootstrap:$(VERSION) \
-	--set-image=stolon-uninstall:$(VERSION) \
-	--set-image=stolon-hook:$(VERSION) \
-	--set-image=stolon-jobs:$(VERSION) \
-	--set-image=stolon:$(VERSION) \
-	--set-image=stolon-telegraf:$(VERSION) \
-	--set-image=stolon-telegraf-node:$(VERSION) \
-	--set-image=stolonctl:$(VERSION)
+		--set-image=stolon-uninstall:$(VERSION) \
+		--set-image=stolon-hook:$(VERSION) \
+		--set-image=stolon-jobs:$(VERSION) \
+		--set-image=stolon:$(VERSION) \
+		--set-image=stolon-telegraf:$(VERSION) \
+		--set-image=stolonctl:$(VERSION)
 
 IMPORT_OPTIONS := --vendor \
 		--ops-url=$(OPS_URL) \
@@ -42,18 +42,17 @@ IMPORT_OPTIONS := --vendor \
 		$(IMPORT_IMAGE_OPTIONS)
 
 TELE_BUILD_OPTIONS := --insecure \
-                --repository=$(OPS_URL) \
-                --name=$(NAME) \
-                --version=$(VERSION) \
-                --glob=**/*.yaml \
-                --ignore=".git" \
-                --ignore="images" \
-                --ignore="cmd" \
-                --ignore="vendor/**/*.yaml" \
-                $(IMPORT_IMAGE_OPTIONS)
+		--repository=$(OPS_URL) \
+		--name=$(NAME) \
+		--version=$(VERSION) \
+		--glob=**/*.yaml \
+		--ignore=".git" \
+		--ignore="images" \
+		--ignore="cmd" \
+		--ignore="vendor/**/*.yaml" \
+		$(IMPORT_IMAGE_OPTIONS)
 
 BUILD_DIR := build
-TARBALL := $(BUILD_DIR)/stolon-app.tar.gz
 
 .PHONY: all
 all: clean images
@@ -71,18 +70,14 @@ import: images
 	-gravity app delete --ops-url=$(OPS_URL) $(REPOSITORY)/$(NAME):$(VERSION) --force --insecure $(EXTRA_GRAVITY_OPTIONS)
 	gravity app import $(IMPORT_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) .
 
-.PHONY: export
-export: $(TARBALL)
-
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-$(TARBALL): import $(BUILD_DIR)
-	gravity package export $(REPOSITORY)/$(NAME):$(VERSION) $(TARBALL) $(EXTRA_GRAVITY_OPTIONS)
-
 .PHONY: build-app
-build-app: images
-	tele build -o $(BUILD_DIR)/installer.tar $(TELE_BUILD_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) resources/app.yaml
+build-app: $(BUILD_DIR) images
+	sed -i.bak "s/version: \"0.0.0+latest\"/version: \"$(RUNTIME_VERSION)\"/" resources/app.yaml
+	tele build -f -o $(BUILD_DIR)/installer.tar $(TELE_BUILD_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) resources/app.yaml
+	if [ -f resources/app.yaml.bak ]; then mv resources/app.yaml.bak resources/app.yaml; fi
 
 .PHONY: build-stolonboot
 build-stolonboot: $(BUILD_DIR)
