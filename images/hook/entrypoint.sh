@@ -5,11 +5,13 @@ echo "Assuming changeset from the envrionment: $RIG_CHANGESET"
 # note that rig does not take explicit changeset ID
 # taking it from the environment variables
 if [ $1 = "update" ]; then
+    # TODO(s.antipov) Rewrite on Helm
     echo "Starting update, changeset: $RIG_CHANGESET"
     rig cs delete --force -c cs/$RIG_CHANGESET
 
     echo "Upgrade keeper database schema"
     rig delete deployments/stolonctl --force
+    rig upsert -f /var/lib/gravity/resources/security.yaml --debug
     rig upsert -f /var/lib/gravity/resources/stolonctl.yaml --debug
 
     while [ ! $(kubectl get pod -l product=stolon,component=stolonctl -o jsonpath='{.items[0].status.phase}') == "Running" ]
@@ -28,6 +30,13 @@ if [ $1 = "update" ]; then
     rig delete deployments/stolon-utils --force
     rig delete configmaps/stolon-telegraf --force
     rig delete configmaps/stolon-telegraf-node --force
+
+    for name in stolon-rpc stolon-utils stolon-keeper stolon-sentinel
+    do
+        kubectl delete serviceaccount/$name --ignore-not-found
+        kubectl delete rolebinding/$name --ignore-not-found
+        kubectl delete role/$name --ignore-not-found
+    done
 
     # wait for keeper pods to go away
     while kubectl get pods --show-all|grep -v stolon-keeper-schema|grep -q stolon-keeper

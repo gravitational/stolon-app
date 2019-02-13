@@ -24,6 +24,7 @@ import (
 
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/cluster"
 
+	"github.com/gravitational/stolon/common"
 	"github.com/gravitational/trace"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -62,6 +63,73 @@ func Status() (*cluster.Status, error) {
 	}
 
 	return status, nil
+}
+
+// IsClusterHealthy simply returns true if cluster is healthy or false in other case
+func IsClusterHealthy(status *cluster.Status) bool {
+	var (
+		runningPods     int
+		masterHealthy   bool
+		runningMasters  int
+		runningStandbys int
+		healthyNodes    int
+		replicationLag  bool
+		masterID        string
+	)
+
+	for _, pod := range status.PodsStatus {
+		var keeperID string
+		for _, keeperState := range status.ClusterData.KeepersState {
+			if pod.PodIP == keeperState.ListenAddress {
+				keeperID = keeperState.ID
+			}
+		}
+		if keeperID != "" && status.ClusterData.KeepersState[keeperID].PGState != nil {
+			runningPods++
+			if status.ClusterData.KeepersState[keeperID].PGState.Role == common.MasterRole {
+				if status.ClusterData.KeepersState[keeperID].Healthy {
+					masterHealthy = true
+					masterID = keeperID
+				}
+				// count amount of running master nodes
+				runningMasters++
+			} else {
+				// count amount of running standby nodes
+				runningStandbys++
+				if masterID != "" {
+					if status.ClusterData.KeepersState[masterID].PGState.XLogPos > status.ClusterData.KeepersState[keeperID].PGState.XLogPos {
+						if status.ClusterData.KeepersState[masterID].PGState.XLogPos-status.ClusterData.KeepersState[keeperID].PGState.XLogPos > 0 {
+							replicationLag = true
+						}
+					} else {
+						if status.ClusterData.KeepersState[keeperID].PGState.XLogPos-status.ClusterData.KeepersState[masterID].PGState.XLogPos > 0 {
+							replicationLag = true
+						}
+					}
+				}
+			}
+			if status.ClusterData.KeepersState[keeperID].Healthy {
+				// count amount of running healthy nodes
+				healthyNodes++
+			}
+		}
+	}
+
+	if runningPods > 1 {
+		if runningMasters == 1 {
+			if masterHealthy {
+				if runningStandbys >= 1 {
+					if healthyNodes >= 2 {
+						if !replicationLag {
+							return true
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return false
 }
 
 // PrintStatus prints status of stolon cluster to stdout

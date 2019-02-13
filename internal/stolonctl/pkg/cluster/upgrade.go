@@ -447,7 +447,7 @@ func (u *upgradeControl) generateJob(jobConfig jobConfig) *batchv1.Job {
 					SecurityContext: &apiv1.PodSecurityContext{
 						RunAsUser: int64Ptr(0),
 					},
-					ServiceAccountName: "stolon-keeper",
+					ServiceAccountName: "stolon",
 					Containers: []apiv1.Container{
 						{
 							Name:    "upgrade",

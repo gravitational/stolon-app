@@ -2,7 +2,7 @@
 # -*- mode: sh; -*-
 
 # File: entrypoint.sh
-# Time-stamp: <2018-05-22 17:05:45>
+# Time-stamp: <2019-02-06 23:07:41>
 # Copyright (C) 2018 Gravitational Inc
 # Description:
 
@@ -30,7 +30,8 @@ if [ ! -f /stolon-data/postgres-new/postgresql.conf ]; then
     PGDATA=/stolon-data/postgres-new gosu stolon ${PGBINNEW}/initdb
 fi
 if [ ! -f /stolon-data/upgrade-state/delete_old_cluster.sh ]; then
-    gosu stolon ${PGBINNEW}/pg_upgrade -d /stolon-data/postgres -D /stolon-data/postgres-new
+    gosu stolon ${PGBINNEW}/pg_upgrade -d /stolon-data/postgres -D /stolon-data/postgres-new || true
+    tail -n +1 /stolon-data/upgrade-state/*
     gosu stolon cp /stolon-data/postgres/pg_hba.conf /stolon-data/postgres-new/pg_hba.conf
     gosu stolon rsync -av /stolon-data/postgres/conf.d /stolon-data/postgres-new/
     gosu stolon rsync -av /stolon-data/postgres/postgresql-base.conf /stolon-data/postgres-new/
