@@ -9,7 +9,9 @@ ENV TERM=xterm \
     PG_VERSION_OLD=9.4 \
     PG_VERSION_NEW=9.6
 
-RUN echo "deb http://deb.debian.org/debian jessie-backports main contrib non-free" > /etc/apt/sources.list.d/jessie-backports.list && \
+RUN sed '/deb http:\/\/httpredir.debian.org\/debian\/ jessie-updates main contrib non-free/d' -i /etc/apt/sources.list && \
+    echo "deb [check-valid-until=no] http://archive.debian.org/debian jessie-backports main contrib non-free" > /etc/apt/sources.list.d/jessie-backports.list && \
+    echo "Acquire::Check-Valid-Until "false";" >> /etc/apt/apt.conf && \
     apt-get update && \
     apt-get install --yes --no-install-recommends \
         curl \
