@@ -2,7 +2,7 @@
 # -*- mode: sh; -*-
 
 # File: entrypoint.sh
-# Time-stamp: <2018-05-22 17:05:45>
+# Time-stamp: <2019-04-03 22:30:48>
 # Copyright (C) 2018 Gravitational Inc
 # Description:
 
@@ -19,6 +19,9 @@ do
     fi
 done
 
+CURRENT_VERSION=$(cat /stolon-data/postgres/PG_VERSION)
+if [ $CURRENT_VERSION == $PG_VERSION_NEW ]; then exit 0; fi
+
 # fix permissions for ssl
 cp -R /etc/ssl/cluster-default /etc/ssl/cluster-default-postgres
 chown -R stolon /etc/ssl/cluster-default-postgres
@@ -30,6 +33,7 @@ if [ ! -f /stolon-data/postgres-new/postgresql.conf ]; then
     PGDATA=/stolon-data/postgres-new gosu stolon ${PGBINNEW}/initdb
 fi
 if [ ! -f /stolon-data/upgrade-state/delete_old_cluster.sh ]; then
+    sed '/idle_in_transaction_session_timeout/d' -i /stolon-data/postgres/postgresql.conf
     gosu stolon ${PGBINNEW}/pg_upgrade -d /stolon-data/postgres -D /stolon-data/postgres-new
     gosu stolon cp /stolon-data/postgres/pg_hba.conf /stolon-data/postgres-new/pg_hba.conf
     gosu stolon rsync -av /stolon-data/postgres/conf.d /stolon-data/postgres-new/
