@@ -10,7 +10,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: stolon
+      product: stolon
       component: stolonctl
   replicas: 1
   template:
