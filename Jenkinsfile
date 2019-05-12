@@ -1,113 +1,108 @@
 #!/usr/bin/env groovy
-
-// --> Constants
-ANSIBLE_VERSION='2.7.4'
-TERRAFORM_VERSION='0.11.11'
-// <--
-
-BRANCH = env.BRANCH_NAME
-
-pipeline {
-    agent any
-    options {
-        ansiColor(colorMapName: 'XTerm')
-        disableConcurrentBuilds()
-        timestamps()
+def propagateParamsToEnv() {
+  for (param in params) {
+    if (env."${param.key}" == null) {
+      env."${param.key}" = param.value
     }
-
-    parameters {
-        string(
-        name: 'GRAVITY_VERSION',
-        defaultValue: '5.0.28',
-        description: 'Version of gravity/tele binaries'
-        )
-        string(
-        name: 'CLUSTER_SSL_APP_VERSION',
-        defaultValue: 'master',
-        description: 'Version of cluster-ssl-app'
-        )
-    }
-
-    environment {
-        ANSIBLE_VERSION = "${ANSIBLE_VERSION}"
-        GRAVITY_VERSION = "${GRAVITY_VERSION}"
-        STATE_DIR = sh(script: '$(pwd)/state', returnStdout: true).trim()
-    }
-    stages {
-        stage('Checkout source') {
-            steps {
-                checkout scm
-            }
-        }
-
-        stage('Build docker image for Ansible') {
-            steps {
-                dir('tests/docker') {
-                    sh "docker build -t ansible:${ANSIBLE_VERSION} --build-arg ANSIBLE_VERSION=${ANSIBLE_VERSION} ."
-                }
-            }
-        }
-
-        stage('Download gravity and tele binaries') {
-            steps {
-                print "Downloading tele and gravity version $GRAVITY_VERSION"
-                downloadBinaries(GRAVITY_VERSION)
-            }
-        }
-
-        stage('Create state directory') {
-            steps {
-                sh "mkdir ${env.STATE_DIR}"
-            }
-        }
-
-        stage('Import dependencies') {
-            stages {
-                stage('Import cluster-ssl-app') {
-                    steps {
-                        print "Cloning cluster-ssl-app"
-                        dir('dependencies') {
-                            sh "git clone https://github.com/gravitational/cluster-ssl-app.git"
-                            dir('cluster-ssl-app') {
-                                sh "make import OPS_URL= STATE_DIR=${env.STATE_DIR}"
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Generate installer tarball') {
-            environment {
-                APP_VERSION = sh(script: 'make what-version', returnStdout: true).trim()
-            }
-            steps {
-                withEnv(['PATH+LOCAL=./bin']) {
-                    print "Building stolon-app installer tarball version ${env.APP_VERSION}"
-                    script {
-                        installerTarballFileName = getInstallerTarballFileName(env.APP_VERSION)
-                        createInstallerTarball(installerTarballFileName)
-                    }
-                }
-            }
-        }
-    }
+  }
 }
 
-def downloadBinaries(version) {
-    dir ('bin') {
-        sh "curl -o tele https://get.gravitational.io/telekube/bin/${version}/linux/x86_64/tele -fSsL"
-        sh "curl -o gravity https://get.gravitational.io/telekube/bin/${version}/linux/x86_64/gravity -fSsL"
-        sh "chmod +x gravity tele"
+properties([
+  disableConcurrentBuilds(),
+  parameters([
+    choice(choices: ["run", "skip"].join("\n"),
+           defaultValue: 'run',
+           description: 'Run or skip robotest system wide tests.',
+           name: 'RUN_ROBOTEST'),
+    choice(choices: ["true", "false"].join("\n"),
+           defaultValue: 'true',
+           description: 'Destroy all VMs on success.',
+           name: 'DESTROY_ON_SUCCESS'),
+    choice(choices: ["true", "false"].join("\n"),
+           defaultValue: 'true',
+           description: 'Destroy all VMs on failure.',
+           name: 'DESTROY_ON_FAILURE'),
+    choice(choices: ["true", "false"].join("\n"),
+           defaultValue: 'true',
+           description: 'Abort all tests upon first failure.',
+           name: 'FAIL_FAST'),
+    choice(choices: ["gce"].join("\n"),
+           defaultValue: 'gce',
+           description: 'Cloud provider to deploy to.',
+           name: 'DEPLOY_TO'),
+    string(name: 'PARALLEL_TESTS',
+           defaultValue: '4',
+           description: 'Number of parallel tests to run.'),
+    string(name: 'REPEAT_TESTS',
+           defaultValue: '1',
+           description: 'How many times to repeat each test.'),
+    string(name: 'ROBOTEST_VERSION',
+           defaultValue: 'stable-gce',
+           description: 'Robotest tag to use.'),
+    string(name: 'OPS_URL',
+           defaultValue: 'https://ci-ops.gravitational.io',
+           description: 'Ops Center URL to download dependencies from'),
+    string(name: 'GRAVITY_VERSION',
+           defaultValue: '5.2.12',
+           description: 'gravity/tele binaries version')
+  ]),
+])
+
+timestamps {
+  node {
+    stage('checkout') {
+      checkout scm
     }
-}
+    stage('params') {
+      echo "${params}"
+      propagateParamsToEnv()
+    }
+    stage('clean') {
+      sh "make clean"
+    }
+    stage('download gravity/tele binaries') {
+      sh "make download-binaries"
+    }
 
-// returns installer tarball name based on application version
-def getInstallerTarballFileName(appVersion) {
-    return "stolon-app-${appVersion}-installer.tar.gz"
-}
+    APP_VERSION = sh(script: 'make what-version', returnStdout: true).trim()
 
-def createInstallerTarball(installerTarballFileName) {
-    def stateDir = "${pwd()}/state"
-    sh "echo $PATH"
+    stage('build-app') {
+      withCredentials([
+      [$class: 'StringBinding', credentialsId:'CI_OPS_API_KEY', variable: 'API_KEY'],
+      ]) {
+        def TELE_STATE_DIR = "${pwd()}/state/${APP_VERSION}"
+        sh """
+export PATH=\$(pwd)/bin:\${PATH}
+rm -rf ${TELE_STATE_DIR} && mkdir -p ${TELE_STATE_DIR}
+export EXTRA_GRAVITY_OPTIONS="--state-dir=${TELE_STATE_DIR}"
+tele login \${EXTRA_GRAVITY_OPTIONS} -o ${OPS_URL} --token=${API_KEY}
+make build-app OPS_URL=$OPS_URL"""
+      }
+    }
+  }
+  throttle(['robotest']) {
+    node {
+      stage('test') {
+        parallel (
+        robotest : {
+          if (params.RUN_ROBOTEST == 'run') {
+            withCredentials([
+                [$class: 'FileBinding', credentialsId:'ROBOTEST_LOG_GOOGLE_APPLICATION_CREDENTIALS', variable: 'GOOGLE_APPLICATION_CREDENTIALS'],
+                [$class: 'StringBinding', credentialsId:'CI_OPS_API_KEY', variable: 'API_KEY'],
+                [$class: 'FileBinding', credentialsId:'OPS_SSH_KEY', variable: 'SSH_KEY'],
+                [$class: 'FileBinding', credentialsId:'OPS_SSH_PUB', variable: 'SSH_PUB'],
+                ]) {
+                  sh """
+                  make robotest-run-suite \
+                    AWS_KEYPAIR=ops \
+                    AWS_REGION=us-east-1 \
+                    ROBOTEST_VERSION=$ROBOTEST_VERSION"""
+            }
+          }else {
+            echo 'skipped system tests'
+          }
+        } )
+      }
+    }
+  }
 }
