@@ -73,6 +73,8 @@ what-version:
 
 .PHONY: images
 images:
+	-git submodule update --init
+	-git submodule update --remote
 	cd images && $(MAKE) -f Makefile VERSION=$(VERSION)
 
 .PHONY: import
