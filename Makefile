@@ -44,7 +44,6 @@ IMPORT_OPTIONS := --vendor \
 		$(IMPORT_IMAGE_OPTIONS)
 
 TELE_BUILD_OPTIONS := --insecure \
-		--state-dir=$(STATE_DIR) \
 		--repository=$(OPS_URL) \
 		--name=$(NAME) \
 		--version=$(VERSION) \
