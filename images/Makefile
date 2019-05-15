@@ -4,7 +4,6 @@ all: images
 BOOTSTRAP_TAG := stolon-bootstrap:$(VERSION)
 UNINSTALL_TAG := stolon-uninstall:$(VERSION)
 HOOK_TAG := stolon-hook:$(VERSION)
-JOBS_TAG := stolon-jobs:$(VERSION)
 STOLON_TAG := stolon:$(VERSION)
 TELEGRAF_TAG := stolon-telegraf:$(VERSION)
 TELEGRAF_NODE_TAG := stolon-telegraf-node:$(VERSION)
@@ -17,13 +16,11 @@ images: bootstrap \
 		telegraf \
 		telegraf-node \
 		hook \
-		jobs \
 		stolonctl
 	docker tag $(BOOTSTRAP_TAG) stolon-bootstrap:latest
 	docker tag $(UNINSTALL_TAG) stolon-uninstall:latest
 	docker tag $(STOLON_TAG) stolon:latest
 	docker tag $(HOOK_TAG) stolon-hook:latest
-	docker tag $(JOBS_TAG) stolon-jobs:latest
 	docker tag $(TELEGRAF_TAG) stolon-telegraf:latest
 	docker tag $(TELEGRAF_NODE_TAG) stolon-telegraf-node:latest
 	docker tag $(STOLONCTL_TAG) stolonctl:latest
@@ -58,7 +55,7 @@ hook:
 	if [ -z "$(CHANGESET)" ]; then \
 		echo "CHANGESET is not set"; exit 1; \
 	fi;
-	docker build --pull --build-arg CHANGESET=stolon-$(CHANGESET) -t $(HOOK_TAG) $(PWD)/hook
+	docker build  --build-arg CHANGESET=stolon-$(CHANGESET) -t $(HOOK_TAG) $(PWD)/hook
 
 STOLON_BINS := stolon/bin
 $(STOLON_BINS):
@@ -80,10 +77,6 @@ telegraf:
 .PHONY: telegraf-node
 telegraf-node:
 	docker build --pull -t $(TELEGRAF_NODE_TAG) $(PWD)/telegraf-node
-
-.PHONY: jobs
-jobs:
-	docker build --pull -t $(JOBS_TAG) $(PWD)/jobs
 
 .PHONY: publish-stolonctl
 publish-stolonctl: stolonctl
