@@ -2,6 +2,10 @@ export VERSION ?= $(shell ./version.sh)
 REPOSITORY := gravitational.io
 NAME := stolon-app
 OPS_URL ?= https://opscenter.localhost.localdomain:33009
+TELE ?= $(shell which tele)
+GRAVITY ?= $(shell which gravity)
+RUNTIME_VERSION ?= $(shell $(TELE) version | awk '/Version:/ {print $$2}')
+GRAVITY_VERSION ?= 5.2.12
 
 SRCDIR=/go/src/github.com/gravitational/stolon-app
 DOCKERFLAGS=--rm=true -v $(PWD):$(SRCDIR) -w $(SRCDIR)
@@ -12,7 +16,6 @@ EXTRA_GRAVITY_OPTIONS ?=
 CONTAINERS := stolon-bootstrap:$(VERSION) \
 			  stolon-uninstall:$(VERSION) \
 			  stolon-hook:$(VERSION) \
-			  stolon-jobs:$(VERSION) \
 			  stolon:$(VERSION) \
 			  stolon-telegraf:$(VERSION) \
 			  stolon-telegraf-node:$(VERSION) \
@@ -21,7 +24,6 @@ CONTAINERS := stolon-bootstrap:$(VERSION) \
 IMPORT_IMAGE_OPTIONS := --set-image=stolon-bootstrap:$(VERSION) \
 	--set-image=stolon-uninstall:$(VERSION) \
 	--set-image=stolon-hook:$(VERSION) \
-	--set-image=stolon-jobs:$(VERSION) \
 	--set-image=stolon:$(VERSION) \
 	--set-image=stolon-telegraf:$(VERSION) \
 	--set-image=stolon-telegraf-node:$(VERSION) \
@@ -42,18 +44,24 @@ IMPORT_OPTIONS := --vendor \
 		$(IMPORT_IMAGE_OPTIONS)
 
 TELE_BUILD_OPTIONS := --insecure \
-                --repository=$(OPS_URL) \
-                --name=$(NAME) \
-                --version=$(VERSION) \
-                --glob=**/*.yaml \
-                --ignore=".git" \
-                --ignore="images" \
-                --ignore="cmd" \
-                --ignore="vendor/**/*.yaml" \
-                $(IMPORT_IMAGE_OPTIONS)
+		--repository=$(OPS_URL) \
+		--name=$(NAME) \
+		--version=$(VERSION) \
+		--glob=**/*.yaml \
+		--ignore=".git" \
+		--ignore="images" \
+		--ignore="cmd" \
+		--ignore="vendor/**/*.yaml" \
+		$(IMPORT_IMAGE_OPTIONS)
 
 BUILD_DIR := build
-TARBALL := $(BUILD_DIR)/stolon-app.tar.gz
+BINARIES_DIR := bin
+
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+$(BINARIES_DIR):
+	mkdir -p $(BINARIES_DIR)
 
 .PHONY: all
 all: clean images
@@ -64,25 +72,22 @@ what-version:
 
 .PHONY: images
 images:
+	-git submodule update --init
+	-git submodule update --remote
 	cd images && $(MAKE) -f Makefile VERSION=$(VERSION)
 
 .PHONY: import
 import: images
-	-gravity app delete --ops-url=$(OPS_URL) $(REPOSITORY)/$(NAME):$(VERSION) --force --insecure $(EXTRA_GRAVITY_OPTIONS)
-	gravity app import $(IMPORT_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) .
-
-.PHONY: export
-export: $(TARBALL)
-
-$(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
-
-$(TARBALL): import $(BUILD_DIR)
-	gravity package export $(REPOSITORY)/$(NAME):$(VERSION) $(TARBALL) $(EXTRA_GRAVITY_OPTIONS)
+	-$(GRAVITY) app delete --ops-url=$(OPS_URL) $(REPOSITORY)/$(NAME):$(VERSION) --force --insecure $(EXTRA_GRAVITY_OPTIONS)
+	sed -i "s/version: \"0.0.0+latest\"/version: \"$(RUNTIME_VERSION)\"/" resources/app.yaml
+	$(GRAVITY) app import $(IMPORT_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) .
+	sed -i "s/version: \"$(RUNTIME_VERSION)\"/version: \"0.0.0+latest\"/" resources/app.yaml
 
 .PHONY: build-app
-build-app: clean images
-	tele build -o $(BUILD_DIR)/installer.tar $(TELE_BUILD_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) resources/app.yaml
+build-app: images
+	sed -i "s/version: \"0.0.0+latest\"/version: \"$(RUNTIME_VERSION)\"/" resources/app.yaml
+	$(TELE) build -f -o $(BUILD_DIR)/installer.tar $(TELE_BUILD_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) resources/app.yaml
+	sed -i "s/version: \"$(RUNTIME_VERSION)\"/version: \"0.0.0+latest\"/" resources/app.yaml
 
 .PHONY: build-stolonboot
 build-stolonboot: $(BUILD_DIR)
@@ -97,6 +102,21 @@ build-stolonctl: $(BUILD_DIR)
 
 build/stolonctl:
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -o $@ cmd/stolonctl/*.go
+
+# number of environment variables are expected to be set
+# see https://github.com/gravitational/robotest/blob/master/suite/README.md
+#
+.PHONY: robotest-run-suite
+robotest-run-suite:
+	./scripts/robotest_run_suite.sh $(shell pwd)/upgrade_from
+
+.PHONY: download-binaries
+download-binaries: $(BINARIES_DIR)
+	for name in gravity tele; \
+	do \
+		curl https://get.gravitational.io/telekube/bin/$(GRAVITY_VERSION)/linux/x86_64/$$name -o $(BINARIES_DIR)/$$name; \
+		chmod +x $(BINARIES_DIR)/$$name; \
+	done
 
 .PHONY: clean
 clean:

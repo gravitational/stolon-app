@@ -1,24 +1,15 @@
 #!/bin/bash
-set -e
+set -xe
 
 echo "Assuming changeset from the envrionment: $RIG_CHANGESET"
 # note that rig does not take explicit changeset ID
 # taking it from the environment variables
 if [ $1 = "update" ]; then
+    echo "---> Checking: $RIG_CHANGESET"
+    if rig status $RIG_CHANGESET --retry-attempts=1 --retry-period=1s; then exit 0; fi
+
     echo "Starting update, changeset: $RIG_CHANGESET"
     rig cs delete --force -c cs/$RIG_CHANGESET
-
-    echo "Upgrade keeper database schema"
-    rig delete deployments/stolonctl --force
-    rig upsert -f /var/lib/gravity/resources/stolonctl.yaml --debug
-
-    while [ ! $(kubectl get pod -l product=stolon,component=stolonctl -o jsonpath='{.items[0].status.phase}') == "Running" ]
-    do
-        echo "waiting for stolonctl Pod to start"
-    done
-
-    stolonctl_pod=$(kubectl get pod -l product=stolon,component=stolonctl -o jsonpath='{.items[0].metadata.name}')
-    if ! kubectl exec $stolonctl_pod -- stolonctl upgrade; then exit 1; fi
 
     echo "Delete old resources"
     rig delete ds/stolon-keeper --force
@@ -26,28 +17,22 @@ if [ $1 = "update" ]; then
     rig delete deployments/stolon-rpc --force
     rig delete deployments/stolon-sentinel --force
     rig delete deployments/stolon-utils --force
-
-    # wait for keeper pods to go away
-    while kubectl get pods --show-all|grep -v stolon-keeper-schema|grep -q stolon-keeper
-    do
-    echo "waiting for keeper pods to go away..."
-        sleep 5
-    done
+    rig delete deployments/stolonctl --force
 
     echo "Creating or updating resources"
     rig upsert -f /var/lib/gravity/resources/keeper.yaml --debug
-    rig upsert -f /var/lib/gravity/resources/rpc.yaml --debug
     rig upsert -f /var/lib/gravity/resources/sentinel.yaml --debug
     rig upsert -f /var/lib/gravity/resources/utils.yaml --debug
     rig upsert -f /var/lib/gravity/resources/alerts.yaml --debug
+    rig upsert -f /var/lib/gravity/resources/stolonctl.yaml --debug
 
     if [ $(kubectl get nodes -l stolon-keeper=yes -o name | wc -l) -ge 3 ]
     then
-        kubectl scale --replicas=3 deployment stolon-sentinel
+        sed -i 's/replicas: 1/replicas/' /var/lib/gravity/resources/sentinel.yaml
     fi
 
     echo "Checking status"
-    rig status $RIG_CHANGESET --retry-attempts=120 --retry-period=1s --debug
+    rig status $RIG_CHANGESET --retry-attempts=120 --retry-period=2s --debug
     echo "Freezing"
     rig freeze
 

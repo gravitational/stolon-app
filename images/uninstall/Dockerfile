@@ -1,4 +1,4 @@
-FROM quay.io/gravitational/debian-tall:0.0.1
+FROM quay.io/gravitational/debian-tall:stretch
 
 ADD uninstall.sh /uninstall
 RUN chmod +x /uninstall

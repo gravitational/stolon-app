@@ -5,7 +5,7 @@ metadata:
   labels:
     monitoring: alert
   name: postgresql-alert
-  namespace: kube-system
+  namespace: monitoring
 data:
   spec: '{"metadata":{"name":"postgresql-alert"},"kind":"alert","version":"v2","spec":{"formula":"var
     period = 5m\n
