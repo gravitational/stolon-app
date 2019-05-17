@@ -23,7 +23,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func bootCluster(sentinels int, rpc int, password string) error {
+func bootCluster(sentinels int, password string) error {
 	err := createSentinels(sentinels)
 	if err != nil {
 		return trace.Wrap(err)
@@ -37,13 +37,6 @@ func bootCluster(sentinels int, rpc int, password string) error {
 	err = createKeepers()
 	if err != nil {
 		return trace.Wrap(err)
-	}
-
-	if rpc > 0 {
-		err = createRPC(rpc)
-		if err != nil {
-			return trace.Wrap(err)
-		}
 	}
 
 	err = createUtils()
@@ -88,21 +81,6 @@ func createKeepers() error {
 	out, err := rigging.FromFile(rigging.ActionCreate, "/var/lib/gravity/resources/keeper.yaml")
 	log.Infof("cmd output: %s", string(out))
 	if err != nil && !strings.Contains(string(out), "already exists") {
-		return trace.Wrap(err)
-	}
-
-	return nil
-}
-
-func createRPC(rpc int) error {
-	log.Infof("creating rpc")
-	out, err := rigging.FromFile(rigging.ActionCreate, "/var/lib/gravity/resources/rpc.yaml")
-	log.Infof("cmd output: %s", string(out))
-	if err != nil && !strings.Contains(string(out), "already exists") {
-		return trace.Wrap(err)
-	}
-
-	if err = rigging.ScaleReplicationController("stolon-rpc", rpc, 60); err != nil {
 		return trace.Wrap(err)
 	}
 

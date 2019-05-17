@@ -9,7 +9,7 @@ GRAVITY_VERSION ?= 5.2.12
 
 SRCDIR=/go/src/github.com/gravitational/stolon-app
 DOCKERFLAGS=--rm=true -v $(PWD):$(SRCDIR) -w $(SRCDIR)
-BUILDIMAGE=golang:1.9
+BUILDIMAGE=golang:1.11
 
 EXTRA_GRAVITY_OPTIONS ?=
 

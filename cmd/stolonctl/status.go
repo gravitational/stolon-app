@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/cluster"
+	"github.com/gravitational/stolon/common"
 
 	"github.com/gravitational/trace"
 	"github.com/spf13/cobra"
@@ -134,4 +135,75 @@ func translateBoolean(value bool) string {
 		return "Yes"
 	}
 	return "No"
+}
+
+func isClusterHealthy(status *cluster.Status) (unhealthyReason string, healthy bool) {
+	var (
+		runningPods     int
+		masterHealthy   bool
+		runningMasters  int
+		runningStandbys int
+		healthyNodes    int
+		replicationLag  bool
+		masterID        string
+	)
+
+	for _, pod := range status.PodsStatus {
+		var keeperID string
+		for _, keeperState := range status.ClusterData.KeepersState {
+			if pod.PodIP == keeperState.ListenAddress {
+				keeperID = keeperState.ID
+			}
+		}
+		if keeperID != "" && status.ClusterData.KeepersState[keeperID].PGState != nil {
+			runningPods++
+			if status.ClusterData.KeepersState[keeperID].PGState.Role == common.MasterRole {
+				if status.ClusterData.KeepersState[keeperID].Healthy {
+					masterHealthy = true
+					masterID = keeperID
+				}
+				// count amount of running master nodes
+				runningMasters++
+			} else {
+				// count amount of running standby nodes
+				runningStandbys++
+				if masterID != "" {
+					if status.ClusterData.KeepersState[masterID].PGState.XLogPos > status.ClusterData.KeepersState[keeperID].PGState.XLogPos {
+						if status.ClusterData.KeepersState[masterID].PGState.XLogPos-status.ClusterData.KeepersState[keeperID].PGState.XLogPos > 0 {
+							replicationLag = true
+						}
+					} else {
+						if status.ClusterData.KeepersState[keeperID].PGState.XLogPos-status.ClusterData.KeepersState[masterID].PGState.XLogPos > 0 {
+							replicationLag = true
+						}
+					}
+				}
+			}
+			if status.ClusterData.KeepersState[keeperID].Healthy {
+				// count amount of running healthy nodes
+				healthyNodes++
+			}
+		}
+	}
+
+	if runningPods <= 1 {
+		return "cluster is running with less than 2 nodes", false
+	}
+	if runningMasters != 1 {
+		return "cluster has more that one master or no master", false
+	}
+	if !masterHealthy {
+		return "master is unhealthy", false
+	}
+	if runningStandbys < 1 {
+		return "cluster has no standby servers", false
+	}
+	if healthyNodes < 2 {
+		return fmt.Sprintf("there is only %v healthy keeper nodes in cluster", healthyNodes), false
+	}
+	if replicationLag {
+		return "high replication lag between master and stanby(s)", false
+	}
+
+	return "", true
 }
