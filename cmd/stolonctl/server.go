@@ -17,7 +17,9 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"net/http"
+	"time"
 
 	"github.com/gravitational/trace"
 	log "github.com/sirupsen/logrus"
@@ -41,7 +43,10 @@ func server(ccmd *cobra.Command, args []string) error {
 	}
 
 	log.Info("Starting endpoint.")
-	http.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
+	handler := http.NewServeMux()
+	server := &http.Server{Addr: ":8080", Handler: handler}
+
+	handler.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
 		clusterStatus, err := Status()
 		if err != nil {
 			log.Error(err)
@@ -61,5 +66,24 @@ func server(ccmd *cobra.Command, args []string) error {
 		w.WriteHeader(http.StatusOK)
 	})
 
-	return http.ListenAndServe(":8080", nil)
+	errChan := make(chan error, 1)
+	go func() {
+		if err := server.ListenAndServe(); err != http.ErrServerClosed {
+			errChan <- trace.Wrap(err)
+		}
+	}()
+
+	select {
+	case err := <-errChan:
+		return err
+	case <-ctx.Done():
+		return shutdown(server)
+	}
+}
+
+func shutdown(server *http.Server) error {
+	gracefulTimeout := 5 * time.Second
+	ctx, cancel := context.WithTimeout(context.Background(), gracefulTimeout)
+	defer cancel()
+	return server.Shutdown(ctx)
 }

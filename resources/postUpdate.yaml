@@ -1,0 +1,39 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: stolon-app-post-update
+  namespace: kube-system
+spec:
+  parallelism: 1
+  completions: 1
+  template:
+    metadata:
+      name: stolon-app-post-update
+    spec:
+      restartPolicy: OnFailure
+      hostNetwork: true
+      containers:
+        - name: post-update
+          image: stolonctl:latest
+          command: ["/usr/bin/stolonctl", "status", "--short"]
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: ETCD_CACERT
+              value: "/etc/etcd/secrets/root.cert"
+            - name: ETCD_CERT
+              value: "/etc/etcd/secrets/etcd.cert"
+            - name: ETCD_KEY
+              value: "/etc/etcd/secrets/etcd.key"
+            - name: ETCD_ENDPOINTS
+              value: "$(NODE_NAME):2379"
+          volumeMounts:
+            - name: etcd-secrets
+              mountPath: /etc/etcd/secrets
+      volumes:
+        - name: etcd-secrets
+          hostPath:
+            path: /var/state

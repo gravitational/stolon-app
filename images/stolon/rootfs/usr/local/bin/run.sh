@@ -6,7 +6,6 @@ export STORE_ENDPOINTS=$NODE_NAME:2379
 export STSENTINEL_STORE_ENDPOINTS=$STORE_ENDPOINTS
 export STKEEPER_STORE_ENDPOINTS=$STORE_ENDPOINTS
 export STPROXY_STORE_ENDPOINTS=$STORE_ENDPOINTS
-export STOLONCTL_STORE_ENDPOINTS=$STORE_ENDPOINTS
 
 function die() {
     echo "ERROR: $*" >&2
@@ -32,23 +31,6 @@ function setup_cluster_ca() {
 	fi
 }
 
-function setup_stolonrpc() {
-	announce_step 'Setup stolon RPC'
-
-	_create_pg_pass "$STOLON_POSTGRES_SERVICE_HOST" \
-				   "$STOLON_POSTGRES_SERVICE_PORT" \
-				   "*" \
-				   "$STOLONRPC_DB_USERNAME" \
-				   "$STOLON_DB_PASSWORD"
-
-	cat > /home/stolon/bin/stolonrpc-cluster <<EOF
-	export STOLONRPC_DB_HOST=$STOLON_POSTGRES_SERVICE_HOST
-	export STOLONRPC_DB_PORT=$STOLON_POSTGRES_SERVICE_PORT
-	stolonrpc "$@"
-EOF
-	chmod +x /home/stolon/bin/stolonrpc-cluster
-}
-
 function _create_pg_pass() {
 	local host=${1:-$STOLON_POSTGRES_SERVICE_HOST}
 	local port=${2:-$STOLON_POSTGRES_SERVICE_PORT}
@@ -62,6 +44,15 @@ function _create_pg_pass() {
 
 function launch_keeper() {
 	announce_step 'Launching stolon keeper'
+
+	if [[ ! -e /stolon-data ]]; then
+		echo "stolon data doesn't exist, data won't be persistent!"
+		mkdir /stolon-data
+	fi
+    if [[ ! -f /stolon-data/dummy.file ]]; then
+        fallocate -l 300MB /stolon-data/dummy.file
+    fi
+	chown -R stolon:stolon /stolon-data
 
 	export STKEEPER_LISTEN_ADDRESS=$POD_IP
 	export STKEEPER_PG_LISTEN_ADDRESS=$POD_IP
@@ -83,16 +74,13 @@ function launch_proxy() {
 	stolon-proxy
 }
 
-function launch_rpc() {
-	announce_step 'Launching stolon RPC'
-
-	/home/stolon/bin/stolonrpc-cluster
-}
-
 function main() {
 	announce_step 'Start'
 
-#	setup_cluster_ca
+	announce_step 'Dump environment variables'
+	env
+
+	setup_cluster_ca
 
 	announce_step 'Select which component to start'
 	if [[ "${KEEPER}" == "true" ]]; then
@@ -107,12 +95,6 @@ function main() {
 
 	if [[ "${PROXY}" == "true" ]]; then
 		launch_proxy
-		exit 0
-	fi
-
-	if [[ "${RPC}" == "true" ]]; then
-		setup_stolonrpc
-		launch_rpc
 		exit 0
 	fi
 

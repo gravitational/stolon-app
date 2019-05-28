@@ -455,7 +455,7 @@ func (u *upgradeControl) generateJob(jobConfig jobConfig) *batchv1.Job {
 					},
 					RestartPolicy:      apiv1.RestartPolicyNever,
 					NodeName:           jobConfig.nodeName,
-					ServiceAccountName: "stolon-keeper",
+					ServiceAccountName: "stolon",
 					InitContainers: []apiv1.Container{
 						{
 							Name:    "fix-secrets",

@@ -1,8 +1,8 @@
 #!/bin/sh
 
-for resource_file in utils rpc keeper sentinel
+for resource_file in alerts keeper rpc sentinel stolonctl telegraf utils security
 do
 	kubectl delete -f /var/lib/gravity/resources/${resource_file}.yaml
 done
 kubectl delete secret stolon
-kubectl label nodes -l stolon-keeper=yes stolon-keeper-
+etcdctl rm --recursive /stolon

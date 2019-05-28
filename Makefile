@@ -18,7 +18,6 @@ CONTAINERS := stolon-bootstrap:$(VERSION) \
 			  stolon-hook:$(VERSION) \
 			  stolon:$(VERSION) \
 			  stolon-telegraf:$(VERSION) \
-			  stolon-telegraf-node:$(VERSION) \
 			  stolonctl:$(VERSION)
 
 IMPORT_IMAGE_OPTIONS := --set-image=stolon-bootstrap:$(VERSION) \
@@ -26,7 +25,6 @@ IMPORT_IMAGE_OPTIONS := --set-image=stolon-bootstrap:$(VERSION) \
 	--set-image=stolon-hook:$(VERSION) \
 	--set-image=stolon:$(VERSION) \
 	--set-image=stolon-telegraf:$(VERSION) \
-	--set-image=stolon-telegraf-node:$(VERSION) \
 	--set-image=stolonctl:$(VERSION)
 
 IMPORT_OPTIONS := --vendor \

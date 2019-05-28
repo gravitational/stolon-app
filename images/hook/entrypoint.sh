@@ -1,5 +1,5 @@
 #!/bin/bash
-set -xe
+set -e
 
 echo "Assuming changeset from the envrionment: $RIG_CHANGESET"
 # note that rig does not take explicit changeset ID
@@ -18,8 +18,12 @@ if [ $1 = "update" ]; then
     rig delete deployments/stolon-sentinel --force
     rig delete deployments/stolon-utils --force
     rig delete deployments/stolonctl --force
+    rig delete configmaps/stolon-telegraf --force
+    rig delete configmaps/stolon-telegraf-node --force
 
     echo "Creating or updating resources"
+    rig upsert -f /var/lib/gravity/resources/security.yaml --debug
+    rig upsert -f /var/lib/gravity/resources/telegraf.yaml --debug
     rig upsert -f /var/lib/gravity/resources/keeper.yaml --debug
     rig upsert -f /var/lib/gravity/resources/sentinel.yaml --debug
     rig upsert -f /var/lib/gravity/resources/utils.yaml --debug

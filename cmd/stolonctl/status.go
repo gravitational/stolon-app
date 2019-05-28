@@ -23,22 +23,28 @@ import (
 	"time"
 
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/cluster"
-	"github.com/gravitational/stolon/common"
 
+	"github.com/gravitational/stolon/common"
 	"github.com/gravitational/trace"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-var statusCmd = &cobra.Command{
-	Use:          "status",
-	Short:        "Show status of PostgreSQL cluster",
-	SilenceUsage: true,
-	RunE:         status,
-}
+const defaultShortOutput = false
+
+var (
+	statusCmd = &cobra.Command{
+		Use:          "status",
+		Short:        "Show status of PostgreSQL cluster",
+		SilenceUsage: true,
+		RunE:         status,
+	}
+	shortOutput bool
+)
 
 func init() {
 	stolonctlCmd.AddCommand(statusCmd)
+	statusCmd.PersistentFlags().BoolVarP(&shortOutput, "short", "s", defaultShortOutput, "Output only overall cluster status and reason if unhealthy")
 }
 
 func status(ccmd *cobra.Command, args []string) error {
@@ -67,6 +73,14 @@ func Status() (*cluster.Status, error) {
 
 // PrintStatus prints status of stolon cluster to stdout
 func PrintStatus(status *cluster.Status) {
+	if !shortOutput {
+		printClusterStatus(status)
+		fmt.Println()
+	}
+	printOverallStatus(status)
+}
+
+func printClusterStatus(status *cluster.Status) {
 	w := new(tabwriter.Writer)
 
 	var (
@@ -100,6 +114,15 @@ func PrintStatus(status *cluster.Status) {
 	}
 
 	w.Flush()
+}
+
+func printOverallStatus(status *cluster.Status) {
+	reason, isHealthy := isClusterHealthy(status)
+	fmt.Printf("Cluster status: %s\n", getStatusString(isHealthy))
+	if !isHealthy {
+		fmt.Printf("Reason: %s\n", reason)
+		os.Exit(1)
+	}
 }
 
 // shortHumanDuration represents pod creation timestamp in
@@ -189,21 +212,31 @@ func isClusterHealthy(status *cluster.Status) (unhealthyReason string, healthy b
 	if runningPods <= 1 {
 		return "cluster is running with less than 2 nodes", false
 	}
-	if runningMasters != 1 {
-		return "cluster has more that one master or no master", false
+	if runningMasters == 0 {
+		return "cluster has no master node", false
+	}
+	if runningMasters > 1 {
+		return "cluster has more than one master node", false
 	}
 	if !masterHealthy {
 		return "master is unhealthy", false
 	}
-	if runningStandbys < 1 {
+	if runningStandbys == 0 {
 		return "cluster has no standby servers", false
 	}
 	if healthyNodes < 2 {
-		return fmt.Sprintf("there is only %v healthy keeper nodes in cluster", healthyNodes), false
+		return fmt.Sprintf("there are only %v healthy keeper nodes in cluster", healthyNodes), false
 	}
 	if replicationLag {
 		return "high replication lag between master and stanby(s)", false
 	}
 
 	return "", true
+}
+
+func getStatusString(status bool) string {
+	if status {
+		return "Healthy"
+	}
+	return "Unhealthy"
 }

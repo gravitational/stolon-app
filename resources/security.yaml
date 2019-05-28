@@ -1,0 +1,111 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: stolon
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: Role
+metadata:
+  name: stolon
+  namespace: default
+rules:
+  - apiGroups:
+      - extensions
+    resources:
+      - podsecuritypolicies
+    resourceNames:
+      - privileged
+    verbs:
+      - use
+  - apiGroups:
+      -  ""
+    verbs:
+      - get
+      - list
+      - watch
+    resources:
+      - secrets
+    resourceNames:
+      - stolon
+      - cluster-ca
+      - cluster-default-ssl
+  - apiGroups:
+      -  ""
+    verbs:
+      - get
+      - list
+      - watch
+    resources:
+      - configmaps
+      - endpoints
+      - events
+      - pods
+      - persistentvolumes
+      - persistentvolumeclaims
+      - services
+      - jobs
+  - apiGroups:
+      - extensions
+      - apps
+    verbs:
+      - delete
+    resources:
+      - deployments
+      - daemonsets
+    resourceNames:
+      - "stolon-sentinel"
+      - "stolon-keeper"
+  - apiGroups:
+      - batch
+      - extensions
+    verbs:
+      - "*"
+    resources:
+      - jobs
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: stolon:crd
+rules:
+  - apiGroups:
+      - apiextensions.k8s.io
+    verbs:
+      - "*"
+    resources:
+      - customresourcedefinitions
+  - apiGroups:
+      - stolon.gravitational.io
+    verbs:
+      - "*"
+    resources:
+      - stolonupgrades
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: stolon:crd
+subjects:
+- kind: ServiceAccount
+  name: stolon
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: stolon:crd
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: stolon
+  namespace: default
+subjects:
+  - kind: ServiceAccount
+    name: stolon
+    namespace: default
+roleRef:
+  kind: Role
+  name: stolon
+  apiGroup: rbac.authorization.k8s.io

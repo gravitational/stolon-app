@@ -2,7 +2,7 @@
 # -*- mode: sh; -*-
 
 # File: entrypoint.sh
-# Time-stamp: <2018-03-28 11:51:14>
+# Time-stamp: <2019-05-20 13:59:04>
 # Copyright (C) 2018 Sergei Antipov
 # Description: Entrypoint for PostgreSQL upgarder tool
 
@@ -13,4 +13,4 @@ set -o pipefail
 
 export ETCD_ENDPOINTS=${NODE_NAME}:2379
 
-while true; do sleep 30; done;
+/usr/bin/stolonctl server
