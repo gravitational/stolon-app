@@ -3,7 +3,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: stolon-app-post-update
-  namespace: kube-system
+  namespace: default
 spec:
   parallelism: 1
   completions: 1
