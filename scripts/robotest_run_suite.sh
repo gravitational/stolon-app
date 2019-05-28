@@ -6,7 +6,7 @@ readonly TOP_DIR=$(pwd)/../
 
 declare -A UPGRADE_MAP
 # gravity version -> list of OS releases to exercise on
-UPGRADE_MAP[1.0.0]="redhat:7"
+UPGRADE_MAP[1.10.59]="redhat:7"
 
 readonly OPS_APIKEY=${API_KEY:?API key for distribution Ops Center required}
 readonly APP_BUILDDIR=$TOP_DIR/build
@@ -45,7 +45,7 @@ function build_upgrade_suite {
   for release in ${!UPGRADE_MAP[@]}; do
     for os in ${UPGRADE_MAP[$release]}; do
       suite+=$(build_upgrade_step $os $release 'devicemapper' $cluster_size)
-      suite+=' '
+      suite+="$suite $(build_upgrade_step $os $release 'overlay2' $cluster_size)"
     done
   done
   echo $suite
@@ -76,15 +76,15 @@ export EXTRA_VOLUME_MOUNTS=$(build_volume_mounts)
 
 suite="$(build_install_suite)"
 suite="$suite $(build_install_suite 'redhat:7' 'devicemapper')"
-#suite="$suite $(build_upgrade_suite)"
+suite="$suite $(build_upgrade_suite)"
 
 echo $suite
 
-#mkdir -p $UPGRADE_FROM_DIR
-#tele login --ops=$OPS_URL --token="$OPS_APIKEY"
-#for release in ${!UPGRADE_MAP[@]}; do
-#  tele pull telekube:$release --output=$UPGRADE_FROM_DIR/installer_$release.tar
-#done
+mkdir -p $UPGRADE_FROM_DIR
+tele login --ops=$OPS_URL --token="$OPS_APIKEY"
+for release in ${!UPGRADE_MAP[@]}; do
+  tele pull stolon-app:$release --output=$UPGRADE_FROM_DIR/installer_$release.tar
+done
 
 docker pull $ROBOTEST_REPO
 docker run $ROBOTEST_REPO cat /usr/bin/run_suite.sh > $ROBOTEST_SCRIPT
