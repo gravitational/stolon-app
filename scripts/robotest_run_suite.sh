@@ -33,7 +33,7 @@ function build_upgrade_step {
   local cluster_size=${4:?$usage}
   local suite=''
   suite+=$(cat <<EOF
- upgrade3={${cluster_size},"os":"${os}","storage_driver":"${storage_driver}","from":"/installer_${release}.tar"}
+ upgrade3lts={${cluster_size},"os":"${os}","storage_driver":"${storage_driver}","from":"/installer_${release}.tar"}
 EOF
 )
   echo $suite
