@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eu -o pipefail
+set -exu -o pipefail
 
 readonly UPGRADE_FROM_DIR=${1:-$(pwd)/../upgrade_from}
 readonly TOP_DIR=$(pwd)/../
@@ -45,7 +45,7 @@ function build_upgrade_suite {
   for release in ${!UPGRADE_MAP[@]}; do
     for os in ${UPGRADE_MAP[$release]}; do
       suite+=$(build_upgrade_step $os $release 'devicemapper' $cluster_size)
-      suite+="$suite $(build_upgrade_step $os $release 'overlay2' $cluster_size)"
+      suite+=" $(build_upgrade_step $os $release 'overlay2' $cluster_size)"
     done
   done
   echo $suite
