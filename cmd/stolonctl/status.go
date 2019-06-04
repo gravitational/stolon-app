@@ -18,6 +18,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"text/tabwriter"
 	"time"
@@ -30,8 +31,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const defaultShortOutput = false
-
 var (
 	statusCmd = &cobra.Command{
 		Use:          "status",
@@ -43,6 +42,8 @@ var (
 )
 
 func init() {
+	const defaultShortOutput = false
+
 	stolonctlCmd.AddCommand(statusCmd)
 	statusCmd.PersistentFlags().BoolVarP(&shortOutput, "short", "s", defaultShortOutput, "Output only overall cluster status and reason if unhealthy")
 }
@@ -57,7 +58,9 @@ func status(ccmd *cobra.Command, args []string) error {
 		return trace.Wrap(err)
 	}
 
-	PrintStatus(clusterStatus)
+	if err := PrintStatus(clusterStatus); err != nil {
+		return trace.Wrap(err)
+	}
 	return nil
 }
 
@@ -72,15 +75,19 @@ func Status() (*cluster.Status, error) {
 }
 
 // PrintStatus prints status of stolon cluster to stdout
-func PrintStatus(status *cluster.Status) {
+func PrintStatus(status *cluster.Status) error {
+	output := os.Stdout
 	if !shortOutput {
-		printClusterStatus(status)
-		fmt.Println()
+		printClusterStatus(status, output)
+		fmt.Fprintln(output)
 	}
-	printOverallStatus(status)
+	if err := printOverallStatus(status, output); err != nil {
+		return trace.Wrap(err)
+	}
+	return nil
 }
 
-func printClusterStatus(status *cluster.Status) {
+func printClusterStatus(status *cluster.Status, output io.Writer) {
 	w := new(tabwriter.Writer)
 
 	var (
@@ -90,7 +97,7 @@ func printClusterStatus(status *cluster.Status) {
 		flags    uint
 		padchar  byte = '\t'
 	)
-	w.Init(os.Stdout, minwidth, tabwidth, padding, padchar, flags)
+	w.Init(output, minwidth, tabwidth, padding, padchar, flags)
 	fmt.Fprintln(w, "NAME\tREADY\tSTATUS\tIP\tNODE\tAGE\tKEEPER_ID\tHEALTHY\tROLE")
 
 	for _, pod := range status.PodsStatus {
@@ -116,13 +123,14 @@ func printClusterStatus(status *cluster.Status) {
 	w.Flush()
 }
 
-func printOverallStatus(status *cluster.Status) {
+func printOverallStatus(status *cluster.Status, output io.Writer) error {
 	reason, isHealthy := isClusterHealthy(status)
-	fmt.Printf("Cluster status: %s\n", getStatusString(isHealthy))
+	fmt.Fprintf(output, "Cluster status: %s\n", getStatusString(isHealthy))
 	if !isHealthy {
-		fmt.Printf("Reason: %s\n", reason)
-		os.Exit(1)
+		return trace.Errorf("Cluster is unhealthy. Reason: %s", reason)
 	}
+
+	return nil
 }
 
 // shortHumanDuration represents pod creation timestamp in
@@ -161,16 +169,42 @@ func translateBoolean(value bool) string {
 }
 
 func isClusterHealthy(status *cluster.Status) (unhealthyReason string, healthy bool) {
-	var (
-		runningPods     int
-		masterHealthy   bool
-		runningMasters  int
-		runningStandbys int
-		healthyNodes    int
-		replicationLag  bool
-		masterID        string
-	)
+	metrics := collectMetricsFromStatus(status)
+	unhealthyReason = computeReasonUnhealthy(metrics)
+	if unhealthyReason != "" {
+		return unhealthyReason, false
+	}
+	return "", true
+}
 
+func computeReasonUnhealthy(metrics statusMetrics) (reason string) {
+	if metrics.runningPods <= 1 {
+		return "cluster is running with less than 2 nodes"
+	}
+	if metrics.runningMasters == 0 {
+		return "cluster has no master node"
+	}
+	if metrics.runningMasters > 1 {
+		return "cluster has more than one master node"
+	}
+	if !metrics.masterHealthy {
+		return "master is unhealthy"
+	}
+	if metrics.runningStandbys == 0 {
+		return "cluster has no standby servers"
+	}
+	if metrics.healthyNodes < 2 {
+		return fmt.Sprintf("there are only %v healthy keeper nodes in cluster", metrics.healthyNodes)
+	}
+	if metrics.replicationLag {
+		return "high replication lag between master and stanby(s)"
+	}
+
+	return ""
+}
+
+func collectMetricsFromStatus(status *cluster.Status) (result statusMetrics) {
+	var masterID string
 	for _, pod := range status.PodsStatus {
 		var keeperID string
 		for _, keeperState := range status.ClusterData.KeepersState {
@@ -179,59 +213,36 @@ func isClusterHealthy(status *cluster.Status) (unhealthyReason string, healthy b
 			}
 		}
 		if keeperID != "" && status.ClusterData.KeepersState[keeperID].PGState != nil {
-			runningPods++
+			result.runningPods++
 			if status.ClusterData.KeepersState[keeperID].PGState.Role == common.MasterRole {
 				if status.ClusterData.KeepersState[keeperID].Healthy {
-					masterHealthy = true
+					result.masterHealthy = true
 					masterID = keeperID
 				}
 				// count amount of running master nodes
-				runningMasters++
+				result.runningMasters++
 			} else {
 				// count amount of running standby nodes
-				runningStandbys++
+				result.runningStandbys++
 				if masterID != "" {
 					if status.ClusterData.KeepersState[masterID].PGState.XLogPos > status.ClusterData.KeepersState[keeperID].PGState.XLogPos {
 						if status.ClusterData.KeepersState[masterID].PGState.XLogPos-status.ClusterData.KeepersState[keeperID].PGState.XLogPos > 0 {
-							replicationLag = true
+							result.replicationLag = true
 						}
 					} else {
 						if status.ClusterData.KeepersState[keeperID].PGState.XLogPos-status.ClusterData.KeepersState[masterID].PGState.XLogPos > 0 {
-							replicationLag = true
+							result.replicationLag = true
 						}
 					}
 				}
 			}
 			if status.ClusterData.KeepersState[keeperID].Healthy {
 				// count amount of running healthy nodes
-				healthyNodes++
+				result.healthyNodes++
 			}
 		}
 	}
-
-	if runningPods <= 1 {
-		return "cluster is running with less than 2 nodes", false
-	}
-	if runningMasters == 0 {
-		return "cluster has no master node", false
-	}
-	if runningMasters > 1 {
-		return "cluster has more than one master node", false
-	}
-	if !masterHealthy {
-		return "master is unhealthy", false
-	}
-	if runningStandbys == 0 {
-		return "cluster has no standby servers", false
-	}
-	if healthyNodes < 2 {
-		return fmt.Sprintf("there are only %v healthy keeper nodes in cluster", healthyNodes), false
-	}
-	if replicationLag {
-		return "high replication lag between master and stanby(s)", false
-	}
-
-	return "", true
+	return result
 }
 
 func getStatusString(status bool) string {
@@ -239,4 +250,13 @@ func getStatusString(status bool) string {
 		return "Healthy"
 	}
 	return "Unhealthy"
+}
+
+type statusMetrics struct {
+	runningPods     int
+	masterHealthy   bool
+	runningMasters  int
+	runningStandbys int
+	healthyNodes    int
+	replicationLag  bool
 }

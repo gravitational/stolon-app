@@ -46,30 +46,15 @@ func server(ccmd *cobra.Command, args []string) error {
 	handler := http.NewServeMux()
 	server := &http.Server{Addr: ":8080", Handler: handler}
 
-	handler.HandleFunc("/status", func(w http.ResponseWriter, r *http.Request) {
-		clusterStatus, err := Status()
-		if err != nil {
-			log.Error(err)
-			w.WriteHeader(http.StatusServiceUnavailable)
-			w.Write([]byte(err.Error()))
-			return
-		}
-
-		reason, isHealthy := isClusterHealthy(clusterStatus)
-		if !isHealthy {
-			log.Errorf("Cluster is unhealthy. Reason: %s", reason)
-			w.WriteHeader(http.StatusServiceUnavailable)
-			w.Write([]byte(reason))
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-	})
+	handler.HandleFunc("/status", statusHandler)
 
 	errChan := make(chan error, 1)
 	go func() {
-		if err := server.ListenAndServe(); err != http.ErrServerClosed {
-			errChan <- trace.Wrap(err)
+		err := server.ListenAndServe()
+		if err == http.ErrServerClosed {
+			errChan <- nil
+		} else {
+			errChan <- err
 		}
 	}()
 
@@ -79,6 +64,26 @@ func server(ccmd *cobra.Command, args []string) error {
 	case <-ctx.Done():
 		return shutdown(server)
 	}
+}
+
+func statusHandler(w http.ResponseWriter, r *http.Request) {
+	clusterStatus, err := Status()
+	if err != nil {
+		log.Error(err)
+		w.WriteHeader(http.StatusServiceUnavailable)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	reason, isHealthy := isClusterHealthy(clusterStatus)
+	if !isHealthy {
+		log.Errorf("Cluster is unhealthy. Reason: %s", reason)
+		w.WriteHeader(http.StatusServiceUnavailable)
+		w.Write([]byte(reason))
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func shutdown(server *http.Server) error {

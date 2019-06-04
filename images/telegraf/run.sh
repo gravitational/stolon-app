@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -o nounset
 
 # create telegraf user
 curl --silent --show-error -XPOST "http://influxdb.kube-system.svc.cluster.local:8086/query?u=root&p=root" \

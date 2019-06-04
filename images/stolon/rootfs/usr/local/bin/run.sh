@@ -8,14 +8,14 @@ export STKEEPER_STORE_ENDPOINTS=$STORE_ENDPOINTS
 export STPROXY_STORE_ENDPOINTS=$STORE_ENDPOINTS
 
 function die() {
-    echo "ERROR: $*" >&2
-    exit 1
+	echo "ERROR: $*" >&2
+	exit 1
 }
 
 function announce_step() {
-    echo
-    echo "===> $*"
-    echo
+	echo
+	echo "===> $*"
+	echo
 }
 
 function setup_cluster_ca() {
@@ -25,7 +25,7 @@ function setup_cluster_ca() {
 		mkdir -p /usr/share/ca-certificates/extra
 		kubectl get secret cluster-ca
 		if [ $? -eq 0 ]; then
-			kubectl get secret cluster-ca -o yaml|grep ca.pem|awk '{print $2}'|base64 -d > /usr/local/share/ca-certificates/cluster.crt
+			kubectl get secret cluster-ca -o yaml | grep ca.pem | awk '{print $2}' | base64 -d >/usr/local/share/ca-certificates/cluster.crt
 			update-ca-certificates
 		fi
 	fi
@@ -38,7 +38,7 @@ function _create_pg_pass() {
 	local username=${4:-"stolon"}
 	local password=${5}
 
-	echo "$host:$port:$database:$username:$password" > ~/.pgpass
+	echo "$host:$port:$database:$username:$password" >~/.pgpass
 	chmod 0600 ~/.pgpass
 }
 
@@ -49,9 +49,9 @@ function launch_keeper() {
 		echo "stolon data doesn't exist, data won't be persistent!"
 		mkdir /stolon-data
 	fi
-    if [[ ! -f /stolon-data/dummy.file ]]; then
-        fallocate -l 300MB /stolon-data/dummy.file
-    fi
+	if [[ ! -f /stolon-data/dummy.file ]]; then
+		fallocate -l 300MB /stolon-data/dummy.file
+	fi
 	chown -R stolon:stolon /stolon-data
 
 	export STKEEPER_LISTEN_ADDRESS=$POD_IP
