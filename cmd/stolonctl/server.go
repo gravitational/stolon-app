@@ -52,10 +52,9 @@ func server(ccmd *cobra.Command, args []string) error {
 	go func() {
 		err := server.ListenAndServe()
 		if err == http.ErrServerClosed {
-			errChan <- nil
-		} else {
-			errChan <- err
+			err = nil
 		}
+		errChan <- err
 	}()
 
 	select {
