@@ -66,23 +66,25 @@ what-version:
 
 .PHONY: images
 images:
+	-git submodule update --init
+	-git submodule update --remote
 	cd images && $(MAKE) -f Makefile VERSION=$(VERSION)
 
 .PHONY: import
 import: images
 	-$(GRAVITY) app delete --ops-url=$(OPS_URL) $(REPOSITORY)/$(NAME):$(VERSION) --force --insecure $(EXTRA_GRAVITY_OPTIONS)
-	sed -i.bak "s/version: \"0.0.0+latest\"/version: \"$(RUNTIME_VERSION)\"/" resources/app.yaml
+	sed -i "s/version: \"0.0.0+latest\"/version: \"$(RUNTIME_VERSION)\"/" resources/app.yaml
 	$(GRAVITY) app import $(IMPORT_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) .
-	if [ -f resources/app.yaml.bak ]; then mv resources/app.yaml.bak resources/app.yaml; fi
+	sed -i "s/version: \"$(RUNTIME_VERSION)\"/version: \"0.0.0+latest\"/" resources/app.yaml
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 .PHONY: build-app
 build-app: images
-	sed -i.bak "s/version: \"0.0.0+latest\"/version: \"$(RUNTIME_VERSION)\"/" resources/app.yaml
+	sed -i "s/version: \"0.0.0+latest\"/version: \"$(RUNTIME_VERSION)\"/" resources/app.yaml
 	$(TELE) build -o $(BUILD_DIR)/installer.tar $(TELE_BUILD_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) resources/app.yaml
-	if [ -f resources/app.yaml.bak ]; then mv resources/app.yaml.bak resources/app.yaml; fi
+	sed -i "s/version: \"$(RUNTIME_VERSION)\"/version: \"0.0.0+latest\"/" resources/app.yaml
 
 .PHONY: build-stolonboot
 build-stolonboot: $(BUILD_DIR)
