@@ -39,7 +39,6 @@ if [ $1 = "update" ]; then
 
     echo "Creating or updating resources"
     rig upsert -f /var/lib/gravity/resources/keeper.yaml --debug
-    rig upsert -f /var/lib/gravity/resources/rpc.yaml --debug
     rig upsert -f /var/lib/gravity/resources/sentinel.yaml --debug
     rig upsert -f /var/lib/gravity/resources/utils.yaml --debug
     rig upsert -f /var/lib/gravity/resources/alerts.yaml --debug
@@ -50,7 +49,7 @@ if [ $1 = "update" ]; then
     fi
 
     echo "Checking status"
-    rig status $RIG_CHANGESET --retry-attempts=120 --retry-period=1s --debug
+    rig status $RIG_CHANGESET --retry-attempts=120 --retry-period=2s --debug
     echo "Freezing"
     rig freeze
 
