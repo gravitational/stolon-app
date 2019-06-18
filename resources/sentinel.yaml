@@ -20,7 +20,7 @@ rules:
     verbs:
       - use
   - apiGroups:
-      -  ""
+      - ""
     verbs:
       - get
       - list
@@ -30,7 +30,7 @@ rules:
     resourceNames:
       - stolon
   - apiGroups:
-      -  ""
+      - ""
     verbs:
       - get
       - list

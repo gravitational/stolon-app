@@ -1,3 +1,4 @@
+---
 apiVersion: bundle.gravitational.io/v2
 kind: Bundle
 metadata:
