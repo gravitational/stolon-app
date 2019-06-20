@@ -88,17 +88,17 @@ build-app: images
 
 .PHONY: build-stolonboot
 build-stolonboot: $(BUILD_DIR)
-	docker run $(DOCKERFLAGS) $(BUILDIMAGE) make build/stolonboot
+	docker run $(DOCKERFLAGS) $(BUILDIMAGE) make build-stolonboot-docker
 
-build/stolonboot:
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -o $@ cmd/stolonboot/*.go
+build-stolonboot-docker:
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -o build/stolonboot cmd/stolonboot/*.go
 
 .PHONY: build-stolonctl
 build-stolonctl: $(BUILD_DIR)
-	docker run $(DOCKERFLAGS) $(BUILDIMAGE) make build/stolonctl
+	docker run $(DOCKERFLAGS) $(BUILDIMAGE) make build-stolonctl-docker
 
-build/stolonctl:
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -o $@ cmd/stolonctl/*.go
+build-stolonctl-docker:
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -o build/stolonctl cmd/stolonctl/*.go
 
 .PHONY: clean
 clean:
