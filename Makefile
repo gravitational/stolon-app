@@ -49,10 +49,7 @@ TELE_BUILD_OPTIONS := --insecure \
                 --name=$(NAME) \
                 --version=$(VERSION) \
                 --glob=**/*.yaml \
-                --ignore=".git" \
-                --ignore="images" \
-                --ignore="cmd" \
-                --ignore="vendor/**/*.yaml" \
+				$(foreach resource, $(filter-out $(WHITELISTED_RESOURCE_NAMES), $(FILE_LIST)), --ignore="$(resource)") \
                 $(IMPORT_IMAGE_OPTIONS)
 
 BUILD_DIR := build
