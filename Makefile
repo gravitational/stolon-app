@@ -30,6 +30,9 @@ IMPORT_IMAGE_OPTIONS := --set-image=stolon-bootstrap:$(VERSION) \
 	--set-image=stolon-telegraf-node:$(VERSION) \
 	--set-image=stolonctl:$(VERSION)
 
+FILE_LIST := $(shell ls -1A)
+WHITELISTED_RESOURCE_NAMES := resources
+
 IMPORT_OPTIONS := --vendor \
 		--ops-url=$(OPS_URL) \
 		--insecure \
@@ -37,10 +40,7 @@ IMPORT_OPTIONS := --vendor \
 		--name=$(NAME) \
 		--version=$(VERSION) \
 		--glob=**/*.yaml \
-		--include="resources" \
-		--include="registry" \
-		--ignore="images" \
-		--ignore="vendor/**/*.yaml" \
+		$(foreach resource, $(filter-out $(WHITELISTED_RESOURCE_NAMES), $(FILE_LIST)), --exclude="$(resource)") \
 		--registry-url=leader.telekube.local:5000 \
 		$(IMPORT_IMAGE_OPTIONS)
 
@@ -49,10 +49,7 @@ TELE_BUILD_OPTIONS := --insecure \
                 --name=$(NAME) \
                 --version=$(VERSION) \
                 --glob=**/*.yaml \
-                --ignore=".git" \
-                --ignore="images" \
-                --ignore="cmd" \
-                --ignore="vendor/**/*.yaml" \
+				$(foreach resource, $(filter-out $(WHITELISTED_RESOURCE_NAMES), $(FILE_LIST)), --ignore="$(resource)") \
                 $(IMPORT_IMAGE_OPTIONS)
 
 BUILD_DIR := build
@@ -66,37 +63,39 @@ what-version:
 
 .PHONY: images
 images:
+	-git submodule update --init
+	-git submodule update --remote
 	cd images && $(MAKE) -f Makefile VERSION=$(VERSION)
 
 .PHONY: import
 import: images
 	-$(GRAVITY) app delete --ops-url=$(OPS_URL) $(REPOSITORY)/$(NAME):$(VERSION) --force --insecure $(EXTRA_GRAVITY_OPTIONS)
-	sed -i.bak "s/version: \"0.0.0+latest\"/version: \"$(RUNTIME_VERSION)\"/" resources/app.yaml
+	sed -i "s/version: \"0.0.0+latest\"/version: \"$(RUNTIME_VERSION)\"/" resources/app.yaml
 	$(GRAVITY) app import $(IMPORT_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) .
-	if [ -f resources/app.yaml.bak ]; then mv resources/app.yaml.bak resources/app.yaml; fi
+	sed -i "s/version: \"$(RUNTIME_VERSION)\"/version: \"0.0.0+latest\"/" resources/app.yaml
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
 .PHONY: build-app
 build-app: images
-	sed -i.bak "s/version: \"0.0.0+latest\"/version: \"$(RUNTIME_VERSION)\"/" resources/app.yaml
+	sed -i "s/version: \"0.0.0+latest\"/version: \"$(RUNTIME_VERSION)\"/" resources/app.yaml
 	$(TELE) build -o $(BUILD_DIR)/installer.tar $(TELE_BUILD_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) resources/app.yaml
-	if [ -f resources/app.yaml.bak ]; then mv resources/app.yaml.bak resources/app.yaml; fi
+	sed -i "s/version: \"$(RUNTIME_VERSION)\"/version: \"0.0.0+latest\"/" resources/app.yaml
 
 .PHONY: build-stolonboot
 build-stolonboot: $(BUILD_DIR)
-	docker run $(DOCKERFLAGS) $(BUILDIMAGE) make build/stolonboot
+	docker run $(DOCKERFLAGS) $(BUILDIMAGE) make build-stolonboot-docker
 
-build/stolonboot:
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -o $@ cmd/stolonboot/*.go
+build-stolonboot-docker:
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -o build/stolonboot cmd/stolonboot/*.go
 
 .PHONY: build-stolonctl
 build-stolonctl: $(BUILD_DIR)
-	docker run $(DOCKERFLAGS) $(BUILDIMAGE) make build/stolonctl
+	docker run $(DOCKERFLAGS) $(BUILDIMAGE) make build-stolonctl-docker
 
-build/stolonctl:
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -o $@ cmd/stolonctl/*.go
+build-stolonctl-docker:
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -o build/stolonctl cmd/stolonctl/*.go
 
 .PHONY: clean
 clean:

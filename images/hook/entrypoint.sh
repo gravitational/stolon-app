@@ -5,6 +5,9 @@ echo "Assuming changeset from the envrionment: $RIG_CHANGESET"
 # note that rig does not take explicit changeset ID
 # taking it from the environment variables
 if [ $1 = "update" ]; then
+    echo "---> Checking: $RIG_CHANGESET"
+    if rig status $RIG_CHANGESET --retry-attempts=1 --retry-period=1s; then exit 0; fi
+
     echo "Starting update, changeset: $RIG_CHANGESET"
     rig cs delete --force -c cs/$RIG_CHANGESET
 
@@ -36,7 +39,6 @@ if [ $1 = "update" ]; then
 
     echo "Creating or updating resources"
     rig upsert -f /var/lib/gravity/resources/keeper.yaml --debug
-    rig upsert -f /var/lib/gravity/resources/rpc.yaml --debug
     rig upsert -f /var/lib/gravity/resources/sentinel.yaml --debug
     rig upsert -f /var/lib/gravity/resources/utils.yaml --debug
     rig upsert -f /var/lib/gravity/resources/alerts.yaml --debug
@@ -47,7 +49,7 @@ if [ $1 = "update" ]; then
     fi
 
     echo "Checking status"
-    rig status $RIG_CHANGESET --retry-attempts=120 --retry-period=1s --debug
+    rig status $RIG_CHANGESET --retry-attempts=120 --retry-period=2s --debug
     echo "Freezing"
     rig freeze
 

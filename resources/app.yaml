@@ -1,3 +1,4 @@
+---
 apiVersion: bundle.gravitational.io/v2
 kind: Bundle
 metadata:
@@ -91,6 +92,8 @@ hooks:
             containers:
               - name: bootstrap
                 image: stolon-bootstrap:latest
+  postInstall:
+    job: file://postInstall.yaml
   update:
     job: |
       apiVersion: batch/v1
@@ -139,6 +142,8 @@ hooks:
                     mountPath: /usr/bin/etcdctl
                   - name: varstate
                     mountPath: /var/state
+  postUpdate:
+    job: file://postUpdate.yaml
   rollback:
     job: |
       apiVersion: batch/v1
