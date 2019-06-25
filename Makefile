@@ -47,7 +47,7 @@ TELE_BUILD_OPTIONS := --insecure \
 		--name=$(NAME) \
 		--version=$(VERSION) \
 		--glob=**/*.yaml \
-		$(foreach resource, $(filter-out $(WHITELISTED_RESOURCE_NAMES), $(FILE_LIST)), --exclude="$(resource)") \
+		$(foreach resource, $(filter-out $(WHITELISTED_RESOURCE_NAMES), $(FILE_LIST)), --ignore="$(resource)") \
 		--ignore="vendor/**/*.yaml" \
 		$(IMPORT_IMAGE_OPTIONS)
 
