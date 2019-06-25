@@ -31,7 +31,7 @@ IMPORT_IMAGE_OPTIONS := --set-image=stolon-bootstrap:$(VERSION) \
 	--set-image=stolonctl:$(VERSION)
 
 FILE_LIST := $(shell ls -1A)
-WHITELISTED_RESOURCE_NAMES := resources
+WHITELISTED_RESOURCE_NAMES := resources vendor
 
 IMPORT_OPTIONS := --vendor \
 		--ops-url=$(OPS_URL) \
