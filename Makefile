@@ -4,7 +4,7 @@ NAME := stolon-app
 OPS_URL ?= https://opscenter.localhost.localdomain:33009
 TELE ?= $(shell which tele)
 GRAVITY ?= $(shell which gravity)
-RUNTIME_VERSION ?= $(shell $(TELE) version | awk '/Version:/ {print $$2}')
+RUNTIME_VERSION ?= $(shell $(TELE) version | awk '/^[vV]ersion:/ {print $$2}')
 GRAVITY_VERSION ?= 5.2.12
 
 SRCDIR=/go/src/github.com/gravitational/stolon-app
@@ -27,6 +27,9 @@ IMPORT_IMAGE_OPTIONS := --set-image=stolon-bootstrap:$(VERSION) \
 	--set-image=stolon-telegraf:$(VERSION) \
 	--set-image=stolonctl:$(VERSION)
 
+FILE_LIST := $(shell ls -1A)
+WHITELISTED_RESOURCE_NAMES := resources vendor
+
 IMPORT_OPTIONS := --vendor \
 		--ops-url=$(OPS_URL) \
 		--insecure \
@@ -34,9 +37,7 @@ IMPORT_OPTIONS := --vendor \
 		--name=$(NAME) \
 		--version=$(VERSION) \
 		--glob=**/*.yaml \
-		--include="resources" \
-		--include="registry" \
-		--ignore="images" \
+		$(foreach resource, $(filter-out $(WHITELISTED_RESOURCE_NAMES), $(FILE_LIST)), --exclude="$(resource)") \
 		--ignore="vendor/**/*.yaml" \
 		--registry-url=leader.telekube.local:5000 \
 		$(IMPORT_IMAGE_OPTIONS)
@@ -46,9 +47,7 @@ TELE_BUILD_OPTIONS := --insecure \
 		--name=$(NAME) \
 		--version=$(VERSION) \
 		--glob=**/*.yaml \
-		--ignore=".git" \
-		--ignore="images" \
-		--ignore="cmd" \
+		$(foreach resource, $(filter-out $(WHITELISTED_RESOURCE_NAMES), $(FILE_LIST)), --exclude="$(resource)") \
 		--ignore="vendor/**/*.yaml" \
 		$(IMPORT_IMAGE_OPTIONS)
 
