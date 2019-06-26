@@ -23,23 +23,19 @@ images: bootstrap \
 	docker tag $(STOLONCTL_TAG) stolonctl:latest
 
 STOLONBOOT_BINS := bootstrap/bin
-$(STOLONBOOT_BINS):
-	cd ../ && make build-stolonboot
-	mkdir $(STOLONBOOT_BINS)
-	cp ../build/stolonboot $(STOLONBOOT_BINS)/stolonboot
-
 .PHONY: bootstrap
-bootstrap: $(STOLONBOOT_BINS)
+bootstrap:
+	cd ../ && make build-stolonboot
+	mkdir -p $(STOLONBOOT_BINS)
+	cp ../build/stolonboot $(STOLONBOOT_BINS)/stolonboot
 	docker build --pull -t $(BOOTSTRAP_TAG) $(PWD)/bootstrap
 
 STOLONCTL_BINS := stolonctl/bin
-$(STOLONCTL_BINS):
-	cd ../ && make build-stolonctl
-	mkdir $(STOLONCTL_BINS)
-	cp ../build/stolonctl $(STOLONCTL_BINS)/stolonctl
-
 .PHONY: stolonctl
-stolonctl: $(STOLONCTL_BINS)
+stolonctl:
+	cd ../ && make build-stolonctl
+	mkdir -p $(STOLONCTL_BINS)
+	cp ../build/stolonctl $(STOLONCTL_BINS)/stolonctl
 	docker build --pull --build-arg CHANGESET=$(CHANGESET) --build-arg VERSION=$(VERSION) -t $(STOLONCTL_TAG) $(PWD)/stolonctl
 
 .PHONY: uninstall
