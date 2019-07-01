@@ -21,9 +21,10 @@ export INSTALLER_URL=$(pwd)/build/installer.tar
 export GRAVITY_URL=$(pwd)/bin/gravity
 export TELE=$TOP_DIR/bin/tele
 export DEPLOY_TO=${DEPLOY_TO:-gce}
-export TAG=$(git rev-parse --short HEAD)
+export TAG=stolon-$(git rev-parse --short HEAD)
 export GCL_PROJECT_ID=${GCL_PROJECT_ID:-"kubeadm-167321"}
 export GCE_REGION="northamerica-northeast1,us-west1,us-east1,us-east4,us-central1"
+export DOCKER_RUN_FLAGS="--user $(id -u):$(id -g)"
 
 function build_upgrade_step {
   local usage="$FUNCNAME os release storage-driver cluster-size"
@@ -80,9 +81,11 @@ suite="$suite $(build_upgrade_suite)"
 echo $suite
 
 mkdir -p $UPGRADE_FROM_DIR
-tele login --ops=$OPS_URL --key="$OPS_APIKEY"
+tele login --ops=$OPS_URL --token="$OPS_APIKEY"
 for release in ${!UPGRADE_MAP[@]}; do
-  tele pull stolon-app:$release --output=$UPGRADE_FROM_DIR/installer_$release.tar
+    if [ ! -f $UPGRADE_FROM_DIR/installer_$release.tar ]; then
+        tele pull stolon-app:$release --output=$UPGRADE_FROM_DIR/installer_$release.tar
+    fi
 done
 
 docker pull $ROBOTEST_REPO

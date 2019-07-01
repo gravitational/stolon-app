@@ -44,7 +44,10 @@ properties([
            description: 'Ops Center URL to download dependencies from'),
     string(name: 'GRAVITY_VERSION',
            defaultValue: '5.2.12',
-           description: 'gravity/tele binaries version')
+           description: 'gravity/tele binaries version'),
+    string(name: 'CLUSTER_SSL_APP_VERSION',
+           defaultValue: '0.8.2-5.2.12',
+           description: 'cluster-ssl-app version')
   ]),
 ])
 
