@@ -32,7 +32,7 @@ IMPORT_IMAGE_OPTIONS := --set-image=stolon-bootstrap:$(VERSION) \
 	--set-image=stolonctl:$(VERSION)
 
 FILE_LIST := $(shell ls -1A)
-WHITELISTED_RESOURCE_NAMES := resources vendor
+WHITELISTED_RESOURCE_NAMES_IMPORT := resources
 
 IMPORT_OPTIONS := --vendor \
 		--ops-url=$(OPS_URL) \
@@ -41,7 +41,10 @@ IMPORT_OPTIONS := --vendor \
 		--name=$(NAME) \
 		--version=$(VERSION) \
 		--glob=**/*.yaml \
-		$(foreach resource, $(filter-out $(WHITELISTED_RESOURCE_NAMES), $(FILE_LIST)), --exclude="$(resource)") \
+		--include="resources" \
+		--include="registry" \
+		--ignore="images" \
+		--ignore="vendor/**/*.yaml" \
 		--registry-url=leader.telekube.local:5000 \
 		$(IMPORT_IMAGE_OPTIONS)
 
