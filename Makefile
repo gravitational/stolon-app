@@ -31,9 +31,6 @@ IMPORT_IMAGE_OPTIONS := --set-image=stolon-bootstrap:$(VERSION) \
 	--set-image=stolon-telegraf-node:$(VERSION) \
 	--set-image=stolonctl:$(VERSION)
 
-FILE_LIST := $(shell ls -1A)
-WHITELISTED_RESOURCE_NAMES_IMPORT := resources
-
 IMPORT_OPTIONS := --vendor \
 		--ops-url=$(OPS_URL) \
 		--insecure \
@@ -53,7 +50,6 @@ TELE_BUILD_OPTIONS := --insecure \
                 --name=$(NAME) \
                 --version=$(VERSION) \
                 --glob=**/*.yaml \
-				$(foreach resource, $(filter-out $(WHITELISTED_RESOURCE_NAMES), $(FILE_LIST)), --ignore="$(resource)") \
                 $(IMPORT_IMAGE_OPTIONS)
 
 BUILD_DIR := build
