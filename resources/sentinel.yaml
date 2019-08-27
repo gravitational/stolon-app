@@ -121,6 +121,13 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: spec.nodeName
+        resources:
+          requests:
+            cpu: 10m
+            memory: 20Mi
+          limits:
+            cpu: 100m
+            memory: 150Mi
         ports:
           - containerPort: 6431
         volumeMounts:
