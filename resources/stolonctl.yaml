@@ -60,6 +60,13 @@ spec:
                 secretKeyRef:
                   name: stolon
                   key: password
+          resources:
+            requests:
+              cpu: 10m
+              memory: 20Mi
+            limits:
+              cpu: 100m
+              memory: 150Mi
           volumeMounts:
             - name: kubectl
               mountPath: /usr/bin/kubectl

@@ -103,6 +103,13 @@ spec:
               secretKeyRef:
                 name: telegraf-influxdb-creds
                 key: password
+        resources:
+          requests:
+            cpu: 10m
+            memory: 20Mi
+          limits:
+            cpu: 100m
+            memory: 150Mi
         volumeMounts:
           - name: secrets
             mountPath: /etc/secrets/stolon
