@@ -20,7 +20,7 @@ rules:
     verbs:
       - use
   - apiGroups:
-      -  ""
+      - ""
     verbs:
       - get
       - list
@@ -32,7 +32,7 @@ rules:
       - cluster-ca
       - cluster-default-ssl
   - apiGroups:
-      -  ""
+      - ""
     verbs:
       - get
       - list
