@@ -17,6 +17,7 @@ const (
 	ChangesetScope            = "Namespaced"
 	DefaultNamespace          = "default"
 	KindDaemonSet             = "DaemonSet"
+	KindStatefulSet           = "StatefulSet"
 	KindChangeset             = "Changeset"
 	KindConfigMap             = "ConfigMap"
 	KindDeployment            = "Deployment"
@@ -44,11 +45,7 @@ const (
 	DefaultRetryPeriod = time.Second
 	DefaultBufferSize  = 1024
 
-	ChangesetAPIVersion  = "changeset.gravitational.io/v1"
-	BatchAPIVersion      = "batch/v1"
-	RBACAPIVersion       = "rbac.authorization.k8s.io/v1alpha1"
-	ExtensionsAPIVersion = "extensions/v1beta1"
-	V1                   = "v1"
+	ChangesetAPIVersion = "changeset.gravitational.io/v1"
 )
 
 // NamespaceOrDefault returns a default namespace if the specified namespace is empty

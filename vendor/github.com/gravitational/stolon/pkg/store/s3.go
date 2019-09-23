@@ -19,7 +19,7 @@ import (
 	"path"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
+	log "github.com/Sirupsen/logrus"
 	"github.com/gravitational/trace"
 	minio "github.com/minio/minio-go"
 )

@@ -34,11 +34,11 @@ ignored = ["github.com/gravitational/stolon-app/images*", "github.com/Sirupsen/l
 
 [[constraint]]
   name = "github.com/gravitational/rigging"
-  version = "0.0.10"
+  version = "5.5.2"
 
 [[override]]
   name = "k8s.io/api"
-  branch = "release-1.9"
+  branch = "release-1.13"
 
 [[override]]
   name = "github.com/coreos/etcd"
@@ -46,11 +46,11 @@ ignored = ["github.com/gravitational/stolon-app/images*", "github.com/Sirupsen/l
 
 [[override]]
   name = "k8s.io/kubernetes"
-  branch = "release-1.9"
+  branch = "release-1.13"
 
 [[override]]
   name = "k8s.io/apimachinery"
-  branch = "release-1.9"
+  branch = "release-1.13"
 
 [[override]]
   name = "github.com/ugorji/go"
@@ -63,3 +63,7 @@ ignored = ["github.com/gravitational/stolon-app/images*", "github.com/Sirupsen/l
 [[override]]
   name = "github.com/minio/minio-go"
   version = "~2.0"
+
+[[override]]
+  name = "github.com/json-iterator/go"
+  version = "=1.1.4"
