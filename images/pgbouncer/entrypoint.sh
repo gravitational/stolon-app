@@ -41,7 +41,7 @@ function create_users_file() {
 }
 
 function bootstrap_database() {
-    pgisready "${PG_DATABASE:-postgres}"" ${PG_SERVICE} ${PG_PORT:-5432} "${PG_USERNAME}"
+    pgisready "${PG_DATABASE:-postgres}" ${PG_SERVICE} ${PG_PORT:-5432} "${PG_USERNAME}"
     psql -h ${PG_SERVICE} -p ${PG_PORT:-5432} ${PG_DATABASE:-postgres} -f /home/stolon/pgbouncer_auth.sql
 }
 
