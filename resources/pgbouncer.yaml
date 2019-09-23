@@ -42,7 +42,7 @@ data:
     server_tls_cert_file = SERVER_TLS_CERT_FILE
     server_tls_protocols = SERVER_TLS_PROTOCOLS
 ---
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: stolon-pgbouncer
@@ -67,7 +67,6 @@ spec:
       initContainers:
         - name: fix-secrets
           image: quay.io/gravitational/stolon-pgbouncer:latest
-          imagePullPolicy: Always
           command: ["/usr/bin/dumb-init", "--", "/usr/local/bin/init-container.sh"]
           securityContext:
             runAsUser: 0
@@ -80,8 +79,8 @@ spec:
               mountPath: /home/stolon/secrets
       containers:
         - name: pgbouncer
-          image: quay.io/gravitational/stolon-pgbouncer:latest
-          imagePullPolicy: Always
+          image: stolon-pgbouncer:latest
+          args: ["pgbouncer"]
           env:
             - name: PG_SERVICE
               value: "stolon-postgres.default.svc"
@@ -133,3 +132,32 @@ spec:
   selector:
     component: pgbouncer
     product: stolon
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: bootstrap-auth-function
+  namespace: default
+spec:
+  parallelism: 1
+  completions: 1
+  template:
+    metadata:
+      name: bootstrap-auth-function
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: bootstrap
+          image: stolon-pgbouncer:latest
+          args: ["bootstrap"]
+          env:
+            - name: PG_SERVICE
+              value: "stolon-postgres.default.svc"
+            - name: PG_USERNAME
+              value: "stolon"
+            - name: PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: stolon
+                  key: password
+
