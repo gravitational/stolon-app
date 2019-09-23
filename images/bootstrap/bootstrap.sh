@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/usr/bin/env bash
+set -o errexit
+
 kubectl apply -f /var/lib/gravity/resources/security.yaml
 kubectl apply -f /var/lib/gravity/resources/telegraf.yaml
 
