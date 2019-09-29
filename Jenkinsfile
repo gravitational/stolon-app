@@ -43,11 +43,17 @@ properties([
            defaultValue: 'https://ci-ops.gravitational.io',
            description: 'Ops Center URL to download dependencies from'),
     string(name: 'GRAVITY_VERSION',
-           defaultValue: '5.2.12',
+           defaultValue: '5.5.21',
            description: 'gravity/tele binaries version'),
     string(name: 'CLUSTER_SSL_APP_VERSION',
-           defaultValue: '0.8.2-5.2.12',
-           description: 'cluster-ssl-app version')
+           defaultValue: '0.8.2-5.5.21',
+           description: 'cluster-ssl-app version'),
+    string(name: 'INTERMEDIATE_RUNTIME_VERSION',
+           defaultValue: '5.2.15',
+           description: 'Version of runtime to upgrade with'),
+    string(name: 'LOGIN_TELE_VERSION',
+           defaultValue: '5.2.15',
+           description: 'Version of tele binary to login into Ops Center with')
   ]),
 ])
 
@@ -63,13 +69,16 @@ timestamps {
     stage('clean') {
       sh "make clean"
     }
-    stage('download gravity/tele binaries') {
-      sh "make download-binaries"
+    stage('download gravity/tele binaries for login') {
+      withEnv(['GRAVITY_VERSION=${LOGIN_TELE_VERSION}']) {
+        echo "GRAVITY_VERSION = ${GRAVITY_VERSION}"
+        sh "make download-binaries"
+      }
     }
 
     APP_VERSION = sh(script: 'make what-version', returnStdout: true).trim()
 
-    stage('build-app') {
+    stage('login to ops center') {
       withCredentials([
       [$class: 'StringBinding', credentialsId:'CI_OPS_API_KEY', variable: 'API_KEY'],
       ]) {
@@ -78,7 +87,19 @@ timestamps {
 export PATH=\$(pwd)/bin:\${PATH}
 rm -rf ${TELE_STATE_DIR} && mkdir -p ${TELE_STATE_DIR}
 export EXTRA_GRAVITY_OPTIONS="--state-dir=${TELE_STATE_DIR}"
-tele login \${EXTRA_GRAVITY_OPTIONS} -o ${OPS_URL} --token=${API_KEY}
+tele login \${EXTRA_GRAVITY_OPTIONS} -o ${OPS_URL} --token=${API_KEY}"""
+      }
+
+    stage('download gravity/tele binaries for build') {
+      echo "GRAVITY_VERSION = ${GRAVITY_VERSION}"
+      sh "make download-binaries"
+    }
+
+    stage('build application') {
+      def TELE_STATE_DIR = "${pwd()}/state/${APP_VERSION}"
+      sh """
+export PATH=\$(pwd)/bin:\${PATH}
+export EXTRA_GRAVITY_OPTIONS="--state-dir=${TELE_STATE_DIR}"
 make build-app OPS_URL=$OPS_URL"""
       }
     }
