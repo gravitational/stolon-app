@@ -26,7 +26,6 @@ if [ $1 = "update" ]; then
     rig upsert -f /var/lib/gravity/resources/security.yaml --debug
     rig upsert -f /var/lib/gravity/resources/telegraf.yaml --debug
     rig upsert -f /var/lib/gravity/resources/keeper.yaml --debug
-    rig upsert -f /var/lib/gravity/resources/sentinel.yaml --debug
     rig upsert -f /var/lib/gravity/resources/utils.yaml --debug
     rig upsert -f /var/lib/gravity/resources/alerts.yaml --debug
     rig upsert -f /var/lib/gravity/resources/stolonctl.yaml --debug
@@ -36,6 +35,7 @@ if [ $1 = "update" ]; then
     then
         sed -i 's/replicas: 1/replicas/' /var/lib/gravity/resources/sentinel.yaml
     fi
+    rig upsert -f /var/lib/gravity/resources/sentinel.yaml --debug
 
     echo "Checking status"
     rig status $RIG_CHANGESET --retry-attempts=120 --retry-period=2s --debug
