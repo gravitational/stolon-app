@@ -50,10 +50,7 @@ properties([
            description: 'cluster-ssl-app version'),
     string(name: 'INTERMEDIATE_RUNTIME_VERSION',
            defaultValue: '5.2.15',
-           description: 'Version of runtime to upgrade with'),
-    string(name: 'LOGIN_TELE_VERSION',
-           defaultValue: '5.2.15',
-           description: 'Version of tele binary to login into Ops Center with')
+           description: 'Version of runtime to upgrade with')
   ]),
 ])
 
@@ -70,36 +67,18 @@ timestamps {
       sh "make clean"
     }
     stage('download gravity/tele binaries for login') {
-      withEnv(['GRAVITY_VERSION=${LOGIN_TELE_VERSION}']) {
-        echo "GRAVITY_VERSION = ${GRAVITY_VERSION}"
-        sh "make download-binaries"
-      }
+      sh "make download-binaries"
     }
 
     APP_VERSION = sh(script: 'make what-version', returnStdout: true).trim()
-
-    stage('login to ops center') {
-      withCredentials([
-      [$class: 'StringBinding', credentialsId:'CI_OPS_API_KEY', variable: 'API_KEY'],
-      ]) {
-        def TELE_STATE_DIR = "${pwd()}/state/${APP_VERSION}"
-        sh """
-export PATH=\$(pwd)/bin:\${PATH}
-rm -rf ${TELE_STATE_DIR} && mkdir -p ${TELE_STATE_DIR}
-export EXTRA_GRAVITY_OPTIONS="--state-dir=${TELE_STATE_DIR}"
-tele login \${EXTRA_GRAVITY_OPTIONS} -o ${OPS_URL} --token=${API_KEY}"""
-      }
-
-    stage('download gravity/tele binaries for build') {
-      echo "GRAVITY_VERSION = ${GRAVITY_VERSION}"
-      sh "make download-binaries"
-    }
 
     stage('build application') {
       def TELE_STATE_DIR = "${pwd()}/state/${APP_VERSION}"
       sh """
 export PATH=\$(pwd)/bin:\${PATH}
+rm -rf ${TELE_STATE_DIR} && mkdir -p ${TELE_STATE_DIR}
 export EXTRA_GRAVITY_OPTIONS="--state-dir=${TELE_STATE_DIR}"
+tele login \${EXTRA_GRAVITY_OPTIONS} -o ${OPS_URL} --token=${API_KEY}
 make build-app OPS_URL=$OPS_URL"""
       }
     }
