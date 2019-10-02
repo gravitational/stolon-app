@@ -99,6 +99,7 @@ make build-app OPS_URL=$OPS_URL"""
                 [$class: 'FileBinding', credentialsId:'OPS_SSH_KEY', variable: 'SSH_KEY'],
                 [$class: 'FileBinding', credentialsId:'OPS_SSH_PUB', variable: 'SSH_PUB'],
                 ]) {
+                  def TELE_STATE_DIR = "${pwd()}/state/${APP_VERSION}"
                   sh """
                   export PATH=\$(pwd)/bin:\${PATH}
                   export EXTRA_GRAVITY_OPTIONS="--state-dir=${TELE_STATE_DIR}"
