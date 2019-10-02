@@ -33,7 +33,7 @@ if [ $1 = "update" ]; then
 
     if [ $(kubectl get nodes -l stolon-keeper=yes -o name | wc -l) -ge 3 ]
     then
-        sed -i 's/replicas: 1/replicas/' /var/lib/gravity/resources/sentinel.yaml
+        sed -i 's/replicas: 1/replicas: 3/' /var/lib/gravity/resources/sentinel.yaml
     fi
     rig upsert -f /var/lib/gravity/resources/sentinel.yaml --debug
 
