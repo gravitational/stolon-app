@@ -72,9 +72,12 @@ timestamps {
 
     APP_VERSION = sh(script: 'make what-version', returnStdout: true).trim()
 
-    stage('build application') {
-      def TELE_STATE_DIR = "${pwd()}/state/${APP_VERSION}"
-      sh """
+    stage('build-app') {
+      withCredentials([
+      [$class: 'StringBinding', credentialsId:'CI_OPS_API_KEY', variable: 'API_KEY'],
+      ]) {
+        def TELE_STATE_DIR = "${pwd()}/state/${APP_VERSION}"
+        sh """
 export PATH=\$(pwd)/bin:\${PATH}
 rm -rf ${TELE_STATE_DIR} && mkdir -p ${TELE_STATE_DIR}
 export EXTRA_GRAVITY_OPTIONS="--state-dir=${TELE_STATE_DIR}"
