@@ -43,11 +43,14 @@ properties([
            defaultValue: 'https://ci-ops.gravitational.io',
            description: 'Ops Center URL to download dependencies from'),
     string(name: 'GRAVITY_VERSION',
-           defaultValue: '5.2.12',
+           defaultValue: '5.5.21',
            description: 'gravity/tele binaries version'),
     string(name: 'CLUSTER_SSL_APP_VERSION',
-           defaultValue: '0.8.2-5.2.12',
-           description: 'cluster-ssl-app version')
+           defaultValue: '0.8.2-5.5.21',
+           description: 'cluster-ssl-app version'),
+    string(name: 'INTERMEDIATE_RUNTIME_VERSION',
+           defaultValue: '5.2.15',
+           description: 'Version of runtime to upgrade with')
   ]),
 ])
 
@@ -63,7 +66,7 @@ timestamps {
     stage('clean') {
       sh "make clean"
     }
-    stage('download gravity/tele binaries') {
+    stage('download gravity/tele binaries for login') {
       sh "make download-binaries"
     }
 
@@ -78,6 +81,7 @@ timestamps {
 export PATH=\$(pwd)/bin:\${PATH}
 rm -rf ${TELE_STATE_DIR} && mkdir -p ${TELE_STATE_DIR}
 export EXTRA_GRAVITY_OPTIONS="--state-dir=${TELE_STATE_DIR}"
+tele logout \${EXTRA_GRAVITY_OPTIONS}
 tele login \${EXTRA_GRAVITY_OPTIONS} -o ${OPS_URL} --token=${API_KEY}
 make build-app OPS_URL=$OPS_URL"""
       }
@@ -95,7 +99,10 @@ make build-app OPS_URL=$OPS_URL"""
                 [$class: 'FileBinding', credentialsId:'OPS_SSH_KEY', variable: 'SSH_KEY'],
                 [$class: 'FileBinding', credentialsId:'OPS_SSH_PUB', variable: 'SSH_PUB'],
                 ]) {
+                  def TELE_STATE_DIR = "${pwd()}/state/${APP_VERSION}"
                   sh """
+                  export PATH=\$(pwd)/bin:\${PATH}
+                  export EXTRA_GRAVITY_OPTIONS="--state-dir=${TELE_STATE_DIR}"
                   make robotest-run-suite \
                     AWS_KEYPAIR=ops \
                     AWS_REGION=us-east-1 \

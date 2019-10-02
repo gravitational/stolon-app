@@ -20,20 +20,22 @@ if [ $1 = "update" ]; then
     rig delete deployments/stolonctl --force
     rig delete configmaps/stolon-telegraf --force
     rig delete configmaps/stolon-telegraf-node --force
+    rig delete configmaps/stolon-pgbouncer --force
 
     echo "Creating or updating resources"
     rig upsert -f /var/lib/gravity/resources/security.yaml --debug
     rig upsert -f /var/lib/gravity/resources/telegraf.yaml --debug
     rig upsert -f /var/lib/gravity/resources/keeper.yaml --debug
-    rig upsert -f /var/lib/gravity/resources/sentinel.yaml --debug
     rig upsert -f /var/lib/gravity/resources/utils.yaml --debug
     rig upsert -f /var/lib/gravity/resources/alerts.yaml --debug
     rig upsert -f /var/lib/gravity/resources/stolonctl.yaml --debug
+    rig upsert -f /var/lib/gravity/resources/pgbouncer.yaml --debug
 
     if [ $(kubectl get nodes -l stolon-keeper=yes -o name | wc -l) -ge 3 ]
     then
-        sed -i 's/replicas: 1/replicas/' /var/lib/gravity/resources/sentinel.yaml
+        sed -i 's/replicas: 1/replicas: 3/' /var/lib/gravity/resources/sentinel.yaml
     fi
+    rig upsert -f /var/lib/gravity/resources/sentinel.yaml --debug
 
     echo "Checking status"
     rig status $RIG_CHANGESET --retry-attempts=120 --retry-period=2s --debug

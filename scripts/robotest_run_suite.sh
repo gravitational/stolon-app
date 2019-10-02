@@ -81,10 +81,9 @@ suite="$suite $(build_upgrade_suite)"
 echo $suite
 
 mkdir -p $UPGRADE_FROM_DIR
-tele login --ops=$OPS_URL --key="$OPS_APIKEY"
 for release in ${!UPGRADE_MAP[@]}; do
     if [ ! -f $UPGRADE_FROM_DIR/installer_$release.tar ]; then
-        tele pull stolon-app:$release --output=$UPGRADE_FROM_DIR/installer_$release.tar
+        tele pull $EXTRA_GRAVITY_OPTIONS stolon-app:$release --output=$UPGRADE_FROM_DIR/installer_$release.tar
     fi
 done
 

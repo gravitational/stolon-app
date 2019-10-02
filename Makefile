@@ -5,7 +5,8 @@ OPS_URL ?= https://opscenter.localhost.localdomain:33009
 TELE ?= $(shell which tele)
 GRAVITY ?= $(shell which gravity)
 RUNTIME_VERSION ?= $(shell $(TELE) version | awk '/^[vV]ersion:/ {print $$2}')
-GRAVITY_VERSION ?= 5.2.12
+INTERMEDIATE_RUNTIME_VERSION ?= 5.2.15
+GRAVITY_VERSION ?= 5.5.21
 CLUSTER_SSL_APP_VERSION ?= "0.0.0+latest"
 
 SRCDIR=/go/src/github.com/gravitational/stolon-app
@@ -19,14 +20,16 @@ CONTAINERS := stolon-bootstrap:$(VERSION) \
 			  stolon-hook:$(VERSION) \
 			  stolon:$(VERSION) \
 			  stolon-telegraf:$(VERSION) \
-			  stolonctl:$(VERSION)
+			  stolonctl:$(VERSION) \
+			  stolon-pgbouncer:$(VERSION)
 
 IMPORT_IMAGE_OPTIONS := --set-image=stolon-bootstrap:$(VERSION) \
 	--set-image=stolon-uninstall:$(VERSION) \
 	--set-image=stolon-hook:$(VERSION) \
 	--set-image=stolon:$(VERSION) \
 	--set-image=stolon-telegraf:$(VERSION) \
-	--set-image=stolonctl:$(VERSION)
+	--set-image=stolonctl:$(VERSION) \
+	--set-image=stolon-pgbouncer:$(VERSION)
 
 IMPORT_OPTIONS := --vendor \
 		--ops-url=$(OPS_URL) \
@@ -47,6 +50,7 @@ TELE_BUILD_OPTIONS := --insecure \
 		--name=$(NAME) \
 		--version=$(VERSION) \
 		--glob=**/*.yaml \
+		--upgrade-via=$(INTERMEDIATE_RUNTIME_VERSION) \
 		$(IMPORT_IMAGE_OPTIONS)
 
 BUILD_DIR := build

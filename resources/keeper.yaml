@@ -16,7 +16,7 @@ spec:
     stolon-proxy: "yes"
     stolon-cluster: "kube-stolon"
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: stolon-keeper

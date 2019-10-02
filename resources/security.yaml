@@ -5,7 +5,7 @@ metadata:
   name: stolon
   namespace: default
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: stolon
@@ -20,7 +20,7 @@ rules:
     verbs:
       - use
   - apiGroups:
-      -  ""
+      - ""
     verbs:
       - get
       - list
@@ -32,7 +32,7 @@ rules:
       - cluster-ca
       - cluster-default-ssl
   - apiGroups:
-      -  ""
+      - ""
     verbs:
       - get
       - list
@@ -65,7 +65,7 @@ rules:
     resources:
       - jobs
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: stolon:crd
@@ -97,7 +97,7 @@ roleRef:
   name: stolon:crd
 ---
 kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: stolon
   namespace: default

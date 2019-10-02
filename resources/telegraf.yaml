@@ -1,3 +1,4 @@
+---
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -43,6 +44,7 @@ data:
     #                            INPUT PLUGINS                                    #
     ###############################################################################
     [[inputs.postgresql]]
+      address = "host=stolon-postgres user=$STOLON_USERNAME password=$STOLON_PASSWORD dbname=postgres sslmode=require"
       ignored_databases = ["template0", "template1"]
 ---
 apiVersion: v1
@@ -97,9 +99,3 @@ data:
         withdbname=false
         tagvalue=""
         measurement="lag"
-      [[inputs.postgresql_extensible.query]]
-        sqlquery="SELECT * FROM pg_stat_replication"
-        version=901
-        withdbname=false
-        tagvalue="client_hostname,state,sent_location,write_location,flush_location,replay_location"
-        measurement="replication_stats"

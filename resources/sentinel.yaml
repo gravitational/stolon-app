@@ -5,7 +5,7 @@ metadata:
   name: stolon-sentinel
   namespace: default
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: stolon-sentinel
@@ -30,6 +30,18 @@ spec:
       serviceAccountName: stolon
       nodeSelector:
         stolon-keeper: "yes"
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: component
+                      operator: In
+                      values:
+                        - sentinel
+                topologyKey: kubernetes.io/hostname
       containers:
       - name: sentinel
         image: stolon:latest
