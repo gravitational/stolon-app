@@ -214,13 +214,3 @@ spec:
         - name: telegraf-config
           configMap:
             name: stolon-telegraf-node
----
-apiVersion: v1
-kind: Secret
-type: Opaque
-metadata:
-  name: telegraf-influxdb-creds
-  namespace: default
-data:
-  username: dGVsZWdyYWY=
-  password: c3VwZXJTZWN1cmVQYXNzd29yZA==

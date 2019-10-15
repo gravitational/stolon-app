@@ -22,6 +22,15 @@ if [ $1 = "update" ]; then
     rig delete configmaps/stolon-telegraf-node --force
     rig delete configmaps/stolon-pgbouncer --force
 
+    ## copy telegraf secret from monitoring namespace
+    if kubectl --namespace=monitoring get secret telegraf-influxdb-creds >/dev/null 2>&1;
+    then
+	    kubectl --namespace=monitoring get secret telegraf-influxdb-creds --export -o yaml |\
+	    kubectl --namespace=default apply -f -
+    else
+	    kubectl --namespace=default apply -f /var/lib/gravity/resources/secrets.yaml
+    fi
+
     echo "Creating or updating resources"
     rig upsert -f /var/lib/gravity/resources/security.yaml --debug
     rig upsert -f /var/lib/gravity/resources/telegraf.yaml --debug

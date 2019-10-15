@@ -8,6 +8,7 @@ RUN apt-get update && \
     apt-get install --yes --no-install-recommends curl tar && \
     curl -sSL https://dl.influxdata.com/telegraf/releases/telegraf-${TELEGRAF_VERSION}_linux_amd64.tar.gz -o /telegraf.tar.gz && \
     tar xzf /telegraf.tar.gz --strip-components=2 && \
+    useradd -ms /bin/bash telegraf && \
     apt-get clean && \
     rm -rf \
         /var/lib/apt/lists/* \
@@ -19,11 +20,6 @@ RUN apt-get update && \
         /telegraf.tar.gz \
         /etc/telegraf/*
 
-ADD run.sh /usr/local/bin/run.sh
-
-RUN useradd -ms /bin/bash telegraf && \
-    chmod a+rx /usr/local/bin/run.sh
-
 USER telegraf
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-CMD ["/usr/local/bin/run.sh"]
+CMD ["/usr/bin/telegraf", "--config", "/etc/telegraf/telegraf.conf"]
