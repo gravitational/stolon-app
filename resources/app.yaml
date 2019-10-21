@@ -32,6 +32,13 @@ installer:
         nodes:
           - profile: node
             count: 5
+      - name: "six"
+        description: "five node cluster"
+        nodes:
+          - profile: node
+            count: 3
+          - profile: app
+            count: 3
 
 nodeProfiles:
   - name: node
@@ -39,6 +46,43 @@ nodeProfiles:
     labels:
       role: "node"
       stolon-keeper: "yes"
+    requirements:
+      cpu:
+        min: 2
+      ram:
+        min: "1GB"
+      volumes:
+        - path: /var/lib/gravity
+          capacity: "4GB"
+        - name: stolon-data
+          path: /var/lib/data/stolon
+          targetPath: /var/lib/data/stolon
+          capacity: "4GB"
+          filesystems: ["ext4", "xfs"]
+      network:
+        minTransferRate: "1MB/s"
+        ports:
+          - protocol: tcp
+            ranges:
+              - "5431-5435"
+              - "5973"
+    expandPolicy: fixed-instance
+    providers:
+      aws:
+        instanceTypes:
+          - m3.large
+          - m3.xlarge
+          - c3.large
+          - c3.xlarge
+          - c3.2xlarge
+          - c3.4xlarge
+          - i2.xlarge
+          - i2.2xlarge
+  - name: app
+    description: "stolon applications node"
+    labels:
+      role: "node"
+      node-role.kubernetes.io/master: ""
     requirements:
       cpu:
         min: 2
