@@ -127,10 +127,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
-            - name: NODE_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: spec.nodeName
+            - name: ETCD_HOSTNAME
+              value: "kubernetes.default.svc.cluster.local"
         - name: keeper
           image: stolon:latest
           ports:
@@ -192,10 +190,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
-            - name: NODE_NAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: spec.nodeName
+            - name: ETCD_HOSTNAME
+              value: "kubernetes.default.svc.cluster.local"
       volumes:
         - name: stolon-secrets
           emptyDir: {}

@@ -27,13 +27,8 @@ installer:
         nodes:
           - profile: node
             count: 3
-      - name: "five"
-        description: "five node cluster"
-        nodes:
-          - profile: node
-            count: 5
       - name: "six"
-        description: "five node cluster"
+        description: "six node cluster"
         nodes:
           - profile: node
             count: 3
@@ -46,6 +41,7 @@ nodeProfiles:
     labels:
       role: "node"
       stolon-keeper: "yes"
+      node-role.kubernetes.io/node: "true"
     requirements:
       cpu:
         min: 2
@@ -82,7 +78,7 @@ nodeProfiles:
     description: "stolon applications node"
     labels:
       role: "node"
-      node-role.kubernetes.io/master: ""
+      node-role.kubernetes.io/master: "true"
     requirements:
       cpu:
         min: 2

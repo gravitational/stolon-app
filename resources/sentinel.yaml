@@ -28,8 +28,6 @@ spec:
         product: stolon
     spec:
       serviceAccountName: stolon
-      nodeSelector:
-        stolon-keeper: "yes"
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -74,10 +72,8 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: status.podIP
-          - name: NODE_NAME
-            valueFrom:
-              fieldRef:
-                fieldPath: spec.nodeName
+          - name: ETCD_HOSTNAME
+            value: "kubernetes.default.svc.cluster.local"
         ports:
           - containerPort: 6431
         volumeMounts:
