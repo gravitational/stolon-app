@@ -25,7 +25,7 @@ spec:
             - name: ETCD_KEY
               value: "/etc/etcd/secrets/etcd.key"
             - name: ETCD_ENDPOINTS
-              value: "kubernetes.default.svc.cluster.local:2379"
+              value: "127.0.0.1:2379"
           volumeMounts:
             - name: etcd-secrets
               mountPath: /etc/etcd/secrets

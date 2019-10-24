@@ -63,6 +63,16 @@ spec:
             - name: data
               mountPath: /stolon-data
       containers:
+        - name: etcd
+          image: stolon-etcd:latest
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - name: etcd-secrets
+              mountPath: /var/state
         - name: telegraf
           image: stolon-telegraf:latest
           env:
@@ -127,8 +137,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
-            - name: ETCD_HOSTNAME
-              value: "kubernetes.default.svc.cluster.local"
         - name: keeper
           image: stolon:latest
           ports:

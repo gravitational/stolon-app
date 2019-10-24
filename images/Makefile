@@ -8,6 +8,7 @@ STOLON_TAG := stolon:$(VERSION)
 TELEGRAF_TAG := stolon-telegraf:$(VERSION)
 STOLONCTL_TAG := stolonctl:$(VERSION)
 PGBOUNCER_TAG := stolon-pgbouncer:$(VERSION)
+ETCD_TAG := stolon-etcd:$(VERSION)
 
 .PHONY: images
 images: bootstrap \
@@ -16,7 +17,8 @@ images: bootstrap \
 		telegraf \
 		hook \
 		stolonctl \
-		pgbouncer
+		pgbouncer \
+		etcd
 	docker tag $(BOOTSTRAP_TAG) stolon-bootstrap:latest
 	docker tag $(UNINSTALL_TAG) stolon-uninstall:latest
 	docker tag $(STOLON_TAG) stolon:latest
@@ -24,6 +26,7 @@ images: bootstrap \
 	docker tag $(TELEGRAF_TAG) stolon-telegraf:latest
 	docker tag $(STOLONCTL_TAG) stolonctl:latest
 	docker tag $(PGBOUNCER_TAG) stolon-pgbouncer:latest
+	docker tag $(ETCD_TAG) stolon-etcd:latest
 
 STOLONBOOT_BINS := bootstrap/bin
 .PHONY: bootstrap
@@ -41,7 +44,7 @@ stolonctl:
 	cp ../build/stolonctl $(STOLONCTL_BINS)/stolonctl
 	docker build --pull --build-arg CHANGESET=$(CHANGESET) --build-arg VERSION=$(VERSION) -t $(STOLONCTL_TAG) $(PWD)/stolonctl
 
-IMAGES_FOR_BUILD := uninstall telegraf pgbouncer
+IMAGES_FOR_BUILD := uninstall telegraf pgbouncer etcd
 TAG_VARIABLE_NAME = $(shell echo '$@' | tr '[:lower:]' '[:upper:]')_TAG
 .PHONY: $(IMAGES_FOR_BUILD)
 $(IMAGES_FOR_BUILD):
