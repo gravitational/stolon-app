@@ -181,16 +181,6 @@ hooks:
                     mountPath: /usr/bin/etcdctl
                   - name: varstate
                     mountPath: /var/state
-              - name: etcd
-                image: stolon-etcd:latest
-                env:
-                  - name: NODE_NAME
-                    valueFrom:
-                      fieldRef:
-                        fieldPath: spec.nodeName
-                volumeMounts:
-                  - name: varstate
-                    mountPath: /var/state
   postUpdate:
     job: file://postUpdate.yaml
   rollback:
