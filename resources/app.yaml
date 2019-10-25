@@ -41,7 +41,6 @@ nodeProfiles:
     labels:
       role: "node"
       stolon-keeper: "yes"
-      node-role.kubernetes.io/node: "true"
     requirements:
       cpu:
         min: 2
@@ -61,7 +60,6 @@ nodeProfiles:
           - protocol: tcp
             ranges:
               - "5431-5435"
-              - "5973"
     expandPolicy: fixed-instance
     providers:
       aws:
@@ -78,7 +76,6 @@ nodeProfiles:
     description: "stolon applications node"
     labels:
       role: "node"
-      node-role.kubernetes.io/master: "true"
     requirements:
       cpu:
         min: 2
@@ -98,7 +95,6 @@ nodeProfiles:
           - protocol: tcp
             ranges:
               - "5431-5435"
-              - "5973"
     expandPolicy: fixed-instance
     providers:
       aws:
