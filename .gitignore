@@ -1,5 +1,5 @@
 *.swp
 gravity.log
-build
-registry
-bin
+/build/
+/registry/
+/bin/
