@@ -25,7 +25,8 @@ COPY --from=builder /gopath/src/github.com/gravitational/stolon/bin/ /usr/local/
 ADD rootfs/ /
 
 RUN chmod a+rx /usr/local/bin/run.sh && \
-    chmod a+rx /usr/local/bin/init-container.sh
+    chmod a+rx /usr/local/bin/init-container.sh && \
+    chmod a+rx /usr/local/bin/stolon-security.sh
 RUN useradd -ms /bin/bash stolon && \
     mkdir -p /home/stolon/bin && \
     mkdir -p /home/stolon/secrets && \

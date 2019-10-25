@@ -160,4 +160,3 @@ spec:
                 secretKeyRef:
                   name: stolon
                   key: password
-
