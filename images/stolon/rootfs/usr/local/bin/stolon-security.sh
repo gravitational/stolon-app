@@ -27,6 +27,7 @@ function create_pg_passfile() {
 }
 
 function disable_connections_to_templates() {
+    pgisready "${PG_DATABASE:-postgres}" ${PG_SERVICE} ${PG_PORT:-5432} "${PG_USERNAME}"
     psql -h${PG_SERVICE} -U${PG_USERNAME} postgres -c "UPDATE pg_database SET datallowconn = false WHERE datistemplate = true"
 }
 
