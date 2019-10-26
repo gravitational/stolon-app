@@ -23,7 +23,7 @@ fi
 kubectl create -f /var/lib/gravity/resources/pgbouncer.yaml
 kubectl wait --for=condition=complete --timeout=120s job/bootstrap-auth-function
 
-kubectl create -f /var/lib/gravity/resources/stolon-security.yaml
+kubectl create -f /var/lib/gravity/resources/postgres-security.yaml
 kubectl wait --for=condition=complete --timeout=120s job/postgres-hardening
 
 kubectl create -f /var/lib/gravity/resources/alerts.yaml
