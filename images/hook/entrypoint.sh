@@ -39,6 +39,7 @@ if [ $1 = "update" ]; then
     rig upsert -f /var/lib/gravity/resources/alerts.yaml --debug
     rig upsert -f /var/lib/gravity/resources/stolonctl.yaml --debug
     rig upsert -f /var/lib/gravity/resources/pgbouncer.yaml --debug
+    rig upsert -f /var/lib/gravity/resources/postgres-security.yaml --debug
 
     if [ $(kubectl get nodes -l stolon-keeper=yes -o name | wc -l) -ge 3 ]
     then
