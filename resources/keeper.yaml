@@ -198,8 +198,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
-            - name: ETCD_HOSTNAME
-              value: "kubernetes.default.svc.cluster.local"
       volumes:
         - name: stolon-secrets
           emptyDir: {}
