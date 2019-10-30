@@ -22,8 +22,6 @@ spec:
         product: stolon
     spec:
       serviceAccountName: stolon
-      nodeSelector:
-        stolon-keeper: "yes"
       containers:
       - name: utils
         image: stolon-telegraf:latest

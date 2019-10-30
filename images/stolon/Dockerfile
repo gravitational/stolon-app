@@ -19,7 +19,8 @@ RUN apt-get update && \
     apt-get install --yes --no-install-recommends \
         postgresql-9.6 \
         postgresql-client-9.6 \
-        postgresql-contrib-9.6
+        postgresql-contrib-9.6 \
+        curl
 
 COPY --from=builder /gopath/src/github.com/gravitational/stolon/bin/ /usr/local/bin/
 ADD rootfs/ /
