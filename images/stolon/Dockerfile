@@ -1,42 +1,34 @@
-FROM quay.io/gravitational/debian-venti:go1.11.5-stretch as builder
-ENV DEBIAN_FRONTEND=noninteractive \
-    TERM=xterm \
-    REPO_PATH=/gopath/src/github.com/gravitational/stolon
-WORKDIR $REPO_PATH
-COPY stolon .
+ARG PGVERSION=9.6
+# base build image
+FROM golang:1.13-buster AS build_base
+ARG STOLON_REVISION=656bc2fe5d801193b412bcfb57dbfa84cfd9f386
 
-RUN mkdir -p bin && \
-    CGO_ENABLED=0 go build -a -installsuffix cgo -ldflags '-s' -o bin/stolon-sentinel ${REPO_PATH}/cmd/sentinel && \
-    CGO_ENABLED=0 go build -a -installsuffix cgo -ldflags '-s' -o bin/stolon-proxy ${REPO_PATH}/cmd/proxy && \
-    go build -a -installsuffix cgo -ldflags '-s' -o bin/stolon-keeper ${REPO_PATH}/cmd/keeper
+RUN set -eux; \
+    apt-get update && \
+    apt-get install -qq -y git && \
+    git clone https://github.com/gravitational/stolon.git /stolon && \
+    cd /stolon && git checkout $STOLON_REVISION
 
-FROM quay.io/gravitational/debian-grande:stretch
+WORKDIR /stolon
 
-ENV DEBIAN_FRONTEND=noninteractive \
-    TERM=xterm
+RUN go mod download
 
-RUN apt-get update && \
-    apt-get install --yes --no-install-recommends \
-        postgresql-9.6 \
-        postgresql-client-9.6 \
-        postgresql-contrib-9.6 \
-        curl
+#######
+####### Build the stolon binaries
+#######
+FROM build_base AS builder
 
-COPY --from=builder /gopath/src/github.com/gravitational/stolon/bin/ /usr/local/bin/
-ADD rootfs/ /
+RUN make
 
-RUN chmod a+rx /usr/local/bin/run.sh && \
-    chmod a+rx /usr/local/bin/init-container.sh && \
-    chmod a+rx /usr/local/bin/stolon-security.sh
-RUN useradd -ms /bin/bash stolon && \
-    mkdir -p /home/stolon/bin && \
-    mkdir -p /home/stolon/secrets && \
-    chown stolon:stolon -R /home/stolon
+#######
+####### Build the final image
+#######
+FROM postgres:$PGVERSION
 
-EXPOSE 5431 5432 6431
+RUN useradd -ms /bin/bash stolon
 
-RUN test -f /cleanup.sh && sh /cleanup.sh
+EXPOSE 5432
 
-USER stolon
-ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-CMD ["/usr/local/bin/run.sh"]
+COPY --from=builder /stolon/bin/ /usr/local/bin
+
+RUN chmod +x /usr/local/bin/stolon-keeper /usr/local/bin/stolon-sentinel /usr/local/bin/stolon-proxy /usr/local/bin/stolonctl

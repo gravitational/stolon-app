@@ -6,7 +6,7 @@ UNINSTALL_TAG := stolon-uninstall:$(VERSION)
 HOOK_TAG := stolon-hook:$(VERSION)
 STOLON_TAG := stolon:$(VERSION)
 TELEGRAF_TAG := stolon-telegraf:$(VERSION)
-STOLONCTL_TAG := stolonctl:$(VERSION)
+STOLONAPPCTL_TAG := stolonappctl:$(VERSION)
 PGBOUNCER_TAG := stolon-pgbouncer:$(VERSION)
 ETCD_TAG := stolon-etcd:$(VERSION)
 
@@ -16,7 +16,7 @@ images: bootstrap \
 		stolon \
 		telegraf \
 		hook \
-		stolonctl \
+		stolonappctl \
 		pgbouncer \
 		etcd
 	docker tag $(BOOTSTRAP_TAG) stolon-bootstrap:latest
@@ -24,7 +24,7 @@ images: bootstrap \
 	docker tag $(STOLON_TAG) stolon:latest
 	docker tag $(HOOK_TAG) stolon-hook:latest
 	docker tag $(TELEGRAF_TAG) stolon-telegraf:latest
-	docker tag $(STOLONCTL_TAG) stolonctl:latest
+	docker tag $(STOLONAPPCTL_TAG) stolonappctl:latest
 	docker tag $(PGBOUNCER_TAG) stolon-pgbouncer:latest
 	docker tag $(ETCD_TAG) stolon-etcd:latest
 
@@ -36,13 +36,13 @@ bootstrap:
 	cp ../build/stolonboot $(STOLONBOOT_BINS)/stolonboot
 	docker build --pull -t $(BOOTSTRAP_TAG) $(PWD)/bootstrap
 
-STOLONCTL_BINS := stolonctl/bin
-.PHONY: stolonctl
-stolonctl:
-	cd ../ && make build-stolonctl
-	mkdir -p $(STOLONCTL_BINS)
-	cp ../build/stolonctl $(STOLONCTL_BINS)/stolonctl
-	docker build --pull --build-arg CHANGESET=$(CHANGESET) --build-arg VERSION=$(VERSION) -t $(STOLONCTL_TAG) $(PWD)/stolonctl
+STOLONAPPCTL_BINS := stolonappctl/bin
+.PHONY: stolonappctl
+stolonappctl:
+	cd ../ && make build-stolonappctl
+	mkdir -p $(STOLONAPPCTL_BINS)
+	cp ../build/stolonappctl $(STOLONAPPCTL_BINS)/stolonappctl
+	docker build --pull --build-arg CHANGESET=$(CHANGESET) --build-arg VERSION=$(VERSION) -t $(STOLONAPPCTL_TAG) $(PWD)/stolonappctl
 
 IMAGES_FOR_BUILD := uninstall telegraf pgbouncer etcd
 TAG_VARIABLE_NAME = $(shell echo '$@' | tr '[:lower:]' '[:upper:]')_TAG
@@ -58,19 +58,13 @@ hook:
 	fi;
 	docker build --pull --build-arg CHANGESET=stolon-$(CHANGESET) -t $(HOOK_TAG) $(PWD)/hook
 
-STOLON_BINS := stolon/bin
-$(STOLON_BINS):
-	cd stolon/stolon && make
-	mkdir -p $(STOLON_BINS)
-	cp stolon/stolon/bin/* $(STOLON_BINS)/
-
 .PHONY: stolon
-stolon: $(STOLON_BINS)
+stolon:
 	docker build --pull -t $(STOLON_TAG) $(PWD)/stolon
 
-.PHONY: publish-stolonctl
-publish-stolonctl: stolonctl
-	docker push $(STOLONCTL_TAG)
+.PHONY: publish-stolonappctl
+publish-stolonappctl: stolonappctl
+	docker push $(STOLONAPPCTL_TAG)
 
 .PHONY: clean
 clean:
