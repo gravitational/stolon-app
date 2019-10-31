@@ -19,7 +19,7 @@ package cluster
 import (
 	"fmt"
 
-	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/defaults"
+	"github.com/gravitational/stolon-app/internal/stolontool/pkg/defaults"
 )
 
 // ResourceName returns name of stolonupgrade resource

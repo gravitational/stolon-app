@@ -1,6 +1,6 @@
 #!/bin/sh
 
-for resource_file in alerts keeper rpc sentinel stolonctl telegraf utils security
+for resource_file in alerts keeper rpc sentinel stolontool telegraf utils security
 do
 	kubectl delete -f /var/lib/gravity/resources/${resource_file}.yaml
 done

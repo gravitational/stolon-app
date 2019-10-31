@@ -17,6 +17,7 @@ if [ $1 = "update" ]; then
     rig delete deployments/stolon-rpc --force
     rig delete deployments/stolon-sentinel --force
     rig delete deployments/stolon-utils --force
+    rig delete deployments/stolontool --force
     rig delete deployments/stolonctl --force
     rig delete configmaps/stolon-telegraf --force
     rig delete configmaps/stolon-telegraf-node --force
@@ -37,7 +38,7 @@ if [ $1 = "update" ]; then
     rig upsert -f /var/lib/gravity/resources/keeper.yaml --debug
     rig upsert -f /var/lib/gravity/resources/utils.yaml --debug
     rig upsert -f /var/lib/gravity/resources/alerts.yaml --debug
-    rig upsert -f /var/lib/gravity/resources/stolonctl.yaml --debug
+    rig upsert -f /var/lib/gravity/resources/stolontool.yaml --debug
     rig upsert -f /var/lib/gravity/resources/pgbouncer.yaml --debug
     rig upsert -f /var/lib/gravity/resources/postgres-security.yaml --debug
 

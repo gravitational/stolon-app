@@ -17,7 +17,7 @@ limitations under the License.
 package main
 
 import (
-	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/cluster"
+	"github.com/gravitational/stolon-app/internal/stolontool/pkg/cluster"
 
 	"github.com/gravitational/trace"
 	"github.com/spf13/cobra"
@@ -33,7 +33,7 @@ var (
 )
 
 func init() {
-	stolonctlCmd.AddCommand(planCmd)
+	stolontoolCmd.AddCommand(planCmd)
 	planCmd.Flags().StringVar(&clusterConfig.Upgrade.NewAppVersion, "app-version",
 		"", "Version of application to upgrade to")
 	planCmd.Flags().StringVar(&clusterConfig.Upgrade.Changeset, "changeset",

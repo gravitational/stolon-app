@@ -22,8 +22,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/cluster"
-	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/defaults"
+	"github.com/gravitational/stolon-app/internal/stolontool/pkg/cluster"
+	"github.com/gravitational/stolon-app/internal/stolontool/pkg/defaults"
 
 	"github.com/fatih/color"
 	"github.com/gravitational/trace"
@@ -47,7 +47,7 @@ var (
 		"NODE_NAME":         "nodename",
 	}
 
-	stolonctlCmd = &cobra.Command{
+	stolontoolCmd = &cobra.Command{
 		Use:   "",
 		Short: "PostgreSQL major versions upgrade tool for Stolon cluster",
 		Run: func(ccmd *cobra.Command, args []string) {
@@ -57,33 +57,33 @@ var (
 )
 
 func main() {
-	if err := stolonctlCmd.Execute(); err != nil {
+	if err := stolontoolCmd.Execute(); err != nil {
 		log.Error(trace.DebugReport(err))
 		printError(err)
 		os.Exit(255)
 	}
 }
 func init() {
-	stolonctlCmd.PersistentFlags().StringVar(&clusterConfig.KubeConfig, "kubeconfig", "",
+	stolontoolCmd.PersistentFlags().StringVar(&clusterConfig.KubeConfig, "kubeconfig", "",
 		"Kubernetes client config file")
-	stolonctlCmd.PersistentFlags().StringVarP(&clusterConfig.Namespace, "namespace", "n",
+	stolontoolCmd.PersistentFlags().StringVarP(&clusterConfig.Namespace, "namespace", "n",
 		defaults.Namespace, "Kubernetes namespace for Stolon application")
-	stolonctlCmd.PersistentFlags().StringVar(&clusterConfig.KeepersPodSelector, "keepers-selector",
+	stolontoolCmd.PersistentFlags().StringVar(&clusterConfig.KeepersPodSelector, "keepers-selector",
 		defaults.KeepersPodSelector, "Label to select keeper pods")
-	stolonctlCmd.PersistentFlags().StringVar(&clusterConfig.SentinelsPodSelector, "sentinels-selector",
+	stolontoolCmd.PersistentFlags().StringVar(&clusterConfig.SentinelsPodSelector, "sentinels-selector",
 		defaults.SentinelsPodSelector, "Label to select sentinel pods")
-	stolonctlCmd.PersistentFlags().StringVar(&clusterConfig.EtcdEndpoints, "etcd-endpoints",
+	stolontoolCmd.PersistentFlags().StringVar(&clusterConfig.EtcdEndpoints, "etcd-endpoints",
 		defaults.EtcdEndpoints, "Etcd server endpoints(ENV variable 'ETCD_ENDPOINTS')")
-	stolonctlCmd.PersistentFlags().StringVar(&clusterConfig.EtcdCertFile, "etcd-cert-file", "",
+	stolontoolCmd.PersistentFlags().StringVar(&clusterConfig.EtcdCertFile, "etcd-cert-file", "",
 		"Path to TLS certificate for connecting to etcd(ENV variable 'ETCD_CERT')")
-	stolonctlCmd.PersistentFlags().StringVar(&clusterConfig.EtcdKeyFile, "etcd-key-file", "",
+	stolontoolCmd.PersistentFlags().StringVar(&clusterConfig.EtcdKeyFile, "etcd-key-file", "",
 		"Path to TLS key for connecting to etcd(ENV variable 'ETCD_KEY')")
-	stolonctlCmd.PersistentFlags().StringVar(&clusterConfig.EtcdCAFile, "etcd-ca-file", "",
+	stolontoolCmd.PersistentFlags().StringVar(&clusterConfig.EtcdCAFile, "etcd-ca-file", "",
 		"Path to TLS CA for connecting to etcd(ENV variable 'ETCD_CACERT')")
-	stolonctlCmd.PersistentFlags().StringVar(&clusterConfig.Name, "cluster-name",
+	stolontoolCmd.PersistentFlags().StringVar(&clusterConfig.Name, "cluster-name",
 		defaults.ClusterName, "Stolon cluster name")
 
-	bindFlagEnv(stolonctlCmd.PersistentFlags())
+	bindFlagEnv(stolontoolCmd.PersistentFlags())
 
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithCancel(context.TODO())

@@ -23,7 +23,7 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/cluster"
+	"github.com/gravitational/stolon-app/internal/stolontool/pkg/cluster"
 
 	"github.com/gravitational/stolon/common"
 	"github.com/gravitational/trace"
@@ -44,7 +44,7 @@ var (
 func init() {
 	const defaultShortOutput = false
 
-	stolonctlCmd.AddCommand(statusCmd)
+	stolontoolCmd.AddCommand(statusCmd)
 	statusCmd.PersistentFlags().BoolVarP(&shortOutput, "short", "s", defaultShortOutput, "Output only overall cluster status and reason if unhealthy")
 }
 

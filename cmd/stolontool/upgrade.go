@@ -17,8 +17,8 @@ limitations under the License.
 package main
 
 import (
-	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/cluster"
-	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/defaults"
+	"github.com/gravitational/stolon-app/internal/stolontool/pkg/cluster"
+	"github.com/gravitational/stolon-app/internal/stolontool/pkg/defaults"
 
 	"github.com/gravitational/trace"
 	"github.com/spf13/cobra"
@@ -34,7 +34,7 @@ var (
 )
 
 func init() {
-	stolonctlCmd.AddCommand(upgradeCmd)
+	stolontoolCmd.AddCommand(upgradeCmd)
 	upgradeCmd.Flags().StringVar(&clusterConfig.Postgres.Host, "postgres-host",
 		defaults.PostgresHost, "Hostname for connection to stolon PostreSQL host")
 	upgradeCmd.Flags().StringVar(&clusterConfig.Postgres.Port, "postgres-port",

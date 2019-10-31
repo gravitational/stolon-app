@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/kubernetes"
+	"github.com/gravitational/stolon-app/internal/stolontool/pkg/kubernetes"
 	"github.com/gravitational/stolon/pkg/cluster"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"

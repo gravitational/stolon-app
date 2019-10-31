@@ -45,6 +45,6 @@ const (
 	// PostgresPgPassPath defines path to store the password file for PostgresQL
 	PostgresPgPassPath = "/tmp/pgpass"
 
-	// ListenerPort defines port for stolonctl server
+	// ListenerPort defines port for stolontool server
 	ListenerPort = "127.0.0.1:8080"
 )

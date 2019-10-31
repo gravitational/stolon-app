@@ -34,7 +34,7 @@ var serverCmd = &cobra.Command{
 }
 
 func init() {
-	stolonctlCmd.AddCommand(serverCmd)
+	stolontoolCmd.AddCommand(serverCmd)
 }
 
 func server(ccmd *cobra.Command, args []string) error {

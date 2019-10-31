@@ -44,7 +44,7 @@ func bootCluster(sentinels int, password string) error {
 		return trace.Wrap(err)
 	}
 
-	err = createStolonctl()
+	err = createStolontool()
 	if err != nil {
 		return trace.Wrap(err)
 	}
@@ -98,9 +98,9 @@ func createUtils() error {
 	return nil
 }
 
-func createStolonctl() error {
-	log.Infof("creating stolonctl container")
-	out, err := rigging.FromFile(rigging.ActionCreate, "/var/lib/gravity/resources/stolonctl.yaml")
+func createStolontool() error {
+	log.Infof("creating stolontool container")
+	out, err := rigging.FromFile(rigging.ActionCreate, "/var/lib/gravity/resources/stolontool.yaml")
 	log.Infof("cmd output: %s", string(out))
 	if err != nil && !strings.Contains(string(out), "already exists") {
 		return trace.Wrap(err)

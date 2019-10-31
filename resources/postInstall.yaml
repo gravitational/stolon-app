@@ -15,8 +15,8 @@ spec:
       hostNetwork: true
       containers:
         - name: post-install
-          image: stolonctl:latest
-          command: ["/usr/bin/stolonctl", "status", "--short"]
+          image: stolontool:latest
+          command: ["/usr/bin/stolontool", "status", "--short"]
           env:
             - name: ETCD_CACERT
               value: "/etc/etcd/secrets/root.cert"

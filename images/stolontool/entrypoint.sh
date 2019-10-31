@@ -6,4 +6,4 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
-/usr/bin/stolonctl server
+/usr/bin/stolontool server

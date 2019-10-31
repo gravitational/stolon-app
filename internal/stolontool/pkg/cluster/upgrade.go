@@ -24,9 +24,9 @@ import (
 	"time"
 
 	"github.com/gravitational/rigging"
-	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/crd"
-	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/kubernetes"
-	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/utils"
+	"github.com/gravitational/stolon-app/internal/stolontool/pkg/crd"
+	"github.com/gravitational/stolon-app/internal/stolontool/pkg/kubernetes"
+	"github.com/gravitational/stolon-app/internal/stolontool/pkg/utils"
 	"github.com/gravitational/stolon/common"
 
 	"github.com/gravitational/trace"

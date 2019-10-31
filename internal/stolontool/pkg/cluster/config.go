@@ -74,7 +74,7 @@ type UpgradeConfig struct {
 	NewAppVersion string
 	// Changeset defines the name of the changeset for upgrade as used by rig
 	Changeset string
-	// NodeName defines the name of kubernetes node where stolonctl pod is started
+	// NodeName defines the name of kubernetes node where stolontool pod is started
 	NodeName string
 	// Force allows to force phase execution
 	Force bool

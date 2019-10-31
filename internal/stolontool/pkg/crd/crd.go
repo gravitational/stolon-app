@@ -20,8 +20,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/kubernetes"
-	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/utils"
+	"github.com/gravitational/stolon-app/internal/stolontool/pkg/kubernetes"
+	"github.com/gravitational/stolon-app/internal/stolontool/pkg/utils"
 
 	"github.com/gravitational/rigging"
 	"github.com/gravitational/trace"

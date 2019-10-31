@@ -20,7 +20,7 @@ CONTAINERS := stolon-bootstrap:$(VERSION) \
 			  stolon-hook:$(VERSION) \
 			  stolon:$(VERSION) \
 			  stolon-telegraf:$(VERSION) \
-			  stolonctl:$(VERSION) \
+			  stolontool:$(VERSION) \
 			  stolon-pgbouncer:$(VERSION) \
 			  stolon-etcd:$(VERSION)
 
@@ -29,7 +29,7 @@ IMPORT_IMAGE_OPTIONS := --set-image=stolon-bootstrap:$(VERSION) \
 	--set-image=stolon-hook:$(VERSION) \
 	--set-image=stolon:$(VERSION) \
 	--set-image=stolon-telegraf:$(VERSION) \
-	--set-image=stolonappctl:$(VERSION) \
+	--set-image=stolontool:$(VERSION) \
 	--set-image=stolon-pgbouncer:$(VERSION) \
 	--set-image=stolon-etcd:$(VERSION)
 
@@ -99,12 +99,12 @@ build-stolonboot: $(BUILD_DIR)
 build-stolonboot-docker:
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -o build/stolonboot cmd/stolonboot/*.go
 
-.PHONY: build-stolonappctl
-build-stolonappctl: $(BUILD_DIR)
-	docker run $(DOCKERFLAGS) $(BUILDIMAGE) make build-stolonappctl-docker
+.PHONY: build-stolontool
+build-stolontool: $(BUILD_DIR)
+	docker run $(DOCKERFLAGS) $(BUILDIMAGE) make build-stolontool-docker
 
-build-stolonappctl-docker:
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -o build/stolonappctl cmd/stolonctl/*.go
+build-stolontool-docker:
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -o build/stolontool cmd/stolontool/*.go
 
 # number of environment variables are expected to be set
 # see https://github.com/gravitational/robotest/blob/master/suite/README.md
