@@ -1,0 +1,133 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "stolon.fullname" . }}-proxy
+  labels:
+    app: {{ template "stolon.name" . }}
+    chart: {{ template "stolon.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.proxy.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "stolon.name" . }}
+      release: {{ .Release.Name }}
+      component: stolon-proxy
+  template:
+    metadata:
+      labels:
+        app: {{ template "stolon.name" . }}
+        release: {{ .Release.Name }}
+        component: stolon-proxy
+        stolon-cluster: {{ template "stolon.fullname" . }}
+      annotations:
+{{- with .Values.proxy.annotations }}
+{{ toYaml . | indent 8 }}
+{{- end }}
+    spec:
+{{- if .Values.proxy.priorityClassName }}
+      priorityClassName: "{{ .Values.proxy.priorityClassName }}"
+{{- end }}
+      serviceAccountName: {{ template "stolon.serviceAccountName" . }}
+      initContainers:
+        - name: fix-secrets
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/usr/bin/dumb-init", "--", "/bin/bash", "-exc"]
+          args:
+            - |
+              if [ -d /etc/secrets/etcd ]; \
+              then \
+                  cp -R /etc/secrets/etcd /home/stolon/secrets/etcd; \
+                  chown -R stolon /home/stolon/secrets/etcd; \
+              fi
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - name: stolon-secrets
+              mountPath: /home/stolon/secrets
+            {{- with .Values.proxy.initVolumeMounts }}
+{{ toYaml . | indent 12 }}
+            {{- end }}
+      containers:
+        - name: etcd
+          image: "{{ .Values.etcdImage.repository }}:{{ .Values.etcdImage.tag }}"
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - name: etcd-secrets
+              mountPath: /var/state
+        - name: {{ .Chart.Name }}-proxy
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/usr/bin/dumb-init", "--", "stolon-proxy"]
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: STPROXY_CLUSTER_NAME
+              value: {{ template "stolon.clusterName" . }}
+            - name: STPROXY_STORE_BACKEND
+              value: {{ .Values.store.backend | quote}}
+            {{- if eq .Values.store.backend "kubernetes" }}
+            - name: STPROXY_KUBE_RESOURCE_KIND
+              value: {{ .Values.store.kubeResourceKind  | quote}}
+            {{- else }}
+            - name: STPROXY_STORE_ENDPOINTS
+              value: {{ .Values.store.endpoints | quote}}
+            {{- end }}
+            {{- if .Values.store.tls }}
+            - name: STPROXY_STORE_CA_FILE
+              value: {{ required "Path to CA file is required!" .Values.store.caFile | quote }}
+            - name: STPROXY_STORE_CERT_FILE
+              value: {{ .Values.store.certFile | quote }}
+            - name: STPROXY_STORE_KEY
+              value: {{ .Values.store.key | quote }}
+            {{- end }}
+            - name: STPROXY_LISTEN_ADDRESS
+              value: {{ default "0.0.0.0" .Values.proxy.listenAddress | quote }}
+            - name: STPROXY_METRICS_LISTEN_ADDRESS
+              value: "0.0.0.0:8080"
+            - name: STPROXY_DEBUG
+              value: {{ .Values.debug | quote}}
+{{- if .Values.proxy.extraEnv }}
+{{ toYaml .Values.proxy.extraEnv | indent 12 }}
+{{- end }}
+          ports:
+{{- range $key, $value := .Values.ports }}
+            - name: {{ $key }}
+{{ toYaml $value | indent 14 }}
+{{- end }}
+          resources:
+{{ toYaml .Values.proxy.resources | indent 12 }}
+          volumeMounts:
+          - name: stolon-secrets
+            mountPath: /home/stolon/secrets
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.ports.stolon.containerPort }}
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+{{- with .Values.proxy.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- with .Values.proxy.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- with .Values.proxy.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+{{- end }}
+      volumes:
+        - name: stolon-secrets
+          emptyDir: {}
+          {{- with .Values.proxy.volumes }}
+{{ toYaml . | indent 8 }}
+          {{- end }}

@@ -1,0 +1,119 @@
+---
+clusterName: kube-stolon
+
+image:
+  repository: quay.io/gravitational/stolon
+  tag: latest
+  pullPolicy: Always
+
+etcdImage:
+  repository: quay.io/gravitational/stolon-etcd
+  tag: latest
+  pullPolicy: Always
+
+persistence:
+  enabled: false
+
+serviceAccount:
+  name: stolon
+
+replicationPassword: "replpassword"
+superuserPassword: "superpassword"
+
+store:
+  backend: etcdv3
+  endpoints: "https://127.0.0.1:2379"
+  tls: true
+  caFile: /home/stolon/secrets/etcd/root.cert
+  certFile: /home/stolon/secrets/etcd/etcd.cert
+  key: /home/stolon/secrets/etcd/etcd.key
+
+pgParameters:
+  idle_in_transaction_session_timeout: "10min"
+  log_destination: "stderr"
+  log_min_messages: "INFO"
+  log_checkpoints: "on"
+  log_min_duration_statement: "1s"
+  log_lock_waits: "on"
+
+clusterSpec:
+  maxStandbys: 5
+  maxStandbysPerSender: 5
+  maxStandbyLag: 16777216
+  automaticPgRestart: true
+  additionalWalSenders: 5
+
+keeper:
+  replicaCount: 3
+  nodeSelector:
+    stolon-keeper: "yes"
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+              - key: component
+                operator: In
+                values:
+                  - stolon-keeper
+          topologyKey: kubernetes.io/hostname
+  initVolumeMounts:
+    - name: etcd-secrets
+      mountPath: /etc/secrets/etcd
+    - name: cluster-ca
+      mountPath: /etc/secrets/cluster-ca
+    - name: cluster-default-ssl
+      mountPath: /etc/secrets/cluster-default
+  volumes:
+    - name: etcd-secrets
+      hostPath:
+        path: /var/state
+    - name: cluster-ca
+      secret:
+        secretName: cluster-ca
+    - name: cluster-default-ssl
+      secret:
+        secretName: cluster-default-ssl
+
+sentinel:
+  replicaCount: 2
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: component
+                  operator: In
+                  values:
+                    - stolon-sentinel
+            topologyKey: kubernetes.io/hostname
+  initVolumeMounts:
+    - name: etcd-secrets
+      mountPath: /etc/secrets/etcd
+  volumes:
+    - name: etcd-secrets
+      hostPath:
+        path: /var/state
+
+proxy:
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: component
+                  operator: In
+                  values:
+                    - stolon-proxy
+            topologyKey: kubernetes.io/hostname
+  initVolumeMounts:
+    - name: etcd-secrets
+      mountPath: /etc/secrets/etcd
+  volumes:
+    - name: etcd-secrets
+      hostPath:
+        path: /var/state

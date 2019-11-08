@@ -1,0 +1,44 @@
+{{- if .Values.rbac.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ template "stolon.fullname" . }}
+  labels:
+    app: {{ template "stolon.name" . }}
+    chart: {{ template "stolon.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+rules:
+  - apiGroups:
+      - extensions
+    resources:
+      - podsecuritypolicies
+    resourceNames:
+      - privileged
+    verbs:
+      - use
+  - apiGroups:
+      - ""
+    verbs:
+      - get
+      - list
+      - watch
+    resources:
+      - secrets
+    resourceNames:
+      - stolon
+      - cluster-ca
+      - cluster-default-ssl
+      - telegraf-influxdb-creds
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - endpoints
+      - configmaps
+      - events
+    verbs:
+      - get
+      - list
+      - watch
+{{- end -}}

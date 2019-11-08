@@ -1,0 +1,89 @@
+{{ if .Values.job.autoUpdateClusterSpec }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "stolon.fullname" . }}-update-cluster-spec
+  labels:
+    app: {{ template "stolon.name" . }}
+    chart: {{ template "stolon.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  annotations:
+    "helm.sh/hook": post-upgrade
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  template:
+    metadata:
+      labels:
+        app: {{ template "stolon.fullname" . }}
+        release: {{ .Release.Name }}
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: {{ template "stolon.serviceAccountName" . }}
+  {{- if eq .Values.store.backend "etcdv2" "etcdv3" }}
+      initContainers:
+        - name: {{ .Chart.Name }}-etcd-wait
+          image: "{{ .Values.etcdImage.repository }}:{{ .Values.etcdImage.tag }}"
+          imagePullPolicy: {{ .Values.etcdImage.pullPolicy }}
+          command:
+            - "/usr/bin/dumb-init"
+            - "--"
+            - "/bin/sh"
+            - "-exc"
+            - |
+              export ETCD_ENDPOINTS=${NODE_NAME}:2379
+              /usr/bin/etcd gateway start --endpoints=$ETCD_ENDPOINTS --listen-addr=127.0.0.1:2379 --trusted-ca-file=/var/state/root.cert &
+              while ! etcdctl --endpoints {{ .Values.store.endpoints }} \
+              {{ if not (empty .Values.store.caFile) }}--ca-file={{ .Values.store.caFile }}{{ end }} \
+              {{ if not (empty .Values.store.certFile) }}--cert-file={{ .Values.store.certFile }}{{ end }} \
+              {{ if not (empty .Values.store.key) }}--key-file={{ .Values.store.key }}{{ end }} \
+              cluster-health; do sleep 1 && echo -n .; done
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - name: etcd-secrets
+              mountPath: /home/stolon/secrets/etcd
+  {{- end }}
+      containers:
+        - name: {{ template "stolon.fullname" . }}-update-cluster-spec
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/usr/bin/dumb-init", "--", "/bin/bash", "-exc"]
+          args:
+            - |
+              export ETCD_ENDPOINTS=${NODE_NAME}:2379
+              /usr/bin/etcd gateway start --endpoints=$ETCD_ENDPOINTS --listen-addr=127.0.0.1:2379 --trusted-ca-file=/var/state/root.cert &
+              while ! etcdctl --endpoints {{ .Values.store.endpoints }} \
+              {{ if not (empty .Values.store.caFile) }}--ca-file={{ .Values.store.caFile }}{{ end }} \
+              {{ if not (empty .Values.store.certFile) }}--cert-file={{ .Values.store.certFile }}{{ end }} \
+              {{ if not (empty .Values.store.key) }}--key-file={{ .Values.store.key }}{{ end }} \
+              cluster-health; do sleep 1 && echo -n .; done
+
+              stolonctl update --cluster-name={{ template "stolon.clusterName" . }} \
+              --store-backend={{ .Values.store.backend }} \
+              {{- if eq .Values.store.backend "kubernetes" }}
+              --kube-resource-kind={{ .Values.store.kubeResourceKind }} \
+              {{- else }}
+              --store-endpoints={{ .Values.store.endpoints }} \
+              {{ if not (empty .Values.store.caFile) }}--store-ca-file={{ .Values.store.caFile }}{{ end }} \
+              {{ if not (empty .Values.store.certFile) }}--store-cert-file={{ .Values.store.certFile }}{{ end }} \
+              {{ if not (empty .Values.store.key) }}--store-key={{ .Values.store.key }}{{ end }} \
+              {{- end }}
+              -p \
+              '{ {{- range $key, $value := .Values.clusterSpec }} {{ $key | quote }}: {{ if typeIs "string" $value }} {{ $value | quote }} {{ else }} {{ $value }} {{ end }}, {{- end }} "pgParameters": {{ toJson .Values.pgParameters }} }'
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - name: etcd-secrets
+              mountPath: /home/stolon/secrets/etcd
+      volumes:
+        - name: etcd-secrets
+          hostPath:
+            path: /var/state
+{{ end }}

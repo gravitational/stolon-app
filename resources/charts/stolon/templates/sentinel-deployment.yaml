@@ -1,0 +1,130 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "stolon.fullname" . }}-sentinel
+  labels:
+    app: {{ template "stolon.name" . }}
+    chart: {{ template "stolon.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.sentinel.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "stolon.name" . }}
+      release: {{ .Release.Name }}
+      component: stolon-sentinel
+  template:
+    metadata:
+      labels:
+        app: {{ template "stolon.name" . }}
+        release: {{ .Release.Name }}
+        component: stolon-sentinel
+        stolon-cluster: {{ template "stolon.fullname" . }}
+      annotations:
+        checksum/config: {{ include (print .Template.BasePath "/hooks/update-cluster-spec-job.yaml") . | sha256sum }}
+{{- with .Values.sentinel.annotations }}
+{{ toYaml . | indent 8 }}
+{{- end }}
+    spec:
+{{- if .Values.sentinel.priorityClassName }}
+      priorityClassName: "{{ .Values.sentinel.priorityClassName }}"
+{{- end }}
+      serviceAccountName: {{ template "stolon.serviceAccountName" . }}
+      initContainers:
+        - name: fix-secrets
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/usr/bin/dumb-init", "--", "/bin/bash", "-exc"]
+          args:
+            - |
+              if [ -d /etc/secrets/etcd ]; \
+              then \
+                  cp -R /etc/secrets/etcd /home/stolon/secrets/etcd; \
+                  chown -R stolon /home/stolon/secrets/etcd; \
+              fi
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - name: stolon-secrets
+              mountPath: /home/stolon/secrets
+            {{- with .Values.sentinel.initVolumeMounts }}
+{{ toYaml . | indent 12 }}
+            {{- end }}
+      containers:
+        - name: etcd
+          image: "{{ .Values.etcdImage.repository }}:{{ .Values.etcdImage.tag }}"
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - name: etcd-secrets
+              mountPath: /var/state
+        - name: sentinel
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/usr/bin/dumb-init", "--", "stolon-sentinel"]
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: STSENTINEL_CLUSTER_NAME
+              value: {{ template "stolon.clusterName" . }}
+            - name: STSENTINEL_STORE_BACKEND
+              value: {{ .Values.store.backend | quote}}
+            {{- if eq .Values.store.backend "kubernetes" }}
+            - name: STSENTINEL_KUBE_RESOURCE_KIND
+              value: {{ .Values.store.kubeResourceKind  | quote}}
+            {{- else }}
+            - name: STSENTINEL_STORE_ENDPOINTS
+              value: {{ .Values.store.endpoints | quote}}
+            {{- end }}
+            {{- if .Values.store.tls }}
+            - name: STSENTINEL_STORE_CA_FILE
+              value: {{ required "Path to CA file is required!" .Values.store.caFile | quote }}
+            - name: STSENTINEL_STORE_CERT_FILE
+              value: {{ .Values.store.certFile | quote }}
+            - name: STSENTINEL_STORE_KEY
+              value: {{ .Values.store.key | quote }}
+            {{- end }}
+            - name: STSENTINEL_METRICS_LISTEN_ADDRESS
+              value: "0.0.0.0:8080"
+            - name: STSENTINEL_DEBUG
+              value: {{ .Values.debug | quote}}
+            {{- with .Values.sentinel.extraEnv }}
+{{ toYaml . | indent 12 }}
+            {{- end }}
+          ports:
+{{- range $key, $value := .Values.ports }}
+            - name: {{ $key }}
+{{ toYaml $value | indent 14 }}
+{{- end }}
+          resources:
+{{ toYaml .Values.sentinel.resources | indent 12 }}
+          volumeMounts:
+          - name: stolon-secrets
+            mountPath: /home/stolon/secrets
+          {{- with .Values.sentinel.volumeMounts }}
+{{ toYaml . | indent 10 }}
+          {{- end }}
+{{- with .Values.sentinel.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- with .Values.sentinel.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- with .Values.sentinel.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+{{- end }}
+      volumes:
+        - name: stolon-secrets
+          emptyDir: {}
+          {{- with .Values.sentinel.volumes }}
+{{ toYaml . | indent 8 }}
+          {{- end }}

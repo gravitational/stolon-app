@@ -1,0 +1,237 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ template "stolon.fullname" . }}-keeper
+  labels:
+    app: {{ template "stolon.name" . }}
+    product: {{ template "stolon.name" . }}
+    chart: {{ template "stolon.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    stolon-keeper: "yes"
+spec:
+  serviceName: {{ template "stolon.fullname" . }}-keeper-headless
+  replicas: {{ .Values.keeper.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "stolon.name" . }}
+      release: {{ .Release.Name }}
+      component: stolon-keeper
+  template:
+    metadata:
+      labels:
+        app: {{ template "stolon.name" . }}
+        product: {{ template "stolon.name" . }}
+        release: {{ .Release.Name }}
+        component: stolon-keeper
+        stolon-cluster: {{ template "stolon.clusterName" . }}
+        stolon-keeper: "yes"
+      annotations:
+{{- with .Values.keeper.annotations }}
+{{ toYaml . | indent 8 }}
+{{- end }}
+    spec:
+{{- if .Values.keeper.priorityClassName }}
+      priorityClassName: "{{ .Values.keeper.priorityClassName }}"
+{{- end }}
+      serviceAccountName: {{ template "stolon.serviceAccountName" . }}
+      terminationGracePeriodSeconds: 15
+      initContainers:
+        - name: fix-secrets
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/usr/bin/dumb-init", "--", "/usr/local/bin/init-container.sh"]
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - name: stolon-secrets
+              mountPath: /home/stolon/secrets
+            - name: data
+              mountPath: /stolon-data
+            {{- with .Values.keeper.initVolumeMounts }}
+{{ toYaml . | indent 12 }}
+            {{- end }}
+      containers:
+        - name: etcd
+          image: "{{ .Values.etcdImage.repository }}:{{ .Values.etcdImage.tag }}"
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - name: etcd-secrets
+              mountPath: /var/state
+        - name: keeper
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          command: ["/usr/bin/dumb-init", "--", "/bin/bash", "-exc"]
+          args:
+            - |
+              # Generate our keeper uid using the pod index
+              IFS='-' read -ra ADDR <<< "$(hostname)"
+              export STKEEPER_UID="{{ .Values.keeper.uid_prefix }}${ADDR[-1]}"
+              export STKEEPER_PG_LISTEN_ADDRESS=$POD_IP
+              export STOLON_DATA=/stolon-data
+              stolon-keeper --data-dir $STOLON_DATA
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: STKEEPER_CLUSTER_NAME
+              value: {{ template "stolon.clusterName" . }}
+            - name: STKEEPER_STORE_BACKEND
+              value: {{ .Values.store.backend | quote }}
+            {{- if eq .Values.store.backend "kubernetes" }}
+            - name: STKEEPER_KUBE_RESOURCE_KIND
+              value: {{ .Values.store.kubeResourceKind  | quote }}
+            {{- else }}
+            - name: STKEEPER_STORE_ENDPOINTS
+              value: {{ .Values.store.endpoints | quote }}
+            {{- end }}
+            {{- if .Values.store.tls }}
+            - name: STKEEPER_STORE_CA_FILE
+              value: {{ required "Path to CA file is required!" .Values.store.caFile | quote }}
+            - name: STKEEPER_STORE_CERT_FILE
+              value: {{ .Values.store.certFile | quote }}
+            - name: STKEEPER_STORE_KEY
+              value: {{ .Values.store.key | quote }}
+            {{- end }}
+            - name: STKEEPER_PG_REPL_USERNAME
+{{ if not (empty .Values.replicationSecret.name) }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.replicationSecret.name }}
+                  key: {{ .Values.replicationSecret.usernameKey }}
+{{ else }}
+              value: {{ .Values.replicationUsername | quote}}
+{{ end }}
+            - name: STKEEPER_PG_REPL_PASSWORD
+{{ if not (empty .Values.replicationSecret.name) }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.replicationSecret.name }}
+                  key: {{ .Values.replicationSecret.passwordKey }}
+{{ else }}
+              value: {{ .Values.replicationPassword | quote}}
+{{ end }}
+            - name: STKEEPER_PG_SU_USERNAME
+{{ if not (empty .Values.superuserSecret.name) }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.superuserSecret.name }}
+                  key: {{ .Values.superuserSecret.usernameKey }}
+{{ else }}
+              value: {{ .Values.superuserUsername | quote }}
+{{ end }}
+            - name: STKEEPER_PG_SU_PASSWORD
+{{ if not (empty .Values.superuserSecret.name) }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.superuserSecret.name }}
+                  key: {{ .Values.superuserSecret.passwordKey }}
+{{ else }}
+              value: {{ .Values.superuserPassword | quote }}
+{{ end }}
+            - name: STKEEPER_METRICS_LISTEN_ADDRESS
+              value: "0.0.0.0:8080"
+            - name: STKEEPER_DEBUG
+              value: {{ .Values.debug | quote}}
+            {{- with .Values.keeper.extraEnv }}
+{{ toYaml . | indent 12 }}
+            {{- end }}
+          ports:
+{{- range $key, $value := .Values.ports }}
+            - name: {{ $key }}
+{{ toYaml $value | indent 14 }}
+{{- end }}
+          resources:
+{{ toYaml .Values.keeper.resources | indent 12 }}
+          volumeMounts:
+          - name: data
+            mountPath: /stolon-data
+          - name: stolon-secrets
+            mountPath: /home/stolon/secrets
+          {{- with .Values.keeper.volumeMounts }}
+{{ toYaml . | indent 10 }}
+          {{- end }}
+{{- if .Values.keeper.hooks.failKeeper.enabled }}
+          - name: config
+            mountPath: /pre-stop-hook.sh
+            subPath: pre-stop-hook.sh
+{{- end }}
+{{- if .Values.nodePostStartScript }}
+          - name: config
+            mountPath: /postStartScript.sh
+            subPath: postStartScript.sh
+{{- end }}
+          lifecycle:
+{{- if .Values.keeper.hooks.failKeeper.enabled }}
+            preStop:
+              exec:
+                command: ["/bin/bash", "-e", "/pre-stop-hook.sh"]
+{{- end }}
+{{- if .Values.nodePostStartScript }}
+            postStart:
+              exec:
+                command: ["/bin/bash", "-e", "/postStartScript.sh"]
+{{- end }}
+{{- with .Values.keeper.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- with .Values.keeper.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+{{- end }}
+{{- with .Values.keeper.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+{{- end }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ template "stolon.fullname" . }}
+        - name: stolon-secrets
+          emptyDir: {}
+{{ if not (empty .Values.superuserSecret.name) }}
+        - name: stolon-secret-{{ .Values.superuserSecret.name }}
+          secret:
+            secretName: {{ .Values.superuserSecret.name }}
+{{ end }}
+{{ if and (not (empty .Values.replicationSecret.name)) (not (eq .Values.superuserSecret.name .Values.replicationSecret.name)) }}
+        - name: stolon-secret-{{ .Values.replicationSecret.name }}
+          secret:
+            secretName: {{ .Values.replicationSecret.name }}
+{{ end }}
+          {{- with .Values.keeper.volumes }}
+{{ toYaml . | indent 8 }}
+          {{- end }}
+{{- if .Values.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+  {{- range .Values.persistence.accessModes }}
+          - {{ . | quote }}
+  {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size | quote }}
+  {{- if .Values.persistence.storageClassName }}
+    {{- if (eq "-" .Values.persistence.storageClassName) }}
+        storageClassName: ""
+    {{- else }}
+        storageClassName: "{{ .Values.persistence.storageClassName }}"
+    {{- end }}
+  {{- end }}
+{{- else }}
+        - name: data
+          hostPath:
+            path: /var/lib/data/stolon
+{{- end }}
