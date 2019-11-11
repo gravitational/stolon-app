@@ -3,13 +3,13 @@
 * Installs [Stolon](https://github.com/sorintlab/stolon) (HA PostgreSQL cluster)
 * Based on [lwolf/stolon-chart](https://github.com/lwolf/stolon-chart) and [stolon examples](https://github.com/sorintlab/stolon/tree/master/examples/kubernetes/statefulset)
 
-## TL;DR;
+## Installing the Chart
 
 ```console
 $ helm install stable/stolon
 ```
 
-## Installing the Chart
+## Installing the Chart with specific release name
 
 To install the chart with the release name `my-release`:
 

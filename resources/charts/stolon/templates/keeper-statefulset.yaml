@@ -9,6 +9,7 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
     stolon-keeper: "yes"
+    name: stolon-keeper
 spec:
   serviceName: {{ template "stolon.fullname" . }}-keeper-headless
   replicas: {{ .Values.keeper.replicaCount }}
@@ -26,6 +27,7 @@ spec:
         component: stolon-keeper
         stolon-cluster: {{ template "stolon.clusterName" . }}
         stolon-keeper: "yes"
+        name: stolon-keeper
       annotations:
 {{- with .Values.keeper.annotations }}
 {{ toYaml . | indent 8 }}
@@ -54,6 +56,7 @@ spec:
       containers:
         - name: etcd
           image: "{{ .Values.etcdImage.repository }}:{{ .Values.etcdImage.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: NODE_NAME
               valueFrom:
@@ -64,6 +67,7 @@ spec:
               mountPath: /var/state
         - name: keeper
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/usr/bin/dumb-init", "--", "/bin/bash", "-exc"]
           args:
             - |
@@ -71,7 +75,6 @@ spec:
               IFS='-' read -ra ADDR <<< "$(hostname)"
               export STKEEPER_UID="{{ .Values.keeper.uid_prefix }}${ADDR[-1]}"
               export STKEEPER_PG_LISTEN_ADDRESS=$POD_IP
-              export STOLON_DATA=/stolon-data
               stolon-keeper --data-dir $STOLON_DATA
           env:
             - name: POD_NAME
@@ -82,6 +85,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: status.podIP
+            - name: STOLON_DATA
+              value: /stolon-data
             - name: STKEEPER_CLUSTER_NAME
               value: {{ template "stolon.clusterName" . }}
             - name: STKEEPER_STORE_BACKEND
@@ -93,11 +98,15 @@ spec:
             - name: STKEEPER_STORE_ENDPOINTS
               value: {{ .Values.store.endpoints | quote }}
             {{- end }}
-            {{- if .Values.store.tls }}
+            {{- if not (empty .Values.store.caFile) }}
             - name: STKEEPER_STORE_CA_FILE
-              value: {{ required "Path to CA file is required!" .Values.store.caFile | quote }}
+              value: {{ .Values.store.caFile | quote }}
+            {{- end }}
+            {{- if not (empty .Values.store.certFile) }}
             - name: STKEEPER_STORE_CERT_FILE
               value: {{ .Values.store.certFile | quote }}
+            {{- end }}
+            {{- if not (empty .Values.store.key) }}
             - name: STKEEPER_STORE_KEY
               value: {{ .Values.store.key | quote }}
             {{- end }}

@@ -110,25 +110,10 @@ nodeProfiles:
 
 hooks:
   install:
-    job: |
-      apiVersion: batch/v1
-      kind: Job
-      metadata:
-        name: stolon-app-install
-        namespace: default
-      spec:
-        parallelism: 1
-        completions: 1
-        template:
-          metadata:
-            name: stolon-app-install
-          spec:
-            restartPolicy: OnFailure
-            containers:
-              - name: bootstrap
-                image: stolon-bootstrap:latest
-  postInstall:
-    job: file://postInstall.yaml
+    job: file://install.yaml
+### TODO (Sergei): Update code for status check after bumping dependencies for stolon
+#  postInstall:
+#    job: file://postInstall.yaml
   update:
     job: |
       apiVersion: batch/v1
@@ -177,8 +162,9 @@ hooks:
                     mountPath: /usr/bin/etcdctl
                   - name: varstate
                     mountPath: /var/state
-  postUpdate:
-    job: file://postUpdate.yaml
+### TODO (Sergei): Update code for status check after bumping dependencies for stolon
+#  postUpdate:
+#    job: file://postUpdate.yaml
   rollback:
     job: |
       apiVersion: batch/v1

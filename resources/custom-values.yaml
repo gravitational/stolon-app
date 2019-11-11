@@ -2,12 +2,12 @@
 clusterName: kube-stolon
 
 image:
-  repository: quay.io/gravitational/stolon
+  repository: leader.telekube.local:5000/stolon
   tag: latest
   pullPolicy: Always
 
 etcdImage:
-  repository: quay.io/gravitational/stolon-etcd
+  repository: leader.telekube.local:5000/stolon-etcd
   tag: latest
   pullPolicy: Always
 
@@ -23,7 +23,6 @@ superuserPassword: "superpassword"
 store:
   backend: etcdv3
   endpoints: "https://127.0.0.1:2379"
-  tls: true
   caFile: /home/stolon/secrets/etcd/root.cert
   certFile: /home/stolon/secrets/etcd/etcd.cert
   key: /home/stolon/secrets/etcd/etcd.key

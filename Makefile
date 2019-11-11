@@ -11,7 +11,7 @@ CLUSTER_SSL_APP_VERSION ?= "0.0.0+latest"
 
 SRCDIR=/go/src/github.com/gravitational/stolon-app
 DOCKERFLAGS=--rm=true -v $(PWD):$(SRCDIR) -w $(SRCDIR)
-BUILDIMAGE=golang:1.11
+BUILDBOX=stolon-app-buildbox:latest
 
 EXTRA_GRAVITY_OPTIONS ?=
 
@@ -67,6 +67,10 @@ $(BINARIES_DIR):
 .PHONY: all
 all: clean images
 
+.PHONY: buildbox
+buildbox:
+	cd images && $(MAKE) -f Makefile buildbox
+
 .PHONY: what-version
 what-version:
 	@echo $(VERSION)
@@ -79,29 +83,33 @@ images:
 import: images
 	sed -i "s/version: \"0.0.0+latest\"/version: \"$(RUNTIME_VERSION)\"/" resources/app.yaml
 	sed -i "s#gravitational.io/cluster-ssl-app:0.0.0+latest#gravitational.io/cluster-ssl-app:$(CLUSTER_SSL_APP_VERSION)#" resources/app.yaml
+	sed -i "s/tag: latest/tag: $(VERSION)/g" resources/custom-values.yaml
 	-$(GRAVITY) app delete --ops-url=$(OPS_URL) $(REPOSITORY)/$(NAME):$(VERSION) --force --insecure $(EXTRA_GRAVITY_OPTIONS)
 	$(GRAVITY) app import $(IMPORT_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) .
 	sed -i "s/version: \"$(RUNTIME_VERSION)\"/version: \"0.0.0+latest\"/" resources/app.yaml
 	sed -i "s#gravitational.io/cluster-ssl-app:$(CLUSTER_SSL_APP_VERSION)#gravitational.io/cluster-ssl-app:0.0.0+latest#" resources/app.yaml
+	sed -i "s/tag: $(VERSION)/tag: latest/g" resources/custom-values.yaml
 
 .PHONY: build-app
 build-app: images
 	sed -i "s/version: \"0.0.0+latest\"/version: \"$(RUNTIME_VERSION)\"/" resources/app.yaml
 	sed -i "s#gravitational.io/cluster-ssl-app:0.0.0+latest#gravitational.io/cluster-ssl-app:$(CLUSTER_SSL_APP_VERSION)#" resources/app.yaml
+	sed -i "s/tag: latest/tag: $(VERSION)/g" resources/custom-values.yaml
 	-$(TELE) build -f -o $(BUILD_DIR)/installer.tar $(TELE_BUILD_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) resources/app.yaml
 	sed -i "s/version: \"$(RUNTIME_VERSION)\"/version: \"0.0.0+latest\"/" resources/app.yaml
 	sed -i "s#gravitational.io/cluster-ssl-app:$(CLUSTER_SSL_APP_VERSION)#gravitational.io/cluster-ssl-app:0.0.0+latest#" resources/app.yaml
+	sed -i "s/tag: $(VERSION)/tag: latest/g" resources/custom-values.yaml
 
 .PHONY: build-stolonboot
 build-stolonboot: $(BUILD_DIR)
-	docker run $(DOCKERFLAGS) $(BUILDIMAGE) make build-stolonboot-docker
+	docker run $(DOCKERFLAGS) $(BUILDBOX) make build-stolonboot-docker
 
 build-stolonboot-docker:
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -o build/stolonboot cmd/stolonboot/*.go
 
 .PHONY: build-stolonctl
 build-stolonctl: $(BUILD_DIR)
-	docker run $(DOCKERFLAGS) $(BUILDIMAGE) make build-stolonctl-docker
+	docker run $(DOCKERFLAGS) $(BUILDBOX) make build-stolonctl-docker
 
 build-stolonctl-docker:
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -a -installsuffix cgo -o build/stolonctl cmd/stolonctl/*.go
@@ -127,28 +135,10 @@ clean:
 	cd images && $(MAKE) clean
 	rm -rf wd_suite
 
-$(GOMETALINTER):
-	go get -u gopkg.in/alecthomas/gometalinter.v2
-	ln -s $(GOPATH)/bin/gometalinter.v2 $(GOPATH)/bin/gometalinter
-	gometalinter --install
-
-.PHONY: lint
-lint: $(GOMETALINTER)
-	gometalinter --vendor --skip images/stolon/stolon --disable-all \
-		--enable=deadcode \
-		--enable=ineffassign \
-		--enable=gosimple \
-		--enable=staticcheck \
-		--enable=gofmt \
-		--enable=goimports \
-		--enable=dupl \
-		--enable=misspell \
-		--enable=errcheck \
-		--enable=vet \
-		--enable=vetshadow \
-		--deadline=1m \
-		./...
-
 .PHONY: fix-logrus
 fix-logrus:
 	find vendor -type f -print0 | xargs -0 sed -i 's/Sirupsen/sirupsen/g'
+
+.PHONY: lint
+lint: buildbox
+	docker run $(DOCKERFLAGS) $(BUILDBOX) golangci-lint run --skip-dirs=vendor ./...

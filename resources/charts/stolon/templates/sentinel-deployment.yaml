@@ -7,6 +7,7 @@ metadata:
     chart: {{ template "stolon.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    name: stolon-sentinel
 spec:
   replicas: {{ .Values.sentinel.replicaCount }}
   selector:
@@ -21,6 +22,7 @@ spec:
         release: {{ .Release.Name }}
         component: stolon-sentinel
         stolon-cluster: {{ template "stolon.fullname" . }}
+        name: stolon-sentinel
       annotations:
         checksum/config: {{ include (print .Template.BasePath "/hooks/update-cluster-spec-job.yaml") . | sha256sum }}
 {{- with .Values.sentinel.annotations }}
@@ -82,11 +84,15 @@ spec:
             - name: STSENTINEL_STORE_ENDPOINTS
               value: {{ .Values.store.endpoints | quote}}
             {{- end }}
-            {{- if .Values.store.tls }}
+            {{- if not (empty .Values.store.caFile) }}
             - name: STSENTINEL_STORE_CA_FILE
-              value: {{ required "Path to CA file is required!" .Values.store.caFile | quote }}
+              value: {{ .Values.store.caFile | quote }}
+            {{- end }}
+            {{- if not (empty .Values.store.certFile) }}
             - name: STSENTINEL_STORE_CERT_FILE
               value: {{ .Values.store.certFile | quote }}
+            {{- end }}
+            {{- if not (empty .Values.store.key) }}
             - name: STSENTINEL_STORE_KEY
               value: {{ .Values.store.key | quote }}
             {{- end }}

@@ -45,11 +45,11 @@ replicationSecret:
 
 superuserUsername: "stolon"
 ## password for the superuser (REQUIRED if superuserSecret is not set)
-superuserPassword:
+superuserPassword: ""
 
 replicationUsername: "repluser"
 ## password for the replication user (REQUIRED if replicationSecret is not set)
-replicationPassword:
+replicationPassword: ""
 
 ## backend could be one of the following: consul, etcdv2, etcdv3 or kubernetes
 store:

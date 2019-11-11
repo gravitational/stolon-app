@@ -1,6 +1,6 @@
 Stolon cluster installed and initialized.
 
-To get superuser password run
+To get superuser password, run
 {{ if not (empty .Values.superuserSecret.name) }}
     PGPASSWORD=$(kubectl get secret --namespace {{ .Release.Namespace }} {{ .Values.superuserSecret.name }} -o jsonpath="{.data.{{.Values.superuserSecret.passwordKey}}}" | base64 --decode; echo)
 {{ else }}

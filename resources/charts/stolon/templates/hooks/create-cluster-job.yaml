@@ -25,24 +25,33 @@ spec:
         - name: {{ .Chart.Name }}-etcd-wait
           image: "{{ .Values.etcdImage.repository }}:{{ .Values.etcdImage.tag }}"
           imagePullPolicy: {{ .Values.etcdImage.pullPolicy }}
-          command:
-            - "/usr/bin/dumb-init"
-            - "--"
-            - "/bin/sh"
-            - "-exc"
+          command: ["/usr/bin/dumb-init", "--", "/bin/sh", "-exc"]
+          args:
             - |
-              export ETCD_ENDPOINTS=${NODE_NAME}:2379
-              /usr/bin/etcd gateway start --endpoints=$ETCD_ENDPOINTS --listen-addr=127.0.0.1:2379 --trusted-ca-file=/var/state/root.cert &
-              while ! etcdctl --endpoints {{ .Values.store.endpoints }} \
-              {{ if not (empty .Values.store.caFile) }}--ca-file={{ .Values.store.caFile }}{{ end }} \
-              {{ if not (empty .Values.store.certFile) }}--cert-file={{ .Values.store.certFile }}{{ end }} \
-              {{ if not (empty .Values.store.key) }}--key-file={{ .Values.store.key }}{{ end }} \
-              cluster-health; do sleep 1 && echo -n .; done
+              export GATEWAY_ENDPOINTS=${NODE_NAME}:2379
+              /usr/bin/etcd gateway start --endpoints=$GATEWAY_ENDPOINTS --listen-addr=127.0.0.1:2379 --trusted-ca-file={{ .Values.store.caFile }} &
+              while ! etcdctl endpoint status --cluster | grep true; do sleep 1 && echo -n "Waiting etcd..."; done
           env:
             - name: NODE_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
+            - name: ETCDCTL_API
+              value: "3"
+            - name: ETCDCTL_ENDPOINTS
+              value: {{ .Values.store.endpoints | quote }}
+            {{- if not (empty .Values.store.caFile) }}
+            - name: ETCDCTL_CACERT
+              value: {{ .Values.store.caFile | quote }}
+            {{- end }}
+            {{- if not (empty .Values.store.key) }}
+            - name: ETCDCTL_KEY
+              value: {{ .Values.store.key | quote }}
+            {{- end }}
+            {{- if not (empty .Values.store.certFile) }}
+            - name: ETCDCTL_CERT
+              value: {{ .Values.store.certFile | quote }}
+            {{- end }}
           volumeMounts:
             - name: etcd-secrets
               mountPath: /home/stolon/secrets/etcd
@@ -54,31 +63,55 @@ spec:
           command: ["/usr/bin/dumb-init", "--", "/bin/bash", "-exc"]
           args:
             - |
-              export ETCD_ENDPOINTS=${NODE_NAME}:2379
-              /usr/bin/etcd gateway start --endpoints=$ETCD_ENDPOINTS --listen-addr=127.0.0.1:2379 --trusted-ca-file=/var/state/root.cert &
-              while ! etcdctl --endpoints {{ .Values.store.endpoints }} \
-              {{ if not (empty .Values.store.caFile) }}--ca-file={{ .Values.store.caFile }}{{ end }} \
-              {{ if not (empty .Values.store.certFile) }}--cert-file={{ .Values.store.certFile }}{{ end }} \
-              {{ if not (empty .Values.store.key) }}--key-file={{ .Values.store.key }}{{ end }} \
-              cluster-health; do sleep 1 && echo -n .; done
-
-              stolonctl init --cluster-name={{ template "stolon.clusterName" . }} \
-              --store-backend={{ .Values.store.backend }} \
-              {{- if eq .Values.store.backend "kubernetes" }}
-              --kube-resource-kind={{ .Values.store.kubeResourceKind }} \
-              {{- else }}
-              --store-endpoints={{ .Values.store.endpoints }} \
-              {{ if not (empty .Values.store.caFile) }}--store-ca-file={{ .Values.store.caFile }}{{ end }} \
-              {{ if not (empty .Values.store.certFile) }}--store-cert-file={{ .Values.store.certFile }}{{ end }} \
-              {{ if not (empty .Values.store.key) }}--store-key={{ .Values.store.key }}{{ end }} \
-              {{- end }}
-              --yes \
+              export GATEWAY_ENDPOINTS=${NODE_NAME}:2379
+              /usr/bin/etcd gateway start --endpoints=$GATEWAY_ENDPOINTS --listen-addr=127.0.0.1:2379 --trusted-ca-file={{ .Values.store.caFile }} &
+              while ! etcdctl endpoint status --cluster | grep true; do sleep 1 && echo -n "Waiting etcd..."; done
+              stolonctl init --yes \
               '{ "initMode": "new", {{- range $key, $value := .Values.clusterSpec }} {{ $key | quote }}: {{ if typeIs "string" $value }} {{ $value | quote }} {{ else if typeIs "bool"  $value }} {{ $value }} {{ else }} {{ int $value }} {{ end }}, {{- end }} "pgParameters": {{ toJson .Values.pgParameters }} }'
           env:
             - name: NODE_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
+            - name: STOLONCTL_CLUSTER_NAME
+              value: {{ template "stolon.clusterName" . }}
+            - name: STOLONCTL_STORE_BACKEND
+              value: {{ .Values.store.backend | quote }}
+            {{- if eq .Values.store.backend "kubernetes" }}
+            - name: STOLONCTL_KUBE_RESOURCE_KIND
+              value: {{ .Values.store.kubeResourceKind  | quote }}
+            {{- else }}
+            - name: STOLONCTL_STORE_ENDPOINTS
+              value: {{ .Values.store.endpoints | quote }}
+            {{- end }}
+            {{- if not (empty .Values.store.caFile) }}
+            - name: STOLONCTL_STORE_CA_FILE
+              value: {{ .Values.store.caFile | quote }}
+            {{- end }}
+            {{- if not (empty .Values.store.certFile) }}
+            - name: STOLONCTL_STORE_CERT_FILE
+              value: {{ .Values.store.certFile | quote }}
+            {{- end }}
+            {{- if not (empty .Values.store.key) }}
+            - name: STOLONCTL_STORE_KEY
+              value: {{ .Values.store.key | quote }}
+            {{- end }}
+            - name: ETCDCTL_API
+              value: "3"
+            - name: ETCDCTL_ENDPOINTS
+              value: {{ .Values.store.endpoints }}
+            {{- if not (empty .Values.store.caFile) }}
+            - name: ETCDCTL_CACERT
+              value: {{ .Values.store.caFile | quote }}
+            {{- end }}
+            {{- if not (empty .Values.store.key) }}
+            - name: ETCDCTL_KEY
+              value: {{ .Values.store.key | quote }}
+            {{- end }}
+            {{- if not (empty .Values.store.certFile) }}
+            - name: ETCDCTL_CERT
+              value: {{ .Values.store.certFile | quote }}
+            {{- end }}
           volumeMounts:
             - name: etcd-secrets
               mountPath: /home/stolon/secrets/etcd

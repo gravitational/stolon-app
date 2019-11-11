@@ -81,11 +81,15 @@ spec:
             - name: STPROXY_STORE_ENDPOINTS
               value: {{ .Values.store.endpoints | quote}}
             {{- end }}
-            {{- if .Values.store.tls }}
+            {{- if not (empty .Values.store.caFile) }}
             - name: STPROXY_STORE_CA_FILE
-              value: {{ required "Path to CA file is required!" .Values.store.caFile | quote }}
+              value: {{ .Values.store.caFile | quote }}
+            {{- end }}
+            {{- if not (empty .Values.store.certFile) }}
             - name: STPROXY_STORE_CERT_FILE
               value: {{ .Values.store.certFile | quote }}
+            {{- end }}
+            {{- if not (empty .Values.store.key) }}
             - name: STPROXY_STORE_KEY
               value: {{ .Values.store.key | quote }}
             {{- end }}

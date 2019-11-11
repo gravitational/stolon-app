@@ -73,7 +73,7 @@ spec:
               {{ if not (empty .Values.store.key) }}--store-key={{ .Values.store.key }}{{ end }} \
               {{- end }}
               -p \
-              '{ {{- range $key, $value := .Values.clusterSpec }} {{ $key | quote }}: {{ if typeIs "string" $value }} {{ $value | quote }} {{ else }} {{ $value }} {{ end }}, {{- end }} "pgParameters": {{ toJson .Values.pgParameters }} }'
+              '{ {{- range $key, $value := .Values.clusterSpec }} {{ $key | quote }}: {{ if typeIs "string" $value }} {{ $value | quote }} {{ else if typeIs "bool"  $value }} {{ $value }} {{ else }} {{ int $value }} {{ end }}, {{- end }} "pgParameters": {{ toJson .Values.pgParameters }} }'
           env:
             - name: NODE_NAME
               valueFrom:
