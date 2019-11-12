@@ -57,8 +57,8 @@ ignored = ["github.com/gravitational/stolon-app/images*", "github.com/Sirupsen/l
   revision = "f1f1a805ed361a0e078bb537e4ea78cd37dcf065"
 
 [[constraint]]
-  name = "github.com/gravitational/stolon"
-  version = "0.3.0"
+  name = "github.com/sorintlab/stolon"
+  revision = "656bc2fe5d801193b412bcfb57dbfa84cfd9f386"
 
 [[override]]
   name = "github.com/minio/minio-go"
