@@ -1,0 +1,20 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: stolon-app-install
+  namespace: default
+spec:
+  parallelism: 1
+  completions: 1
+  backoffLimit: 0
+  activeDeadlineSeconds: 1200
+  template:
+    metadata:
+      name: stolon-app-install
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: install
+          image: quay.io/gravitational/debian-tall:buster
+          command: ["/bin/sh", "-c", "exit", "0"]

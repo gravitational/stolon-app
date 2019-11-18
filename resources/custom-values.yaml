@@ -1,0 +1,145 @@
+---
+clusterName: kube-stolon
+
+debug: "false"
+
+image:
+  repository: quay.io/gravitational/stolon
+  tag: latest
+  pullPolicy: Always
+
+etcdImage:
+  repository: quay.io/gravitational/stolon-etcd
+  tag: latest
+  pullPolicy: Always
+
+pgbouncerImage:
+  repository: quay.io/gravitational/stolon-pgbouncer
+  tag: latest
+  pullPolicy: Always
+
+serviceAccount:
+  name: stolon
+
+store:
+  backend: etcdv3
+  endpoints: "https://127.0.0.1:2379"
+  caFile: /var/state/root.cert
+  certFile: /var/state/etcd.cert
+  key: /var/state/etcd.key
+
+pgParameters:
+  idle_in_transaction_session_timeout: "10min"
+  log_destination: "stderr"
+  log_min_messages: "INFO"
+  log_checkpoints: "on"
+  log_min_duration_statement: "1s"
+  log_lock_waits: "on"
+  ssl: "on"
+  ssl_ca_file: "/home/stolon/secrets/cluster-ca/ca.pem"
+  ssl_cert_file: "/home/stolon/secrets/cluster-default/default-server.pem"
+  ssl_key_file: "/home/stolon/secrets/cluster-default/default-server-key.pem"
+
+clusterSpec:
+  maxStandbys: 5
+  maxStandbysPerSender: 5
+  maxStandbyLag: 16777216
+  automaticPgRestart: true
+  additionalWalSenders: 5
+  pgHBA:
+    - "hostssl all all 0.0.0.0/0 md5"
+    - "hostssl all all ::0/0 md5"
+
+sentinel:
+  replicaCount: 3
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: component
+                  operator: In
+                  values:
+                    - stolon-sentinel
+            topologyKey: kubernetes.io/hostname
+
+keeper:
+  nodeSelector:
+    stolon-keeper: "yes"
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+              - key: component
+                operator: In
+                values:
+                  - stolon-keeper
+          topologyKey: kubernetes.io/hostname
+  initVolumeMounts:
+    - name: stolon-secrets
+      mountPath: /home/stolon/secrets
+    - name: data
+      mountPath: /stolon-data
+    - name: cluster-ca
+      mountPath: /etc/secrets/cluster-ca
+    - name: cluster-default-ssl
+      mountPath: /etc/secrets/cluster-default
+  volumeMounts:
+    - name: stolon-secrets
+      mountPath: /home/stolon/secrets
+    - name: data
+      mountPath: /stolon-data
+    - name: etcd-secrets
+      mountPath: /var/state
+    - name: cluster-ca
+      mountPath: /etc/ssl/cluster-ca
+    - name: cluster-default-ssl
+      mountPath: /etc/ssl/cluster-default-ssl
+  volumes:
+    - name: stolon-secrets
+      emptyDir: {}
+    - name: etcd-secrets
+      hostPath:
+        path: /var/state
+    - name: data
+      hostPath:
+        path: /var/lib/data/stolon
+    - name: cluster-ca
+      secret:
+        secretName: cluster-ca
+    - name: cluster-default-ssl
+      secret:
+        secretName: cluster-default-ssl
+
+proxy:
+  replicaCount: 3
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: component
+                  operator: In
+                  values:
+                    - stolon-proxy
+            topologyKey: kubernetes.io/hostname
+
+pgbouncer:
+  replicaCount: 2
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: component
+                  operator: In
+                  values:
+                    - stolon-pgbouncer
+            topologyKey: kubernetes.io/hostname
