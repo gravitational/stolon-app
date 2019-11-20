@@ -4,17 +4,22 @@ clusterName: kube-stolon
 debug: "false"
 
 image:
-  repository: quay.io/gravitational/stolon
+  repository: leader.telekube.local:5000/stolon
   tag: latest
   pullPolicy: Always
 
 etcdImage:
-  repository: quay.io/gravitational/stolon-etcd
+  repository: leader.telekube.local:5000/stolon-etcd
   tag: latest
   pullPolicy: Always
 
 pgbouncerImage:
-  repository: quay.io/gravitational/stolon-pgbouncer
+  repository: leader.telekube.local:5000/stolon-pgbouncer
+  tag: latest
+  pullPolicy: Always
+
+telegrafImage:
+  repository: leader.telekube.local:5000/stolon-telegraf
   tag: latest
   pullPolicy: Always
 
@@ -22,33 +27,25 @@ serviceAccount:
   name: stolon
 
 store:
-  backend: etcdv3
+  backend: etcd
   endpoints: "https://127.0.0.1:2379"
   caFile: /var/state/root.cert
   certFile: /var/state/etcd.cert
   key: /var/state/etcd.key
 
-pgParameters:
-  idle_in_transaction_session_timeout: "10min"
-  log_destination: "stderr"
-  log_min_messages: "INFO"
-  log_checkpoints: "on"
-  log_min_duration_statement: "1s"
-  log_lock_waits: "on"
-  ssl: "on"
-  ssl_ca_file: "/home/stolon/secrets/cluster-ca/ca.pem"
-  ssl_cert_file: "/home/stolon/secrets/cluster-default/default-server.pem"
-  ssl_key_file: "/home/stolon/secrets/cluster-default/default-server-key.pem"
-
 clusterSpec:
-  maxStandbys: 5
-  maxStandbysPerSender: 5
-  maxStandbyLag: 16777216
-  automaticPgRestart: true
-  additionalWalSenders: 5
-  pgHBA:
-    - "hostssl all all 0.0.0.0/0 md5"
-    - "hostssl all all ::0/0 md5"
+  init_with_multiple_keepers: true
+  max_standbys_per_sender: 5
+  max_replication_lag_bytes: 16777216
+  max_replication_lag: 300
+  pg_parameters:
+    idle_in_transaction_session_timeout: "10min"
+    log_destination: "stderr"
+    log_min_messages: "INFO"
+    log_checkpoints: "on"
+    log_min_duration_statement: "1s"
+    log_lock_waits: "on"
+    log_line_prefix: '%m [%p]: [%l-1] user=%u,db=%d '
 
 sentinel:
   replicaCount: 3
@@ -113,21 +110,6 @@ keeper:
     - name: cluster-default-ssl
       secret:
         secretName: cluster-default-ssl
-
-proxy:
-  replicaCount: 3
-  affinity:
-    podAntiAffinity:
-      preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 100
-          podAffinityTerm:
-            labelSelector:
-              matchExpressions:
-                - key: component
-                  operator: In
-                  values:
-                    - stolon-proxy
-            topologyKey: kubernetes.io/hostname
 
 pgbouncer:
   replicaCount: 2

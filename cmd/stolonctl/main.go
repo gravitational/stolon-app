@@ -83,7 +83,9 @@ func init() {
 	stolonctlCmd.PersistentFlags().StringVar(&clusterConfig.Name, "cluster-name",
 		defaults.ClusterName, "Stolon cluster name")
 
-	bindFlagEnv(stolonctlCmd.PersistentFlags())
+	if err := bindFlagEnv(stolonctlCmd.PersistentFlags()); err != nil {
+		log.Warn(trace.DebugReport(err))
+	}
 
 	var cancel context.CancelFunc
 	ctx, cancel = context.WithCancel(context.TODO())
@@ -91,25 +93,27 @@ func init() {
 		exitSignals := make(chan os.Signal, 1)
 		signal.Notify(exitSignals, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
 
-		select {
-		case sig := <-exitSignals:
-			log.Infof("Caught signal: %v.", sig)
-			cancel()
-		}
+		sig := <-exitSignals
+		log.Infof("Caught signal: %v.", sig)
+		cancel()
 	}()
 
 }
 
 // bindFlagEnv binds environment variables to command flags
-func bindFlagEnv(flagSet *flag.FlagSet) {
+func bindFlagEnv(flagSet *flag.FlagSet) error {
 	for env, flag := range envs {
 		cmdFlag := flagSet.Lookup(flag)
 		if cmdFlag != nil {
 			if value := os.Getenv(env); value != "" {
-				cmdFlag.Value.Set(value)
+				if err := cmdFlag.Value.Set(value); err != nil {
+					return trace.Wrap(err)
+				}
+
 			}
 		}
 	}
+	return nil
 }
 
 // printError prints the error message to the console

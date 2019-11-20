@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: StatefulSet
+kind: DaemonSet
 metadata:
   name: {{ template "stolon.fullname" . }}-keeper
   labels:
@@ -9,10 +9,9 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
     stolon-keeper: "yes"
+    stolon-proxy: "yes"
     name: stolon-keeper
 spec:
-  serviceName: {{ template "stolon.fullname" . }}-keeper-headless
-  replicas: {{ .Values.keeper.replicaCount }}
   selector:
     matchLabels:
       app: {{ template "stolon.name" . }}
@@ -48,7 +47,7 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
       containers:
-        {{- if or (eq .Values.store.backend "etcdv2") (eq .Values.store.backend "etcdv3") }}
+        {{- if eq .Values.store.backend "etcd" }}
         - name: etcd
           image: "{{ .Values.etcdImage.repository }}:{{ .Values.etcdImage.tag }}"
           imagePullPolicy: {{ .Values.etcdImage.pullPolicy }}
@@ -70,19 +69,66 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
         {{- end }}
+        - name: proxy
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.proxy.containerPort }}
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.proxy.containerPort }}
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+          volumeMounts:
+          env:
+            - name: PROXY
+              value: "true"
+            - name: STPROXY_CLUSTER_NAME
+              value: {{ template "stolon.clusterName" . }}
+            - name: STPROXY_STORE_BACKEND
+              value: {{ .Values.store.backend | quote }}
+            {{- if not (empty .Values.store.endpoints) }}
+            - name: STPROXY_STORE_ENDPOINTS
+              value: {{ .Values.store.endpoints | quote}}
+            {{- end }}
+            {{- if not (empty .Values.store.caFile) }}
+            - name: STPROXY_STORE_CACERT
+              value: {{ .Values.store.caFile | quote }}
+            {{- end }}
+            {{- if not (empty .Values.store.certFile) }}
+            - name: STPROXY_STORE_CERT
+              value: {{ .Values.store.certFile | quote }}
+            {{- end }}
+            {{- if not (empty .Values.store.key) }}
+            - name: STPROXY_STORE_KEY
+              value: {{ .Values.store.key | quote }}
+            {{- end }}
+            - name: STPROXY_DEBUG
+              value: {{ .Values.debug | quote }}
+            - name: STPROXY_PORT
+              value: {{ .Values.proxy.containerPort | quote }}
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          {{- with .Values.keeper.etcdVolumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
         - name: keeper
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["/usr/bin/dumb-init", "--", "/bin/bash", "-exc"]
-          args:
-            - |
-              export STKEEPER_UID={{ .Values.keeper.uid_prefix }}${POD_NAME: -1}
-              stolon-keeper
           env:
+            - name: KEEPER
+              value: "true"
             - name: POD_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
             - name: STKEEPER_CLUSTER_NAME
               value: {{ template "stolon.clusterName" . }}
             - name: STKEEPER_STORE_BACKEND
@@ -92,11 +138,11 @@ spec:
               value: {{ .Values.store.endpoints | quote}}
             {{- end }}
             {{- if not (empty .Values.store.caFile) }}
-            - name: STKEEPER_STORE_CA_FILE
+            - name: STKEEPER_STORE_CACERT
               value: {{ .Values.store.caFile | quote }}
             {{- end }}
             {{- if not (empty .Values.store.certFile) }}
-            - name: STKEEPER_STORE_CERT_FILE
+            - name: STKEEPER_STORE_CERT
               value: {{ .Values.store.certFile | quote }}
             {{- end }}
             {{- if not (empty .Values.store.key) }}
@@ -125,14 +171,29 @@ spec:
                   name: {{ template "stolon.fullname" . }}
                   {{- end }}
                   key: "pg_repl_password"
-            - name: STKEEPER_DATA_DIR
-              value: {{ .Values.keeper.dataDir | quote }}
-            - name: STKEEPER_PG_LISTEN_ADDRESS
-              valueFrom:
-                fieldRef:
-                  fieldPath: status.podIP
             - name: STKEEPER_DEBUG
-              value: {{ .Values.debug | quote}}
+              value: {{ .Values.debug | quote }}
+            - name: STKEEPER_PG_BIN_PATH
+              value: /usr/lib/postgresql/9.6/bin
+            - name: STKEEPER_PORT
+              value: {{ .Values.ports.stolonrpc.containerPort | quote }}
+            - name: STKEEPER_PG_PORT
+              value: {{ .Values.ports.stolon.containerPort | quote }}
+            - name: STKEEPER_PG_SSL_REPLICATION
+              value: "true"
+            - name: STKEEPER_PG_SSL_CERT_FILE
+              value: "/home/stolon/secrets/cluster-default/default-server.pem"
+            - name: STKEEPER_PG_SSL_KEY_FILE
+              value: "/home/stolon/secrets/cluster-default/default-server-key.pem"
+            - name: STKEEPER_PG_SSL_CA_FILE
+              value: "/home/stolon/secrets/cluster-ca/ca.pem"
+            - name: STKEEPER_PG_SSL_CIPHERS
+              value: >-
+                ECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA256:
+                EECDH+aRSA+SHA256:EECDH+ECDSA+SHA384:EECDH+ECDSA+SHA256:
+                EECDH+aRSA+SHA384:EDH+aRSA+AESGCM:EDH+aRSA+SHA256:EDH+aRSA:
+                EECDH:!aNULL:!eNULL:!MEDIUM:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:
+                !DSS:!RC4:!SEED
           ports:
             {{- range $key, $value := .Values.ports }}
             - name: {{ $key }}

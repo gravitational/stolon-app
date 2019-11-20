@@ -3,23 +3,23 @@
 # Declare variables to be passed into your templates.
 
 image:
-  repository: sorintlab/stolon
-  tag: v0.13.0-pg10
+  repository: quay.io/gravitational/stolon
+  tag: latest
   pullPolicy: IfNotPresent
 
 etcdImage:
-  repository: k8s.gcr.io/etcd-amd64
-  tag: 2.3.7
+  repository: quay.io/gravitational/stolon-etcd
+  tag: latest
   pullPolicy: IfNotPresent
 
 telegrafImage:
-  repository: telegraf
-  tag: 1.12-alpine
+  repository: quay.io/gravitational/stolon-telegraf
+  tag: latest
   pullPolicy: IfNotPresent
 
 pgbouncerImage:
-  repository: edoburu/pgbouncer
-  tag: 1.8.1
+  repository: quay.io/gravitational/stolon-pgbouncer
+  tag: latest
   pullPolicy: IfNotPresent
 
 debug: false
@@ -51,28 +51,17 @@ replication:
 
 # backend could be one of the following: consul, etcdv2, etcdv3 or kubernetes
 store:
-  backend: etcdv3
+  backend: etcd
   endpoints: "http://127.0.0.1:2379"
 
-job:
-  autoCreateCluster: true
-  autoUpdateClusterSpec: true
-
-clusterSpec: {}
-  # sleepInterval: 5s
-  # requestTimeout: 10s
-  # failInterval: 20s
-  # deadKeeperRemovalInterval: 48h
-  # maxStandbys: 5
-
-pgParameters: {}
-  # maxConnections: 1000
+clusterSpec:
+  max_replication_lag: 300
 
 ports:
   stolon:
     containerPort: 5432
-  metrics:
-    containerPort: 8080
+  stolonrpc:
+    containerPort: 5431
 
 telegraf:
   config:
@@ -108,6 +97,9 @@ telegraf:
             - "template1"
 
 sentinel:
+  containerPort: 6431
+  keeperControlPort: 5431
+  configMountPath: /etc/stolon/
   replicaCount: 2
   affinity: {}
   volumeMounts:
@@ -119,16 +111,7 @@ sentinel:
         path: /var/state
 
 keeper:
-  dataDir: "/stolon-data"
-  uid_prefix: "keeper"
   replicaCount: 2
-  service:
-    type: ClusterIP
-    ports:
-      keeper:
-        port: 5432
-        targetPort: 5432
-        protocol: TCP
   nodeSelector: {}
   initVolumeMounts:
     - name: data
@@ -150,23 +133,15 @@ keeper:
         path: /var/lib/data/stolon
 
 proxy:
-  replicaCount: 2
-  affinity: {}
+  containerPort: 5434
   service:
     type: ClusterIP
 #    loadBalancerIP: ""
     ports:
       proxy:
         port: 5432
-        targetPort: 5432
+        targetPort: 5434
         protocol: TCP
-  volumeMounts:
-    - name: etcd-secrets
-      mountPath: /var/state
-  volumes:
-    - name: etcd-secrets
-      hostPath:
-        path: /var/state
 
 pgbouncer:
   replicaCount: 2

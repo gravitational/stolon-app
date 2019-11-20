@@ -141,6 +141,4 @@ fix-logrus:
 
 .PHONY: lint
 lint: buildbox
-### TODO (Sergei): Fix all linting problems after replacing gravitational/stolon
-### dependencies with sorintlab/stolon and remove '-' here
-	-docker run $(DOCKERFLAGS) $(BUILDBOX) golangci-lint run --skip-dirs=vendor ./...
+	docker run $(DOCKERFLAGS) $(BUILDBOX) golangci-lint run --skip-dirs=vendor ./...

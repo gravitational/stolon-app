@@ -32,7 +32,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       containers:
-        {{- if or (eq .Values.store.backend "etcdv2") (eq .Values.store.backend "etcdv3") }}
+        {{- if eq .Values.store.backend "etcd" }}
         - name: etcd
           image: "{{ .Values.etcdImage.repository }}:{{ .Values.etcdImage.tag }}"
           imagePullPolicy: {{ .Values.etcdImage.pullPolicy }}
@@ -57,8 +57,9 @@ spec:
         - name: sentinel
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["/usr/bin/dumb-init", "--", "stolon-sentinel"]
           env:
+            - name: SENTINEL
+              value: "true"
             - name: STSENTINEL_CLUSTER_NAME
               value: {{ template "stolon.clusterName" . }}
             - name: STSENTINEL_STORE_BACKEND
@@ -68,19 +69,27 @@ spec:
               value: {{ .Values.store.endpoints | quote}}
             {{- end }}
             {{- if not (empty .Values.store.caFile) }}
-            - name: STSENTINEL_STORE_CA_FILE
+            - name: STSENTINEL_STORE_CACERT
               value: {{ .Values.store.caFile | quote }}
             {{- end }}
             {{- if not (empty .Values.store.certFile) }}
-            - name: STSENTINEL_STORE_CERT_FILE
+            - name: STSENTINEL_STORE_CERT
               value: {{ .Values.store.certFile | quote }}
             {{- end }}
             {{- if not (empty .Values.store.key) }}
             - name: STSENTINEL_STORE_KEY
               value: {{ .Values.store.key | quote }}
             {{- end }}
-            - name: STSENTINEL_METRICS_LISTEN_ADDRESS
-              value: "0.0.0.0:{{ .Values.ports.metrics.containerPort }}"
+            - name: STSENTINEL_KEEPER_KUBE_LABEL_SELECTOR
+              value: 'stolon-cluster={{ template "stolon.clusterName" . }},stolon-keeper=yes'
+            - name: STSENTINEL_KUBERNETES_NAMESPACE
+              value: {{ .Release.Namespace | quote }}
+            - name: STSENTINEL_PORT
+              value: {{ .Values.sentinel.containerPort | quote }}
+            - name: STSENTINEL_KEEPER_PORT
+              value: {{ .Values.sentinel.keeperControlPort | quote }}
+            - name: STSENTINEL_INITIAL_CLUSTER_CONFIG
+              value: "{{ .Values.sentinel.configMountPath }}/cluster-config.json"
             - name: STSENTINEL_DEBUG
               value: {{ .Values.debug | quote}}
           ports:
@@ -88,11 +97,16 @@ spec:
             - name: {{ $key }}
               {{- toYaml $value | nindent 14 }}
           {{- end }}
-          {{- with .Values.sentinel.volumeMounts }}
           volumeMounts:
+            - name: cluster-config
+              mountPath: {{ .Values.sentinel.configMountPath }}
+          {{- with .Values.sentinel.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
-      {{- with .Values.sentinel.volumes }}
       volumes:
+        - name: cluster-config
+          configMap:
+            name: {{ include "stolon.fullname" . }}-cluster-config
+      {{- with .Values.sentinel.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}

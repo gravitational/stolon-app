@@ -1,37 +1,22 @@
 ARG PGVERSION=9.6
 # base build image
-FROM golang:1.13-buster AS build_base
-ARG STOLON_REVISION=656bc2fe5d801193b412bcfb57dbfa84cfd9f386
+FROM quay.io/gravitational/debian-venti:go1.13.4-buster AS builder
+ARG STOLON_REVISION=cf9226e5b7d4658f126f7c0f27bdd93312538a18
 
+ENV REPO_PATH=/gopath/src/github.com/gravitational/stolon
 RUN set -eux; \
     apt-get update && \
     apt-get install -qq -y git && \
-    git clone https://github.com/gravitational/stolon.git /stolon && \
-    cd /stolon && git checkout $STOLON_REVISION
+    git clone https://github.com/gravitational/stolon.git $REPO_PATH && \
+    cd $REPO_PATH && git checkout $STOLON_REVISION
 
-WORKDIR /stolon
+WORKDIR $REPO_PATH
 
-RUN go mod download
-
-#######
-####### Build the stolon binaries
-#######
-FROM build_base AS builder
-
-RUN make
-
-#######
-####### Download etcd binaries
-#######
-FROM quay.io/gravitational/debian-grande:buster as downloader
-ARG ETCD_VERSION=v3.3.11
-ENV DEBIAN_FRONTEND noninteractive
-
-RUN apt-get update && \
-    apt-get install -qq -y curl && \
-    mkdir -p /etcd && \
-    curl -L https://storage.googleapis.com/etcd/${ETCD_VERSION}/etcd-${ETCD_VERSION}-linux-amd64.tar.gz -o /etcd.tar.gz && \
-    tar xzf /etcd.tar.gz -C /etcd --strip-components=1
+RUN mkdir -p bin && \
+    CGO_ENABLED=0 go build -a -installsuffix cgo -ldflags '-s' -o bin/stolon-sentinel ${REPO_PATH}/cmd/sentinel && \
+    CGO_ENABLED=0 go build -a -installsuffix cgo -ldflags '-s' -o bin/stolon-proxy ${REPO_PATH}/cmd/proxy && \
+    CGO_ENABLED=0 go build -a -installsuffix cgo -ldflags '-s' -o bin/stolontool ${REPO_PATH}/cmd/stolonctl && \
+    go build -a -installsuffix cgo -ldflags '-s' -o bin/stolon-keeper ${REPO_PATH}/cmd/keeper
 
 #######
 ####### Build the final image
@@ -50,16 +35,20 @@ RUN apt-get update && \
         /usr/share/doc-base/ \
         /usr/share/man/ \
         /tmp/* && \
-    chmod +x /usr/local/bin/init-container.sh && \
+    chmod a+rx /usr/local/bin/run.sh && \
+    chmod a+rx /usr/local/bin/init-container.sh && \
+    chmod a+rx /usr/local/bin/stolon-security.sh && \
     useradd -ms /bin/bash stolon
 
 EXPOSE 5432
 
-COPY --from=builder /stolon/bin/ /usr/local/bin
-COPY --from=downloader /etcd/etcd* /usr/bin/
+COPY --from=builder /gopath/src/github.com/gravitational/stolon/bin/ /usr/local/bin
 
-RUN chmod +x /usr/local/bin/stolon-keeper /usr/local/bin/stolon-sentinel /usr/local/bin/stolon-proxy /usr/local/bin/stolonctl
+RUN chmod +x /usr/local/bin/stolon-keeper /usr/local/bin/stolon-sentinel /usr/local/bin/stolon-proxy
+
+EXPOSE 5431 5432 6431
 
 USER stolon
 
-ENTRYPOINT ["stolon-keeper"]
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+CMD ["/usr/local/bin/run.sh"]

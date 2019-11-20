@@ -59,7 +59,7 @@ nodeProfiles:
         ports:
           - protocol: tcp
             ranges:
-              - "5431-5435"
+              - "5431-5434"
     expandPolicy: fixed-instance
     providers:
       aws:
@@ -94,7 +94,7 @@ nodeProfiles:
         ports:
           - protocol: tcp
             ranges:
-              - "5431-5435"
+              - "5431-5434"
     expandPolicy: fixed-instance
     providers:
       aws:
@@ -111,9 +111,8 @@ nodeProfiles:
 hooks:
   install:
     job: file://install.yaml
-### TODO (Sergei): Update code for status check after bumping dependencies for stolon
-#  postInstall:
-#    job: file://postInstall.yaml
+  postInstall:
+    job: file://postInstall.yaml
   update:
     job: |
       apiVersion: batch/v1
@@ -162,9 +161,8 @@ hooks:
                     mountPath: /usr/bin/etcdctl
                   - name: varstate
                     mountPath: /var/state
-### TODO (Sergei): Update code for status check after bumping dependencies for stolon
-#  postUpdate:
-#    job: file://postUpdate.yaml
+  postUpdate:
+    job: file://postUpdate.yaml
   rollback:
     job: |
       apiVersion: batch/v1

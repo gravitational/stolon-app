@@ -27,4 +27,4 @@ spec:
   selector:
     app: {{ template "stolon.name" . }}
     release: {{ .Release.Name }}
-    component: stolon-proxy
+    component: stolon-keeper

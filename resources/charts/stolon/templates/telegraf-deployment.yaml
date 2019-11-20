@@ -29,8 +29,8 @@ spec:
       serviceAccountName: {{ template "stolon.serviceAccountName" . }}
       containers:
       - name: utils
-          image: "{{ .Values.telegrafImage.repository }}:{{ .Values.telegrafImage.tag }}"
-          imagePullPolicy: {{ .Values.telegrafImage.pullPolicy }}
+        image: "{{ .Values.telegrafImage.repository }}:{{ .Values.telegrafImage.tag }}"
+        imagePullPolicy: {{ .Values.telegrafImage.pullPolicy }}
         env:
           - name: STOLON_USERNAME
             value: "stolon"
