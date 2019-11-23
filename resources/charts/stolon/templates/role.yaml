@@ -19,47 +19,9 @@ rules:
       - use
   - apiGroups:
       - ""
-    verbs:
-      - get
-      - list
-      - watch
     resources:
-      - secrets
-    resourceNames:
-      - stolon
-      - cluster-ca
-      - cluster-default-ssl
-  - apiGroups:
-      - ""
-    verbs:
-      - get
-      - list
-      - watch
-    resources:
-      - configmaps
-      - endpoints
-      - events
       - pods
-      - persistentvolumes
-      - persistentvolumeclaims
-      - services
-      - jobs
-  - apiGroups:
-      - extensions
-      - apps
     verbs:
-      - delete
-    resources:
-      - deployments
-      - daemonsets
-    resourceNames:
-      - "stolon-sentinel"
-      - "stolon-keeper"
-  - apiGroups:
-      - batch
-      - extensions
-    verbs:
-      - "*"
-    resources:
-      - jobs
+      - get
+      - list
 {{- end -}}

@@ -32,7 +32,7 @@ spec:
       {{- end }}
       initContainers:
         - name: fix-secrets
-          image: "{{ .Values.pgbouncerImage.repository }}:{{ .Values.pgbouncerImage.tag }}"
+          image: "{{ .Values.registry }}{{ .Values.pgbouncerImage.repository }}:{{ .Values.pgbouncerImage.tag }}"
           imagePullPolicy: {{ .Values.pgbouncerImage.pullPolicy }}
           command: ["/usr/bin/dumb-init", "--", "/usr/local/bin/init-container.sh"]
           securityContext:
@@ -46,7 +46,7 @@ spec:
               mountPath: /home/stolon/secrets
       containers:
         - name: pgbouncer
-          image: "{{ .Values.pgbouncerImage.repository }}:{{ .Values.pgbouncerImage.tag }}"
+          image: "{{ .Values.registry }}{{ .Values.pgbouncerImage.repository }}:{{ .Values.pgbouncerImage.tag }}"
           imagePullPolicy: {{ .Values.pgbouncerImage.pullPolicy }}
           args: ["pgbouncer"]
           env:

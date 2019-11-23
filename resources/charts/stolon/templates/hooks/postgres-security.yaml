@@ -1,0 +1,42 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "stolon.fullname" . }}-postgres-hardening
+  labels:
+    app: {{ template "stolon.name" . }}
+    chart: {{ template "stolon.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  parallelism: 1
+  completions: 1
+  template:
+    metadata:
+      app: {{ template "stolon.fullname" . }}
+      release: {{ .Release.Name }}
+      name: postgres-hardening
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: postgres-hardening
+          image: "{{ .Values.registry }}{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/usr/bin/dumb-init", "--", "/usr/local/bin/stolon-security.sh"]
+          env:
+            - name: PG_SERVICE
+              value: {{ template "stolon.fullname" . }}-postgres.default.svc
+            - name: PG_USERNAME
+              value: {{ .Values.superuser.username | quote }}
+            - name: PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  {{- if .Values.existingSecret }}
+                  name: {{ .Values.existingSecret | quote }}
+                  {{- else }}
+                  name: {{ template "stolon.fullname" . }}
+                  {{- end }}
+                  key: "password"

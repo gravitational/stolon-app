@@ -34,7 +34,7 @@ spec:
       containers:
         {{- if eq .Values.store.backend "etcd" }}
         - name: etcd
-          image: "{{ .Values.etcdImage.repository }}:{{ .Values.etcdImage.tag }}"
+          image: "{{ .Values.registry }}{{ .Values.etcdImage.repository }}:{{ .Values.etcdImage.tag }}"
           imagePullPolicy: {{ .Values.etcdImage.pullPolicy }}
           env:
             - name: NODE_NAME
@@ -55,7 +55,7 @@ spec:
           {{- end }}
         {{- end }}
         - name: sentinel
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.registry }}{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: SENTINEL

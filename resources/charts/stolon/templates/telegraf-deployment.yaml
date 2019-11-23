@@ -29,9 +29,11 @@ spec:
       serviceAccountName: {{ template "stolon.serviceAccountName" . }}
       containers:
       - name: utils
-        image: "{{ .Values.telegrafImage.repository }}:{{ .Values.telegrafImage.tag }}"
+        image: "{{ .Values.registry }}{{ .Values.telegrafImage.repository }}:{{ .Values.telegrafImage.tag }}"
         imagePullPolicy: {{ .Values.telegrafImage.pullPolicy }}
         env:
+          - name: STOLON_HOST
+            value: "{{ template "stolon.fullname" . }}-postgres.default.svc"
           - name: STOLON_USERNAME
             value: "stolon"
           - name: STOLON_PASSWORD

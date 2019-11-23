@@ -2,25 +2,32 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+registry: ""
+
 image:
-  repository: quay.io/gravitational/stolon
+  repository: stolon
   tag: latest
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 etcdImage:
-  repository: quay.io/gravitational/stolon-etcd
+  repository: stolon-etcd
   tag: latest
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 telegrafImage:
-  repository: quay.io/gravitational/stolon-telegraf
+  repository: stolon-telegraf
   tag: latest
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 pgbouncerImage:
-  repository: quay.io/gravitational/stolon-pgbouncer
+  repository: stolon-pgbouncer
   tag: latest
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
+
+stolonctlImage:
+  repository: stolonctl
+  tag: latest
+  pullPolicy: Always
 
 debug: false
 
@@ -91,10 +98,18 @@ telegraf:
           password: "$INFLUXDB_PASSWORD"
     inputs:
       - postgresql:
-          address: "host=stolon-postgres user=$STOLON_USERNAME password=$STOLON_PASSWORD dbname=postgres sslmode=require"
+          address: "host=$STOLON_HOST user=$STOLON_USERNAME password=$STOLON_PASSWORD dbname=postgres sslmode=require"
           ignored_databases:
             - "template0"
             - "template1"
+      - postgresql_extensible:
+          address: "host=$STOLON_HOST user=$STOLON_USERNAME password=$STOLON_PASSWORD dbname=postgres sslmode=require"
+          name_prefix: "pg_"
+          query:
+            sqlquery: "SELECT slot_name, active, client_addr, pg_xlog_location_diff(pg_current_xlog_insert_location(), restart_lsn) AS ret_bytes FROM pg_replication_slots JOIN pg_stat_replication ON pg_replication_slots.active_pid = pg_stat_replication.pid"
+            version: 901
+            withdbname: false
+            tagvalue: "slot_name"
 
 sentinel:
   containerPort: 6431
@@ -146,9 +161,28 @@ proxy:
 pgbouncer:
   replicaCount: 2
   affinity: {}
+  service:
+    type: ClusterIP
+#    loadBalancerIP: ""
+    ports:
+      pgbouncer:
+        port: 5432
+        targetPort: 6432
+        protocol: TCP
 
 pgbouncerConfig:
   maxClientConnections: 100
   serverTLSMode: require
   serverTLSCertFile: /home/stolon/secrets/pgbouncer.pem
   serverTLSKeyFile: /home/stolon/secrets/pgbouncer-key.pem
+
+stolonctl:
+  replicaCount: 1
+  service:
+    type: ClusterIP
+#    loadBalancerIP: ""
+    ports:
+      stolonctl:
+        port: 8080
+        targetPort: 8080
+        protocol: TCP

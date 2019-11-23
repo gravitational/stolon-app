@@ -1,34 +1,16 @@
 ---
 clusterName: kube-stolon
 
+registry: "leader.telekube.local:5000/"
+
 debug: "false"
-
-image:
-  repository: leader.telekube.local:5000/stolon
-  tag: latest
-  pullPolicy: Always
-
-etcdImage:
-  repository: leader.telekube.local:5000/stolon-etcd
-  tag: latest
-  pullPolicy: Always
-
-pgbouncerImage:
-  repository: leader.telekube.local:5000/stolon-pgbouncer
-  tag: latest
-  pullPolicy: Always
-
-telegrafImage:
-  repository: leader.telekube.local:5000/stolon-telegraf
-  tag: latest
-  pullPolicy: Always
 
 serviceAccount:
   name: stolon
 
 store:
   backend: etcd
-  endpoints: "https://127.0.0.1:2379"
+  endpoints: "127.0.0.1:2379"
   caFile: /var/state/root.cert
   certFile: /var/state/etcd.cert
   key: /var/state/etcd.key

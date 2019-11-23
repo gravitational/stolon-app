@@ -18,7 +18,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-export ETCD_ENDPOINTS=${ETCD_ENDPOINTS:-127.0.0.1:2379}
+set -o nounset
 
 if ! [ -z $ETCD_TRUSTED_CA_FILE ]; then EXTRA_PARAMS="--trusted-ca-file=${ETCD_TRUSTED_CA_FILE}"; fi
 

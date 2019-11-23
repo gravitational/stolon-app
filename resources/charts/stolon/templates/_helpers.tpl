@@ -177,6 +177,15 @@ Create chart name and version as used by the chart label.
             {{- range $k, $v := $value }}
               {{- $tps := typeOf $v }}
               {{- if eq $tps "string" }}
+        {{ $k }} = {{ $v | quote }}
+              {{- end }}
+              {{- if eq $tps "float64" }}
+        {{ $k }} = {{ $v | int64 }}
+              {{- end }}
+              {{- if eq $tps "int" }}
+        {{ $k }} = {{ $v | int64 }}
+              {{- end }}
+              {{- if eq $tps "bool" }}
         {{ $k }} = {{ $v }}
               {{- end }}
               {{- if eq $tps "[]interface {}"}}

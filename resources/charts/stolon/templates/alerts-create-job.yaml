@@ -1,0 +1,54 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "stolon.fullname" . }}-create-alerts-job
+  labels:
+    app: {{ template "stolon.name" . }}
+    chart: {{ template "stolon.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  parallelism: 1
+  completions: 1
+  template:
+    metadata:
+      labels:
+        app: {{ template "stolon.fullname" . }}
+        release: {{ .Release.Name }}
+    spec:
+      nodeSelector:
+        gravitational.io/k8s-role: master
+      restartPolicy: OnFailure
+      serviceAccountName: {{ template "stolon.serviceAccountName" . }}
+      containers:
+        - name: copy
+          image: "{{ .Values.registry }}{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/usr/bin/dumb-init", "--", "/bin/bash", "-cex"]
+          args:
+            - |
+              for file in /etc/alerts/*.yaml; do \
+                  /usr/bin/gravity resource create -f $file; \
+              done
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          volumeMounts:
+            - name: gravity
+              mountPath: /usr/bin/gravity
+            - name: gravity-local
+              mountPath: /var/lib/gravity/local
+            - name: alerts
+              mountPath: /etc/alerts
+      volumes:
+        - name: gravity
+          hostPath:
+            path: /usr/bin/gravity
+        - name: gravity-local
+          hostPath:
+            path: /var/lib/gravity/local
+        - name: alerts
+          configMap:
+            name: {{ include "stolon.fullname" . }}-alerts

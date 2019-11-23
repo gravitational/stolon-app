@@ -18,6 +18,13 @@ RUN mkdir -p bin && \
     CGO_ENABLED=0 go build -a -installsuffix cgo -ldflags '-s' -o bin/stolontool ${REPO_PATH}/cmd/stolonctl && \
     go build -a -installsuffix cgo -ldflags '-s' -o bin/stolon-keeper ${REPO_PATH}/cmd/keeper
 
+FROM quay.io/gravitational/debian-grande:buster AS downloader
+ARG PGMETRICS_VERSION=1.7.0
+RUN apt-get update && apt-get install wget -yqq && \
+    wget https://github.com/rapidloop/pgmetrics/releases/download/v${PGMETRICS_VERSION}/pgmetrics_${PGMETRICS_VERSION}_linux_amd64.tar.gz && \
+    tar xvf pgmetrics_${PGMETRICS_VERSION}_linux_amd64.tar.gz && \
+    cp pgmetrics_${PGMETRICS_VERSION}_linux_amd64/pgmetrics /pgmetrics
+
 #######
 ####### Build the final image
 #######
@@ -43,6 +50,7 @@ RUN apt-get update && \
 EXPOSE 5432
 
 COPY --from=builder /gopath/src/github.com/gravitational/stolon/bin/ /usr/local/bin
+COPY --from=downloader /pgmetrics /usr/local/bin
 
 RUN chmod +x /usr/local/bin/stolon-keeper /usr/local/bin/stolon-sentinel /usr/local/bin/stolon-proxy
 
