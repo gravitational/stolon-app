@@ -225,14 +225,8 @@ func collectMetricsFromStatus(status *cluster.Status) (result statusMetrics) {
 				// count amount of running standby nodes
 				result.runningStandbys++
 				if masterID != "" {
-					if status.ClusterData.KeepersState[masterID].PGState.XLogPos > status.ClusterData.KeepersState[keeperID].PGState.XLogPos {
-						if status.ClusterData.KeepersState[masterID].PGState.XLogPos-status.ClusterData.KeepersState[keeperID].PGState.XLogPos > 0 {
-							result.replicationLag = true
-						}
-					} else {
-						if status.ClusterData.KeepersState[keeperID].PGState.XLogPos-status.ClusterData.KeepersState[masterID].PGState.XLogPos > 0 {
-							result.replicationLag = true
-						}
+					if status.ClusterData.KeepersState[masterID].PGState.XLogPos-status.ClusterData.KeepersState[keeperID].PGState.XLogPos != 0 {
+						result.replicationLag = true
 					}
 				}
 			}
