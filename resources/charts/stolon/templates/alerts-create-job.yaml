@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ template "stolon.fullname" . }}-create-alerts-job
+  name: {{ template "stolon.fullname" . }}-create-alerts
   labels:
     app: {{ template "stolon.name" . }}
     chart: {{ template "stolon.chart" . }}
