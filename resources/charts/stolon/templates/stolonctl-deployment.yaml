@@ -37,10 +37,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
-            {{- if not (empty .Values.store.endpoints) }}
             - name: ETCD_ENDPOINTS
-              value: {{ .Values.store.endpoints | quote}}
-            {{- end }}
+              value: "$(NODE_NAME):2379"
             {{- if not (empty .Values.store.caFile) }}
             - name: ETCD_CACERT
               value: {{ .Values.store.caFile | quote }}

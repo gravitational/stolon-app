@@ -129,38 +129,9 @@ hooks:
           spec:
             hostNetwork: true
             restartPolicy: Never
-            volumes:
-              - name: etcdctl
-                hostPath:
-                  path: /usr/bin/etcdctl
-              - name: varstate
-                hostPath:
-                  path: /var/state
             containers:
               - name: hook
                 image: stolon-hook:latest
-                args: ["update"]
-                env:
-                  - name: ETCDCTL_CA_FILE
-                    value: "/var/state/root.cert"
-                  - name: ETCDCTL_CERT_FILE
-                    value: "/var/state/etcd.cert"
-                  - name: ETCDCTL_KEY_FILE
-                    value: "/var/state/etcd.key"
-                  - name: ETCDCTL_PEERS
-                    value: "https://127.0.0.1:2379"
-                  - name: ETCD_ENDPOINTS
-                    value: "127.0.0.1:2379"
-                  - name: POSTGRES_PASSWORD
-                    valueFrom:
-                      secretKeyRef:
-                        name: stolon
-                        key: password
-                volumeMounts:
-                  - name: etcdctl
-                    mountPath: /usr/bin/etcdctl
-                  - name: varstate
-                    mountPath: /var/state
   postUpdate:
     job: file://postUpdate.yaml
   rollback:
@@ -181,7 +152,7 @@ hooks:
             containers:
               - name: hook
                 image: stolon-hook:latest
-                args: ["rollback"]
+                command: ["/usr/bin/dumb-init", "/rollback.sh"]
   uninstall:
     job: |
       apiVersion: batch/v1

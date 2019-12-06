@@ -33,7 +33,7 @@ FROM postgres:$PGVERSION
 ADD rootfs/ /
 
 RUN apt-get update && \
-    apt-get install dumb-init && \
+    apt-get install dumb-init jq -yqq && \
     apt-get clean && \
     rm -rf \
         /var/lib/apt/lists/* \
@@ -45,6 +45,7 @@ RUN apt-get update && \
     chmod a+rx /usr/local/bin/run.sh && \
     chmod a+rx /usr/local/bin/init-container.sh && \
     chmod a+rx /usr/local/bin/stolon-security.sh && \
+    chmod a+rx /usr/local/bin/update-secret.sh && \
     useradd -ms /bin/bash stolon
 
 EXPOSE 5432

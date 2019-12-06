@@ -26,6 +26,8 @@ rules:
     verbs:
       - get
       - create
+      - update
+      - patch
     resources:
       - secrets
 {{- end -}}
