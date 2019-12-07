@@ -47,4 +47,7 @@ const (
 
 	// ListenerPort defines port for stolonctl server
 	ListenerPort = "127.0.0.1:8080"
+
+	// LagThreshold is the threshold for lag between master and standby in bytes
+	LagThreshold uint64 = 4194304 // 4MB
 )

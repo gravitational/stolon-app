@@ -45,6 +45,7 @@ var (
 		"APP_VERSION":       "app-version",
 		"RIG_CHANGESET":     "changeset",
 		"NODE_NAME":         "nodename",
+		"LAG_THRESHOLD":     "lag-threshold",
 	}
 
 	stolonctlCmd = &cobra.Command{
