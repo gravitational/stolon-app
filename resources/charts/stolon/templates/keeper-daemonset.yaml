@@ -182,7 +182,7 @@ spec:
             - name: STKEEPER_PG_SSL_REPLICATION
               value: "true"
             - name: STKEEPER_PG_SSL_CERT_FILE
-              value: "/home/stolon/secrets/cluster-default/default-server.pem"
+              value: "/home/stolon/secrets/cluster-default/default-server-with-chain.pem"
             - name: STKEEPER_PG_SSL_KEY_FILE
               value: "/home/stolon/secrets/cluster-default/default-server-key.pem"
             - name: STKEEPER_PG_SSL_CA_FILE
