@@ -40,7 +40,9 @@ var (
 		SilenceUsage: true,
 		RunE:         status,
 	}
-	shortOutput  bool
+	shortOutput bool
+	// lagThreshold is the threshold for the lag between master and standby
+	// reaching which cluster status will be considered as failed
 	lagThreshold uint64
 )
 

@@ -85,7 +85,7 @@ func init() {
 		defaults.ClusterName, "Stolon cluster name")
 
 	if err := bindFlagEnv(stolonctlCmd.PersistentFlags()); err != nil {
-		log.Warn(trace.DebugReport(err))
+		log.WithError(err).Warn("Failed to bind environment variables to flags.")
 	}
 
 	var cancel context.CancelFunc
