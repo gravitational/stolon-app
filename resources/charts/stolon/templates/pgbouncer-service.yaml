@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "stolon.fullname" . }}-pgbouncer
+  labels:
+    app: {{ template "stolon.name" . }}
+    chart: {{ template "stolon.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  {{- if (or (eq .Values.pgbouncer.service.type "ClusterIP") (empty .Values.pgbouncer.service.type)) }}
+  type: ClusterIP
+  {{- if .Values.pgbouncer.service.clusterIP }}
+  clusterIP: {{ .Values.pgbouncer.service.clusterIP }}
+  {{- end }}
+  {{- else if eq .Values.pgbouncer.service.type "LoadBalancer" }}
+  type: LoadBalancer
+  loadBalancerIP: {{ .Values.pgbouncer.service.loadBalancerIP }}
+  {{- else }}
+  type: {{ .Values.pgbouncer.service.type }}
+  {{- end }}
+  ports:
+  {{- range $key, $value := .Values.pgbouncer.service.ports }}
+    - name: {{ $key }}
+      {{ toYaml $value | nindent 6 }}
+  {{- end }}
+  selector:
+    app: {{ template "stolon.name" . }}
+    release: {{ .Release.Name }}
+    component: stolon-pgbouncer

@@ -1,0 +1,60 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "stolon.fullname" . }}-telegraf
+  labels:
+    app: {{ template "stolon.name" . }}
+    chart: {{ template "stolon.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "stolon.name" . }}
+      release: {{ .Release.Name }}
+      component: stolon-telegraf
+      name: {{ template "stolon.fullname" . }}-telegraf
+  template:
+    metadata:
+      labels:
+        app: {{ template "stolon.name" . }}
+        release: {{ .Release.Name }}
+        component: stolon-telegraf
+        stolon-cluster: {{ template "stolon.fullname" . }}
+        name: {{ template "stolon.fullname" . }}-telegraf
+        product: {{ template "stolon.name" . }}
+    spec:
+      serviceAccountName: {{ template "stolon.serviceAccountName" . }}
+      containers:
+      - name: utils
+        image: "{{ .Values.registry }}{{ .Values.telegrafImage.repository }}:{{ .Values.telegrafImage.tag }}"
+        imagePullPolicy: {{ .Values.telegrafImage.pullPolicy }}
+        env:
+          - name: STOLON_HOST
+            value: "{{ template "stolon.fullname" . }}-postgres.default.svc"
+          - name: STOLON_USERNAME
+            value: "stolon"
+          - name: STOLON_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: stolon
+                key: password
+          - name: INFLUXDB_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: telegraf-influxdb-creds
+                key: username
+          - name: INFLUXDB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: telegraf-influxdb-creds
+                key: password
+        volumeMounts:
+          - name: telegraf-config
+            mountPath: /etc/telegraf
+      volumes:
+        - name: telegraf-config
+          configMap:
+            name: {{ include "stolon.fullname" . }}-telegraf

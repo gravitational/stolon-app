@@ -19,11 +19,13 @@ package main
 import (
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"text/tabwriter"
 	"time"
 
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/cluster"
+	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/defaults"
 
 	"github.com/gravitational/stolon/common"
 	"github.com/gravitational/trace"
@@ -39,13 +41,17 @@ var (
 		RunE:         status,
 	}
 	shortOutput bool
+	// lagThreshold is the threshold for the lag between master and standby
+	// reaching which cluster status will be considered as failed
+	lagThreshold uint64
 )
 
 func init() {
 	const defaultShortOutput = false
 
 	stolonctlCmd.AddCommand(statusCmd)
-	statusCmd.PersistentFlags().BoolVarP(&shortOutput, "short", "s", defaultShortOutput, "Output only overall cluster status and reason if unhealthy")
+	statusCmd.PersistentFlags().BoolVarP(&shortOutput, "short", "s", defaultShortOutput, "Output only overall cluster status and reason if unhealthy.")
+	statusCmd.PersistentFlags().Uint64Var(&lagThreshold, "lag-threshold", defaults.LagThreshold, "Threshold for lag between master node and standby.")
 }
 
 func status(ccmd *cobra.Command, args []string) error {
@@ -225,14 +231,8 @@ func collectMetricsFromStatus(status *cluster.Status) (result statusMetrics) {
 				// count amount of running standby nodes
 				result.runningStandbys++
 				if masterID != "" {
-					if status.ClusterData.KeepersState[masterID].PGState.XLogPos > status.ClusterData.KeepersState[keeperID].PGState.XLogPos {
-						if status.ClusterData.KeepersState[masterID].PGState.XLogPos-status.ClusterData.KeepersState[keeperID].PGState.XLogPos > 0 {
-							result.replicationLag = true
-						}
-					} else {
-						if status.ClusterData.KeepersState[keeperID].PGState.XLogPos-status.ClusterData.KeepersState[masterID].PGState.XLogPos > 0 {
-							result.replicationLag = true
-						}
+					if math.Abs(float64(status.ClusterData.KeepersState[masterID].PGState.XLogPos-status.ClusterData.KeepersState[keeperID].PGState.XLogPos)) > float64(lagThreshold) {
+						result.replicationLag = true
 					}
 				}
 			}

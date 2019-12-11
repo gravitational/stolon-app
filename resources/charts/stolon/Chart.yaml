@@ -1,0 +1,8 @@
+apiVersion: v1
+description: Stolon - PostgreSQL cloud native High Availability.
+engine: gotpl
+home: https://github.com/sorintlab/stolon
+name: stolon
+sources:
+  - https://github.com/sorintlab/stolon
+version: 0.1.0

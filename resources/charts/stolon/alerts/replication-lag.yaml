@@ -1,0 +1,34 @@
+---
+version: v2
+kind: alert
+metadata:
+  name: stolon-replication-lag
+spec:
+  formula: |
+    var period = 30m
+    var every = 5m
+    var critLag = 16777216
+    var critReset = 0
+    var pg_replication_lag = stream
+        |from()
+            .measurement('pg_postgresql')
+            .groupBy('client_addr')
+        |where(lambda: "active" )
+        |window()
+            .period(period)
+            .every(every)
+
+    var trigger_high_lag = pg_replication_lag
+       |alert()
+           .message('{{ .Level }} / postgresql: replication lag is high for the standby {{ .Tags "client_addr" }}')
+           .crit(lambda: int("ret_bytes") > critLag)
+           .critReset(lambda: int("ret_bytes") == critReset)
+           .stateChangesOnly(1h)
+           .details('''
+    <b>{{ .Message }}</b>
+    <p>Level: {{ .Level }}</p>
+    <p>Replication for standby {{ .Tags "client_addr" }}: {{ index .Fields "ret_bytes" }} bytes</p>
+    ''')
+           .email()
+           .log('/var/lib/kapacitor/logs/postgresql_high_lag.log')
+           .mode(0644)

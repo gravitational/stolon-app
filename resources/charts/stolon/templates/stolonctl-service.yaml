@@ -1,0 +1,31 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "stolon.fullname" . }}-stolonctl
+  labels:
+    app: {{ template "stolon.name" . }}
+    chart: {{ template "stolon.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  {{- if (or (eq .Values.stolonctl.service.type "ClusterIP") (empty .Values.stolonctl.service.type)) }}
+  type: ClusterIP
+  {{- if .Values.stolonctl.service.clusterIP }}
+  clusterIP: {{ .Values.stolonctl.service.clusterIP }}
+  {{- end }}
+  {{- else if eq .Values.stolonctl.service.type "LoadBalancer" }}
+  type: LoadBalancer
+  loadBalancerIP: {{ .Values.stolonctl.service.loadBalancerIP }}
+  {{- else }}
+  type: {{ .Values.stolonctl.service.type }}
+  {{- end }}
+  ports:
+  {{- range $key, $value := .Values.stolonctl.service.ports }}
+    - name: {{ $key }}
+      {{ toYaml $value | nindent 6 }}
+  {{- end }}
+  selector:
+    app: {{ template "stolon.name" . }}
+    release: {{ .Release.Name }}
+    component: stolonctl
