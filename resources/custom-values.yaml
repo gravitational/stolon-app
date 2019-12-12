@@ -16,6 +16,7 @@ store:
   key: /var/state/etcd.key
 
 clusterSpec:
+  request_timeout: "60s"
   init_with_multiple_keepers: true
   max_standbys_per_sender: 5
   max_replication_lag_bytes: 16777216
