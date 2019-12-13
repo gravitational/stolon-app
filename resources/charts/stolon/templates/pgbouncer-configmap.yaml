@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "stolon.fullname" . }}-pgbouncer
+  labels:
+    app: {{ include "stolon.name" . }}
+    chart: {{ include "stolon.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+data:
+  pgbouncer.ini: |
+    [databases]
+    * = host=PG_SERVICE port=PG_PORT auth_user=stolon
+
+    [pgbouncer]
+    user = stolon
+    listen_port = 6432
+    listen_addr = *
+    auth_type = md5
+    auth_file = /home/stolon/pgbouncer/users.txt
+    auth_query = SELECT * from public.user_lookup($1)
+    pidfile = /tmp/pgbouncer.pid
+    unix_socket_dir = /tmp
+    logfile = /dev/stdout
+    admin_users = stolon
+    stats_users = stolon
+    default_pool_size = DEFAULT_POOL_SIZE
+    max_client_conn = MAX_CLIENT_CONN
+    max_db_connections = MAX_DB_CONNECTIONS
+    min_pool_size = MIN_POOL_SIZE
+    pool_mode = POOL_MODE
+    reserve_pool_size = RESERVE_POOL_SIZE
+    reserve_pool_timeout = RESERVE_POOL_TIMEOUT
+    query_timeout = QUERY_TIMEOUT
+    ignore_startup_parameters = IGNORE_STARTUP_PARAMETERS
+    server_round_robin = 1
+    client_tls_sslmode = CLIENT_TLS_SSLMODE
+    client_tls_key_file = CLIENT_TLS_KEY_FILE
+    client_tls_cert_file = CLIENT_TLS_CERT_FILE
+    client_tls_ca_file = CLIENT_TLS_CA_FILE
+    client_tls_protocols = CLIENT_TLS_PROTOCOLS
+    server_tls_sslmode = SERVER_TLS_SSLMODE
+    server_tls_ca_file = SERVER_TLS_CA_FILE
+    server_tls_key_file = SERVER_TLS_KEY_FILE
+    server_tls_cert_file = SERVER_TLS_CERT_FILE
+    server_tls_protocols = SERVER_TLS_PROTOCOLS

@@ -70,7 +70,7 @@ func statusHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error(err)
 		w.WriteHeader(http.StatusServiceUnavailable)
-		w.Write([]byte(err.Error()))
+		w.Write([]byte(err.Error())) //nolint:errcheck
 		return
 	}
 
@@ -78,7 +78,7 @@ func statusHandler(w http.ResponseWriter, r *http.Request) {
 	if !isHealthy {
 		log.Errorf("Cluster is unhealthy. Reason: %s", reason)
 		w.WriteHeader(http.StatusServiceUnavailable)
-		w.Write([]byte(reason))
+		w.Write([]byte(reason)) //nolint:errcheck
 		return
 	}
 

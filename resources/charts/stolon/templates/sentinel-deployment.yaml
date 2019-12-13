@@ -1,0 +1,112 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "stolon.fullname" . }}-sentinel
+  labels:
+    app: {{ template "stolon.name" . }}
+    chart: {{ template "stolon.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    name: stolon-sentinel
+spec:
+  replicas: {{ .Values.sentinel.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "stolon.name" . }}
+      release: {{ .Release.Name }}
+      component: stolon-sentinel
+      name: stolon-sentinel
+  template:
+    metadata:
+      labels:
+        app: {{ template "stolon.name" . }}
+        release: {{ .Release.Name }}
+        component: stolon-sentinel
+        stolon-cluster: {{ template "stolon.fullname" . }}
+        name: stolon-sentinel
+        product: {{ template "stolon.name" . }}
+    spec:
+      serviceAccountName: {{ template "stolon.serviceAccountName" . }}
+      {{- with .Values.sentinel.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        {{- if eq .Values.store.backend "etcd" }}
+        - name: etcd
+          image: "{{ .Values.registry }}{{ .Values.etcdImage.repository }}:{{ .Values.etcdImage.tag }}"
+          imagePullPolicy: {{ .Values.etcdImage.pullPolicy }}
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: ETCD_ENDPOINTS
+              value: "$(NODE_NAME):2379"
+            - name: ETCD_LISTEN_ADDR
+              value: "127.0.0.1:2379"
+            {{- if not (empty .Values.store.caFile) }}
+            - name: ETCD_TRUSTED_CA_FILE
+              value: {{ .Values.store.caFile | quote }}
+            {{- end }}
+          {{- with .Values.sentinel.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        {{- end }}
+        - name: sentinel
+          image: "{{ .Values.registry }}{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: SENTINEL
+              value: "true"
+            - name: STSENTINEL_CLUSTER_NAME
+              value: {{ template "stolon.clusterName" . }}
+            - name: STSENTINEL_STORE_BACKEND
+              value: {{ .Values.store.backend | quote}}
+            {{- if not (empty .Values.store.endpoints) }}
+            - name: STSENTINEL_STORE_ENDPOINTS
+              value: {{ .Values.store.endpoints | quote}}
+            {{- end }}
+            {{- if not (empty .Values.store.caFile) }}
+            - name: STSENTINEL_STORE_CACERT
+              value: {{ .Values.store.caFile | quote }}
+            {{- end }}
+            {{- if not (empty .Values.store.certFile) }}
+            - name: STSENTINEL_STORE_CERT
+              value: {{ .Values.store.certFile | quote }}
+            {{- end }}
+            {{- if not (empty .Values.store.key) }}
+            - name: STSENTINEL_STORE_KEY
+              value: {{ .Values.store.key | quote }}
+            {{- end }}
+            - name: STSENTINEL_KEEPER_KUBE_LABEL_SELECTOR
+              value: 'stolon-cluster={{ template "stolon.clusterName" . }},stolon-keeper=yes'
+            - name: STSENTINEL_KUBERNETES_NAMESPACE
+              value: {{ .Release.Namespace | quote }}
+            - name: STSENTINEL_PORT
+              value: {{ .Values.sentinel.containerPort | quote }}
+            - name: STSENTINEL_KEEPER_PORT
+              value: {{ .Values.sentinel.keeperControlPort | quote }}
+            - name: STSENTINEL_INITIAL_CLUSTER_CONFIG
+              value: "{{ .Values.sentinel.configMountPath }}/cluster-config.json"
+            - name: STSENTINEL_DEBUG
+              value: {{ .Values.debug | quote}}
+          ports:
+          {{- range $key, $value := .Values.ports }}
+            - name: {{ $key }}
+              {{- toYaml $value | nindent 14 }}
+          {{- end }}
+          volumeMounts:
+            - name: cluster-config
+              mountPath: {{ .Values.sentinel.configMountPath }}
+          {{- with .Values.sentinel.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: cluster-config
+          configMap:
+            name: {{ include "stolon.fullname" . }}-cluster-config
+      {{- with .Values.sentinel.volumes }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -24,6 +24,7 @@ export DEPLOY_TO=${DEPLOY_TO:-gce}
 export TAG=stolon-$(git rev-parse --short HEAD)
 export GCL_PROJECT_ID=${GCL_PROJECT_ID:-"kubeadm-167321"}
 export GCE_REGION="northamerica-northeast1,us-west1,us-east1,us-east4,us-central1"
+export GCE_PREEMPTIBLE="false"
 export DOCKER_RUN_FLAGS="--user $(id -u):$(id -g)"
 
 function build_upgrade_step {

@@ -38,7 +38,6 @@ import (
 
 const (
 	pgDumpCommand             = "pg_dumpall"
-	pgRestoreCommand          = "pg_restore"
 	stolonKeeperDaemonset     = "stolon-keeper"
 	stolonSentinelDeployment  = "stolon-sentinel"
 	jobTimeout                = 600 // 10 minutes
@@ -374,7 +373,7 @@ func (u *upgradeControl) rollbackPostgresSchema(ctx context.Context, pgRole, nod
 		postgresRole: pgRole,
 		command:      pgRollback,
 	}
-	jobControl, err := rigging.NewJobControl(rigging.JobConfig{u.generateJob(jobCfg), u.kubeClient.Client})
+	jobControl, err := rigging.NewJobControl(rigging.JobConfig{Job: u.generateJob(jobCfg), Clientset: u.kubeClient.Client})
 	if err != nil {
 		return trace.Wrap(err)
 	}

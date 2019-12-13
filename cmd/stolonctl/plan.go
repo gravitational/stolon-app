@@ -20,6 +20,7 @@ import (
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/cluster"
 
 	"github.com/gravitational/trace"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -39,7 +40,9 @@ func init() {
 	planCmd.Flags().StringVar(&clusterConfig.Upgrade.Changeset, "changeset",
 		"", "Changeset of upgrade")
 
-	bindFlagEnv(planCmd.Flags())
+	if err := bindFlagEnv(planCmd.Flags()); err != nil {
+		log.Warn(trace.DebugReport(err))
+	}
 }
 
 func plan(ccmd *cobra.Command, args []string) error {

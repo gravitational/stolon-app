@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "stolon.fullname" . }}-pgbouncer
+  labels:
+    app: {{ template "stolon.name" . }}
+    chart: {{ template "stolon.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.pgbouncer.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "stolon.name" . }}
+      release: {{ .Release.Name }}
+      component: stolon-pgbouncer
+      name: {{ template "stolon.fullname" . }}-pgbouncer
+  template:
+    metadata:
+      labels:
+        app: {{ template "stolon.name" . }}
+        release: {{ .Release.Name }}
+        component: stolon-pgbouncer
+        stolon-cluster: {{ template "stolon.fullname" . }}
+        name: {{ template "stolon.fullname" . }}-pgbouncer
+        product: {{ template "stolon.name" . }}
+    spec:
+      serviceAccountName: {{ template "stolon.serviceAccountName" . }}
+      {{- with .Values.pgbouncer.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: fix-secrets
+          image: "{{ .Values.registry }}{{ .Values.pgbouncerImage.repository }}:{{ .Values.pgbouncerImage.tag }}"
+          imagePullPolicy: {{ .Values.pgbouncerImage.pullPolicy }}
+          command: ["/usr/bin/dumb-init", "--", "/usr/local/bin/init-container.sh"]
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - name: cluster-ca
+              mountPath: /etc/secrets/cluster-ca
+            - name: cluster-default
+              mountPath: /etc/secrets/cluster-default
+            - name: stolon-secrets
+              mountPath: /home/stolon/secrets
+      containers:
+        - name: pgbouncer
+          image: "{{ .Values.registry }}{{ .Values.pgbouncerImage.repository }}:{{ .Values.pgbouncerImage.tag }}"
+          imagePullPolicy: {{ .Values.pgbouncerImage.pullPolicy }}
+          args: ["pgbouncer"]
+          env:
+            - name: PG_SERVICE
+              value: {{ template "stolon.fullname" . }}-postgres.default.svc
+            - name: PG_USERNAME
+              value: {{ .Values.superuser.username | quote }}
+            - name: PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                secretKeyRef:
+                  {{- if .Values.existingSecret }}
+                  name: {{ .Values.existingSecret | quote }}
+                  {{- else }}
+                  name: {{ template "stolon.fullname" . }}
+                  {{- end }}
+                  key: "password"
+            - name: MAX_CLIENT_CONN
+              value: {{ .Values.pgbouncerConfig.maxClientConnections | quote }}
+            - name: SERVER_TLS_SSLMODE
+              value: {{ .Values.pgbouncerConfig.serverTLSMode | quote }}
+            - name: SERVER_TLS_CERT_FILE
+              value: {{ .Values.pgbouncerConfig.serverTLSCertFile | quote }}
+            - name: SERVER_TLS_KEY_FILE
+              value: {{ .Values.pgbouncerConfig.serverTLSKeyFile | quote }}
+          volumeMounts:
+            - name: pgbouncer-config
+              mountPath: /etc/pgbouncer
+            - name: stolon-secrets
+              mountPath: /home/stolon/secrets
+      volumes:
+        - name: stolon-secrets
+          emptyDir: {}
+        - name: cluster-ca
+          secret:
+            secretName: cluster-ca
+        - name: cluster-default
+          secret:
+            secretName: cluster-default-ssl
+        - name: pgbouncer-config
+          configMap:
+            name: {{ include "stolon.fullname" . }}-pgbouncer

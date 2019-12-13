@@ -59,12 +59,12 @@ function fill_config_file() {
     sed -i "s/PG_SERVICE/${PG_SERVICE}/g" ${CONF_DIR?}/pgbouncer.ini
     sed -i "s/CLIENT_TLS_SSLMODE/${CLIENT_TLS_SSLMODE:-require}/g" ${CONF_DIR?}/pgbouncer.ini
     sed -i "s#CLIENT_TLS_KEY_FILE#${CLIENT_TLS_KEY_FILE:-/home/stolon/secrets/cluster-default/default-server-key.pem}#g" ${CONF_DIR?}/pgbouncer.ini
-    sed -i "s#CLIENT_TLS_CERT_FILE#${CLIENT_TLS_CERT_FILE:-/home/stolon/secrets/cluster-default/default-server.pem}#g" ${CONF_DIR?}/pgbouncer.ini
+    sed -i "s#CLIENT_TLS_CERT_FILE#${CLIENT_TLS_CERT_FILE:-/home/stolon/secrets/cluster-default/default-server-with-chain.pem}#g" ${CONF_DIR?}/pgbouncer.ini
     sed -i "s#CLIENT_TLS_CA_FILE#${CLIENT_TLS_CA_FILE:-/home/stolon/secrets/cluster-ca/ca.pem}#g" ${CONF_DIR?}/pgbouncer.ini
     sed -i "s/CLIENT_TLS_PROTOCOLS/${CLIENT_TLS_PROTOCOLS:-secure}/g" ${CONF_DIR?}/pgbouncer.ini
     sed -i "s/SERVER_TLS_SSLMODE/${SERVER_TLS_SSLMODE:-require}/g" ${CONF_DIR?}/pgbouncer.ini
     sed -i "s#SERVER_TLS_KEY_FILE#${SERVER_TLS_KEY_FILE:-/home/stolon/secrets/cluster-default/default-server-key.pem}#g" ${CONF_DIR?}/pgbouncer.ini
-    sed -i "s#SERVER_TLS_CERT_FILE#${SERVER_TLS_CERT_FILE:-/home/stolon/secrets/cluster-default/default-server.pem}#g" ${CONF_DIR?}/pgbouncer.ini
+    sed -i "s#SERVER_TLS_CERT_FILE#${SERVER_TLS_CERT_FILE:-/home/stolon/secrets/cluster-default/default-server-with-chain.pem}#g" ${CONF_DIR?}/pgbouncer.ini
     sed -i "s#SERVER_TLS_CA_FILE#${SERVER_TLS_CA_FILE:-/home/stolon/secrets/cluster-ca/ca.pem}#g" ${CONF_DIR?}/pgbouncer.ini
     sed -i "s/SERVER_TLS_PROTOCOLS/${SERVER_TLS_PROTOCOLS:-secure}/g" ${CONF_DIR?}/pgbouncer.ini
 }

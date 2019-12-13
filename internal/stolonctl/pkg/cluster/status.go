@@ -30,8 +30,6 @@ import (
 	"k8s.io/api/core/v1"
 )
 
-const stolonKeeperMaster = "master"
-
 // getPods returns list of keeper and sentinel pods
 func getPods(config Config) ([]v1.Pod, error) {
 	client, err := kubernetes.NewClient(config.KubeConfig)

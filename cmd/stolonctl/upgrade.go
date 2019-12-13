@@ -21,6 +21,7 @@ import (
 	"github.com/gravitational/stolon-app/internal/stolonctl/pkg/defaults"
 
 	"github.com/gravitational/trace"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -57,7 +58,9 @@ func init() {
 	upgradeCmd.Flags().BoolVar(&clusterConfig.Upgrade.Force, "force",
 		false, "Force allows to force phase execution")
 
-	bindFlagEnv(upgradeCmd.Flags())
+	if err := bindFlagEnv(upgradeCmd.Flags()); err != nil {
+		log.Warn(trace.DebugReport(err))
+	}
 }
 
 func upgrade(ccmd *cobra.Command, args []string) error {
