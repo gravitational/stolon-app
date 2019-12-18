@@ -4,6 +4,9 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
+kubectl create /var/lib/gravity/resources/preUpdate.yaml
+kubectl wait --for-condition=complete --timeout=120s job/stolon-app-pre-update 
+
 # check for existence of stolon helm release
 if [[ $(helm list stolon | wc -l) -eq 0 ]]
 then

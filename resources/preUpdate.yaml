@@ -1,0 +1,39 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: stolon-app-pre-update
+  namespace: default
+spec:
+  parallelism: 1
+  completions: 1
+  template:
+    metadata:
+      name: stolon-app-pre-update
+    spec:
+      restartPolicy: OnFailure
+      hostNetwork: true
+      containers:
+        - name: pre-update
+          image: stolonctl:latest
+          command: ["/usr/bin/stolonctl", "status", "--short"]
+          env:
+            - name: ETCD_CACERT
+              value: "/etc/etcd/secrets/root.cert"
+            - name: ETCD_CERT
+              value: "/etc/etcd/secrets/etcd.cert"
+            - name: ETCD_KEY
+              value: "/etc/etcd/secrets/etcd.key"
+            - name: ETCD_ENDPOINTS
+              value: "127.0.0.1:2379"
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - name: etcd-secrets
+              mountPath: /etc/etcd/secrets
+      volumes:
+        - name: etcd-secrets
+          hostPath:
+            path: /var/state
