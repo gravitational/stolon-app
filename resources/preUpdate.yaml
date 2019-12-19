@@ -11,8 +11,9 @@ spec:
     metadata:
       name: stolon-app-pre-update
     spec:
+      nodeSelector:
+        gravitational.io/k8s-role: master
       restartPolicy: OnFailure
-      hostNetwork: true
       containers:
         - name: pre-update
           image: stolonctl:latest
@@ -24,12 +25,12 @@ spec:
               value: "/etc/etcd/secrets/etcd.cert"
             - name: ETCD_KEY
               value: "/etc/etcd/secrets/etcd.key"
-            - name: ETCD_ENDPOINTS
-              value: "127.0.0.1:2379"
             - name: NODE_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
+            - name: ETCD_ENDPOINTS
+              value: "$(NODE_NAME):2379"
           volumeMounts:
             - name: etcd-secrets
               mountPath: /etc/etcd/secrets
