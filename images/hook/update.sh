@@ -6,7 +6,7 @@ set -o pipefail
 
 kubectl delete -f /var/lib/gravity/resources/preUpdate.yaml --ignore-not-found
 kubectl create -f /var/lib/gravity/resources/preUpdate.yaml
-kubectl wait --for-condition=complete --timeout=120s job/stolon-app-pre-update 
+kubectl wait --for=condition=complete --timeout=120s job/stolon-app-pre-update 
 
 # check for existence of stolon helm release
 if [[ $(helm list stolon | wc -l) -eq 0 ]]
