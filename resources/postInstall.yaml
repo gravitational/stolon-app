@@ -12,7 +12,6 @@ spec:
       name: stolon-app-post-install
     spec:
       restartPolicy: OnFailure
-      hostNetwork: true
       containers:
         - name: post-install
           image: stolonctl:latest
@@ -24,12 +23,12 @@ spec:
               value: "/etc/etcd/secrets/etcd.cert"
             - name: ETCD_KEY
               value: "/etc/etcd/secrets/etcd.key"
-            - name: ETCD_ENDPOINTS
-              value: "127.0.0.1:2379"
             - name: NODE_NAME
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
+            - name: ETCD_ENDPOINTS
+              value: "$(NODE_NAME):2379"
           volumeMounts:
             - name: etcd-secrets
               mountPath: /etc/etcd/secrets
