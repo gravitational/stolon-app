@@ -78,4 +78,3 @@ publish-stolonctl: stolonctl
 clean:
 	-rm -rf $(STOLONBOOT_BINS)
 	-rm -rf $(STOLONCTL_BINS)
-	-rm -rf $(STOLON_BINS)
