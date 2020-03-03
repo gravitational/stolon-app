@@ -18,10 +18,5 @@ spec:
         - name: install
           image: quay.io/gravitational/debian-tall:buster
           command:
-            - /usr/local/bin/helm
-            - install
-            - /var/lib/gravity/resources/charts/stolon
-            - --values
-            - /var/lib/gravity/resources/custom-values.yaml
-            - --name
-            - stolon
+            - /bin/sh
+            - /var/lib/gravity/resources/install.sh
