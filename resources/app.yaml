@@ -129,7 +129,6 @@ hooks:
           metadata:
             name: stolon-app-update
           spec:
-            hostNetwork: true
             restartPolicy: Never
             containers:
               - name: hook
