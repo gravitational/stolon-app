@@ -45,7 +45,7 @@ fi
 set +e
 helm upgrade --install stolon /var/lib/gravity/resources/charts/stolon \
      --values /var/lib/gravity/resources/custom-values.yaml \
-     --set existingSecret=stolon
+     --set existingSecret=stolon --set runAsUser=${GRAVITY_SERVICE_USER}
 
 set -e
 kubectl wait --for=condition=complete --timeout=5m job/stolon-postgres-hardening

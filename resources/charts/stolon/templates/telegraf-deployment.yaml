@@ -27,6 +27,8 @@ spec:
         product: {{ template "stolon.name" . }}
     spec:
       serviceAccountName: {{ template "stolon.serviceAccountName" . }}
+      securityContext:
+        runAsUser:  {{ .Values.runAsUser }}
       containers:
       - name: utils
         image: "{{ .Values.registry }}{{ .Values.telegrafImage.repository }}:{{ .Values.telegrafImage.tag }}"
