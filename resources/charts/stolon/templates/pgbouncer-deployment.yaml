@@ -26,8 +26,6 @@ spec:
         product: {{ template "stolon.name" . }}
     spec:
       serviceAccountName: {{ template "stolon.serviceAccountName" . }}
-      securityContext:
-        runAsUser:  {{ .Values.runAsUser }}
       {{- with .Values.pgbouncer.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}

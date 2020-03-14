@@ -12,6 +12,8 @@ spec:
       name: stolon-app-post-install
     spec:
       restartPolicy: OnFailure
+      securityContext:
+        runAsUser: 0
       containers:
         - name: post-install
           image: stolonctl:latest

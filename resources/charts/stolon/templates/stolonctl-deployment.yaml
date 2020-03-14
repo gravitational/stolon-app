@@ -27,7 +27,7 @@ spec:
     spec:
       serviceAccountName: {{ template "stolon.serviceAccountName" . }}
       securityContext:
-        runAsUser:  {{ .Values.runAsUser }}
+        runAsUser: 0
       nodeSelector:
         gravitational.io/k8s-role: master
       containers:

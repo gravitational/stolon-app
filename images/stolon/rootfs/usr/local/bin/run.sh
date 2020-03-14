@@ -45,15 +45,6 @@ function _create_pg_pass() {
 function launch_keeper() {
 	announce_step 'Launching stolon keeper'
 
-	if [[ ! -e /stolon-data ]]; then
-		echo "stolon data doesn't exist, data won't be persistent!"
-		mkdir /stolon-data
-	fi
-	if [[ ! -f /stolon-data/dummy.file ]]; then
-		fallocate -l 300MB /stolon-data/dummy.file
-	fi
-	chown -R stolon:stolon /stolon-data
-
 	export STKEEPER_LISTEN_ADDRESS=$POD_IP
 	export STKEEPER_PG_LISTEN_ADDRESS=$POD_IP
 

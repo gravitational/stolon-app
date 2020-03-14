@@ -30,8 +30,6 @@ spec:
         name: stolon-keeper
     spec:
       serviceAccountName: {{ template "stolon.serviceAccountName" . }}
-      securityContext:
-        runAsUser:  {{ .Values.runAsUser }}
       {{- with .Values.keeper.nodeSelector }}
       nodeSelector:
         {{ toYaml . | nindent 8 }}

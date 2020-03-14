@@ -10,15 +10,15 @@ set -o errexit
 if [ -d /etc/secrets/cluster-default ]
 then
     cp -R /etc/secrets/cluster-default /home/stolon/secrets/cluster-default
-    chown -R stolon /home/stolon/secrets/cluster-default
-	chmod 0600 /home/stolon/secrets/cluster-default/default-server-key.pem
+    chown -R stolon:stolon /home/stolon/secrets/cluster-default
+    chmod 0600 /home/stolon/secrets/cluster-default/default-server-key.pem
 fi
 
 if [ -d /etc/secrets/cluster-ca ]
 then
     cp -LR /etc/secrets/cluster-ca /home/stolon/secrets/cluster-ca
-    chown -R stolon /home/stolon/secrets/cluster-ca
-	chmod 0600 /home/stolon/secrets/cluster-ca/ca.pem
+    chown -R stolon:stolon /home/stolon/secrets/cluster-ca
+	  chmod 0600 /home/stolon/secrets/cluster-ca/ca.pem
 fi
 
 # Generate client pgbouncer certificate for connection to PostgreSQL
