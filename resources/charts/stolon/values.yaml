@@ -117,10 +117,17 @@ sentinel:
   configMountPath: /etc/stolon/
   replicaCount: 2
   affinity: {}
-  volumeMounts:
+  initVolumeMounts:
+    - name: stolon-secrets
+      mountPath: /home/stolon/secrets
     - name: etcd-secrets
       mountPath: /var/state
+  volumeMounts:
+    - name: stolon-secrets
+      mountPath: /home/stolon/secrets
   volumes:
+    - name: stolon-secrets
+      emptyDir: {}
     - name: etcd-secrets
       hostPath:
         path: /var/state
@@ -132,13 +139,13 @@ keeper:
     - name: data
       mountPath: /stolon-data
   etcdVolumeMounts:
-    - name: etcd-secrets
-      mountPath: /var/state
+    - name: stolon-secrets
+      mountPath: /home/stolon/secrets
   volumeMounts:
     - name: data
       mountPath: /stolon-data
-    - name: etcd-secrets
-      mountPath: /var/state
+    - name: stolon-secrets
+      mountPath: /home/stolon/secrets
   volumes:
     - name: etcd-secrets
       hostPath:

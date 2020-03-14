@@ -31,6 +31,17 @@ spec:
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      initContainers:
+        - name: fix-permissions
+          image: "{{ .Values.registry }}{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/usr/bin/dumb-init", "--", "/usr/local/bin/init-container.sh"]
+          securityContext:
+            runAsUser: 0
+          {{- with .Values.sentinel.initVolumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
       containers:
         {{- if eq .Values.store.backend "etcd" }}
         - name: etcd

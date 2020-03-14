@@ -11,6 +11,8 @@ spec:
     metadata:
       name: stolon-app-pre-update
     spec:
+      securitContext:
+        runAsUser: 0
       nodeSelector:
         gravitational.io/k8s-role: master
       restartPolicy: OnFailure

@@ -113,6 +113,8 @@ hooks:
     job: file://install.yaml
   postInstall:
     job: file://postInstall.yaml
+  preUpdate:
+    job: file://preUpdateHook.yaml
   update:
     job: |
       apiVersion: batch/v1
@@ -127,7 +129,6 @@ hooks:
           metadata:
             name: stolon-app-update
           spec:
-            hostNetwork: true
             restartPolicy: Never
             containers:
               - name: hook

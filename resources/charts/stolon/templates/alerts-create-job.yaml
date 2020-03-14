@@ -19,6 +19,8 @@ spec:
       nodeSelector:
         gravitational.io/k8s-role: master
       restartPolicy: OnFailure
+      securityContext:
+        runAsUser: 0
       serviceAccountName: {{ template "stolon.serviceAccountName" . }}
       containers:
         - name: copy
