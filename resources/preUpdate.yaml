@@ -11,7 +11,7 @@ spec:
     metadata:
       name: stolon-app-pre-update
     spec:
-      securitContext:
+      securityContext:
         runAsUser: 0
       nodeSelector:
         gravitational.io/k8s-role: master

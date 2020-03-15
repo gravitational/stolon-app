@@ -64,7 +64,7 @@ spec:
                   key: "password"
           volumeMounts:
             - name: etcd-secrets
-              mountPath: /var/state
+              mountPath: /home/stolon/secrets/etcd
       volumes:
         - name: etcd-secrets
           hostPath:
