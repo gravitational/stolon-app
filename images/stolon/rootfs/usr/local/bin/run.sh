@@ -49,6 +49,12 @@ function launch_keeper() {
 	export STKEEPER_PG_LISTEN_ADDRESS=$POD_IP
 
 	stolon-keeper --data-dir /stolon-data
+
+	if [ $? -eq 0 ] ; then
+		echo 'Stolon stopped successfully'
+	else
+		echo 'Stolon had some issues while shutting down'
+	fi
 }
 
 function launch_sentinel() {
