@@ -51,9 +51,9 @@ function launch_keeper() {
 	stolon-keeper --data-dir /stolon-data
 
 	if [ $? -eq 0 ] ; then
-		echo 'Stolon stopped successfully'
+		announce_step 'Stolon stopped successfully'
 	else
-		echo 'Stolon had some issues while shutting down'
+		announce_step 'Stolon had some issues while shutting down'
 	fi
 }
 
