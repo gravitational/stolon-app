@@ -5,7 +5,7 @@ OPS_URL ?= https://opscenter.localhost.localdomain:33009
 TELE ?= $(shell which tele)
 GRAVITY ?= $(shell which gravity)
 RUNTIME_VERSION ?= $(shell $(TELE) version | awk '/^[vV]ersion:/ {print $$2}')
-INTERMEDIATE_RUNTIME_VERSION ?= 5.2.15
+INTERMEDIATE_RUNTIME_VERSION ?=
 GRAVITY_VERSION ?= 5.5.21
 CLUSTER_SSL_APP_VERSION ?= "0.0.0+latest"
 
@@ -14,6 +14,11 @@ DOCKERFLAGS=--rm=true -v $(PWD):$(SRCDIR) -w $(SRCDIR)
 BUILDBOX=stolon-app-buildbox:latest
 
 EXTRA_GRAVITY_OPTIONS ?=
+TELE_BUILD_EXTRA_OPTIONS ?=
+# if variable is not empty add an extra parameter to tele build
+ifneq ($(INTERMEDIATE_RUNTIME_VERSION),)
+	TELE_BUILD_EXTRA_OPTIONS +=  --upgrade-via=$(INTERMEDIATE_RUNTIME_VERSION)
+endif
 
 CONTAINERS := stolon-bootstrap:$(VERSION) \
 			  stolon-uninstall:$(VERSION) \
@@ -52,7 +57,7 @@ TELE_BUILD_OPTIONS := --insecure \
 		--name=$(NAME) \
 		--version=$(VERSION) \
 		--glob=**/*.yaml \
-		--upgrade-via=$(INTERMEDIATE_RUNTIME_VERSION) \
+		$(TELE_BUILD_EXTRA_OPTIONS) \
 		$(IMPORT_IMAGE_OPTIONS)
 
 BUILD_DIR := build
