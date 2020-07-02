@@ -22,7 +22,7 @@ spec:
         app: {{ template "stolon.name" . }}
         release: {{ .Release.Name }}
         component: stolon-sentinel
-        stolon-cluster: {{ template "stolon.fullname" . }}
+        stolon-cluster: {{ template "stolon.clusterName" . }}
         name: stolon-sentinel
         product: {{ template "stolon.name" . }}
     spec:

@@ -20,9 +20,9 @@ const (
 	// Namespace defines Kubernetes namespace for stolon application
 	Namespace = "default"
 	// KeepersPodSelector defines label selector to select keeper pods
-	KeepersPodSelector = "name=stolon-keeper"
+	KeepersPodSelector = "name=stolon-keeper,stolon-cluster=kube-stolon"
 	// SentinelsPodSelector defines label selector to select sentinel pods
-	SentinelsPodSelector = "name=stolon-sentinel"
+	SentinelsPodSelector = "name=stolon-sentinel,stolon-cluster=kube-stolon"
 
 	// EtcdEndpoints defines endpoints for connecting to etcd
 	EtcdEndpoints = "127.0.0.1:2379"

@@ -85,9 +85,6 @@ keeper:
     - name: etcd-secrets
       hostPath:
         path: /var/state
-    - name: data
-      hostPath:
-        path: /var/lib/data/stolon
     - name: cluster-ca
       secret:
         secretName: cluster-ca

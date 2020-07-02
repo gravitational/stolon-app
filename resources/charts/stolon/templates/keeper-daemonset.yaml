@@ -203,7 +203,10 @@ spec:
           volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-      {{- with .Values.keeper.volumes }}
       volumes:
+      {{- with .Values.keeper.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
+        - name: data
+          hostPath:
+            path: {{ template "stolon.keeperDataPath" . }}
