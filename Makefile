@@ -40,7 +40,6 @@ IMPORT_IMAGE_OPTIONS := --set-image=stolon-bootstrap:$(VERSION) \
 
 IMPORT_OPTIONS := --vendor \
 		--ops-url=$(OPS_URL) \
-		--insecure \
 		--repository=$(REPOSITORY) \
 		--name=$(NAME) \
 		--version=$(VERSION) \
@@ -52,8 +51,7 @@ IMPORT_OPTIONS := --vendor \
 		--registry-url=leader.telekube.local:5000 \
 		$(IMPORT_IMAGE_OPTIONS)
 
-TELE_BUILD_OPTIONS := --insecure \
-		--repository=$(OPS_URL) \
+TELE_BUILD_OPTIONS := --repository=$(OPS_URL) \
 		--name=$(NAME) \
 		--version=$(VERSION) \
 		--glob=**/*.yaml \
@@ -89,7 +87,7 @@ import: images
 	sed -i "s#gravitational.io/cluster-ssl-app:0.0.0+latest#gravitational.io/cluster-ssl-app:$(CLUSTER_SSL_APP_VERSION)#" resources/app.yaml
 	sed -i "s/tag: latest/tag: $(VERSION)/g" resources/charts/stolon/values.yaml
 	sed -i "s/0.1.0/$(VERSION)/g" resources/charts/stolon/Chart.yaml
-	-$(GRAVITY) app delete --ops-url=$(OPS_URL) $(REPOSITORY)/$(NAME):$(VERSION) --force --insecure $(EXTRA_GRAVITY_OPTIONS)
+	-$(GRAVITY) app delete --ops-url=$(OPS_URL) $(REPOSITORY)/$(NAME):$(VERSION) --force $(EXTRA_GRAVITY_OPTIONS)
 	$(GRAVITY) app import $(IMPORT_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) .
 	sed -i "s#gravitational.io/cluster-ssl-app:$(CLUSTER_SSL_APP_VERSION)#gravitational.io/cluster-ssl-app:0.0.0+latest#" resources/app.yaml
 	sed -i "s/tag: $(VERSION)/tag: latest/g" resources/charts/stolon/values.yaml
