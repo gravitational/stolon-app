@@ -145,13 +145,13 @@ node {
       }
     }
 
-    stage('import') {
+    stage('push') {
       if (params.IMPORT_APP) {
         withCredentials([
           string(credentialsId: params.OPS_CENTER_CREDENTIALS, variable: 'API_KEY'),
         ]) {
           withEnv(MAKE_ENV) {
-            sh 'make import'
+            sh 'make push'
           }
         }
       } else {

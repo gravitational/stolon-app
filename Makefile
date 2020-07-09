@@ -145,3 +145,7 @@ fix-logrus:
 .PHONY: lint
 lint: buildbox
 	docker run $(DOCKERFLAGS) $(BUILDBOX) golangci-lint run --skip-dirs=vendor ./...
+
+.PHONY: push
+push:
+	$(TELE) push -f $(EXTRA_GRAVITY_OPTIONS) $(BUILD_DIR)/installer.tar
