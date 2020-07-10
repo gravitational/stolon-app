@@ -22,7 +22,7 @@ spec:
         app: {{ template "stolon.name" . }}
         release: {{ .Release.Name }}
         component: stolon-telegraf
-        stolon-cluster: {{ template "stolon.fullname" . }}
+        stolon-cluster: {{ template "stolon.clusterName" . }}
         name: {{ template "stolon.fullname" . }}-telegraf
         product: {{ template "stolon.name" . }}
     spec:
@@ -31,7 +31,7 @@ spec:
         runAsUser:  {{ .Values.runAsUser }}
       containers:
       - name: utils
-        image: "{{ .Values.registry }}{{ .Values.telegrafImage.repository }}:{{ .Values.telegrafImage.tag }}"
+        image: "{{ .Values.registry }}{{ .Values.telegrafImage.repository }}:{{ .Values.tag }}"
         imagePullPolicy: {{ .Values.telegrafImage.pullPolicy }}
         env:
           - name: STOLON_HOST

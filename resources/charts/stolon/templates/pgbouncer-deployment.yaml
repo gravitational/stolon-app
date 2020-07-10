@@ -21,7 +21,7 @@ spec:
         app: {{ template "stolon.name" . }}
         release: {{ .Release.Name }}
         component: stolon-pgbouncer
-        stolon-cluster: {{ template "stolon.fullname" . }}
+        stolon-cluster: {{ template "stolon.clusterName" . }}
         name: {{ template "stolon.fullname" . }}-pgbouncer
         product: {{ template "stolon.name" . }}
     spec:
@@ -32,7 +32,7 @@ spec:
       {{- end }}
       initContainers:
         - name: fix-secrets
-          image: "{{ .Values.registry }}{{ .Values.pgbouncerImage.repository }}:{{ .Values.pgbouncerImage.tag }}"
+          image: "{{ .Values.registry }}{{ .Values.pgbouncerImage.repository }}:{{ .Values.tag }}"
           imagePullPolicy: {{ .Values.pgbouncerImage.pullPolicy }}
           command: ["/usr/bin/dumb-init", "--", "/usr/local/bin/init-container.sh"]
           securityContext:
@@ -46,7 +46,7 @@ spec:
               mountPath: /home/stolon/secrets
       containers:
         - name: pgbouncer
-          image: "{{ .Values.registry }}{{ .Values.pgbouncerImage.repository }}:{{ .Values.pgbouncerImage.tag }}"
+          image: "{{ .Values.registry }}{{ .Values.pgbouncerImage.repository }}:{{ .Values.tag }}"
           imagePullPolicy: {{ .Values.pgbouncerImage.pullPolicy }}
           args: ["pgbouncer"]
           env:

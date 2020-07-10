@@ -37,15 +37,18 @@ var (
 	ctx           context.Context
 
 	envs = map[string]string{
-		"ETCD_CERT":         "etcd-cert-file",
-		"ETCD_KEY":          "etcd-key-file",
-		"ETCD_CACERT":       "etcd-ca-file",
-		"ETCD_ENDPOINTS":    "etcd-endpoints",
-		"POSTGRES_PASSWORD": "postgres-password",
-		"APP_VERSION":       "app-version",
-		"RIG_CHANGESET":     "changeset",
-		"NODE_NAME":         "nodename",
-		"LAG_THRESHOLD":     "lag-threshold",
+		"ETCD_CERT":          "etcd-cert-file",
+		"ETCD_KEY":           "etcd-key-file",
+		"ETCD_CACERT":        "etcd-ca-file",
+		"ETCD_ENDPOINTS":     "etcd-endpoints",
+		"POSTGRES_PASSWORD":  "postgres-password",
+		"APP_VERSION":        "app-version",
+		"RIG_CHANGESET":      "changeset",
+		"NODE_NAME":          "nodename",
+		"LAG_THRESHOLD":      "lag-threshold",
+		"SENTINELS_SELECTOR": "sentinels-selector",
+		"KEEPERS_SELECTOR":   "keepers-selector",
+		"CLUSTER_NAME":       "cluster-name",
 	}
 
 	stolonctlCmd = &cobra.Command{
@@ -70,9 +73,9 @@ func init() {
 	stolonctlCmd.PersistentFlags().StringVarP(&clusterConfig.Namespace, "namespace", "n",
 		defaults.Namespace, "Kubernetes namespace for Stolon application")
 	stolonctlCmd.PersistentFlags().StringVar(&clusterConfig.KeepersPodSelector, "keepers-selector",
-		defaults.KeepersPodSelector, "Label to select keeper pods")
+		defaults.KeepersPodSelector, "Label to select keeper pods(ENV variable 'KEEPERS_SELECTOR')")
 	stolonctlCmd.PersistentFlags().StringVar(&clusterConfig.SentinelsPodSelector, "sentinels-selector",
-		defaults.SentinelsPodSelector, "Label to select sentinel pods")
+		defaults.SentinelsPodSelector, "Label to select sentinel pods(ENV variable 'SENTINELS_SELECTOR')")
 	stolonctlCmd.PersistentFlags().StringVar(&clusterConfig.EtcdEndpoints, "etcd-endpoints",
 		defaults.EtcdEndpoints, "Etcd server endpoints(ENV variable 'ETCD_ENDPOINTS')")
 	stolonctlCmd.PersistentFlags().StringVar(&clusterConfig.EtcdCertFile, "etcd-cert-file", "",

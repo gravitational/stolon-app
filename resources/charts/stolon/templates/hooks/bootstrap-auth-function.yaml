@@ -18,12 +18,13 @@ spec:
     metadata:
       app: {{ template "stolon.fullname" . }}
       release: {{ .Release.Name }}
-      name: bootstrap-auth-function
+      name: {{ template "stolon.fullname" . }}-bootstrap-auth-function
+      stolon-cluster: {{ template "stolon.clusterName" . }}
     spec:
       restartPolicy: OnFailure
       containers:
         - name: bootstrap
-          image: "{{ .Values.registry }}{{ .Values.pgbouncerImage.repository }}:{{ .Values.pgbouncerImage.tag }}"
+          image: "{{ .Values.registry }}{{ .Values.pgbouncerImage.repository }}:{{ .Values.tag }}"
           imagePullPolicy: {{ .Values.pgbouncerImage.pullPolicy }}
           args: ["bootstrap"]
           env:

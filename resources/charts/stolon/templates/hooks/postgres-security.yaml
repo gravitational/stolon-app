@@ -18,12 +18,13 @@ spec:
     metadata:
       app: {{ template "stolon.fullname" . }}
       release: {{ .Release.Name }}
-      name: postgres-hardening
+      name: {{ template "stolon.fullname" . }}-postgres-hardening
+      stolon-cluster: {{ template "stolon.clusterName" . }}
     spec:
       restartPolicy: OnFailure
       containers:
         - name: postgres-hardening
-          image: "{{ .Values.registry }}{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.registry }}{{ .Values.image.repository }}:{{ .Values.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/usr/bin/dumb-init", "--", "/usr/local/bin/stolon-security.sh"]
           env:

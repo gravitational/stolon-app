@@ -15,7 +15,7 @@ spec:
       app: {{ template "stolon.name" . }}
       release: {{ .Release.Name }}
       component: stolon-sentinel
-      name: stolon-sentinel
+      name: {{ template "stolon.fullname" . }}-sentinel
   template:
     metadata:
       labels:
@@ -23,7 +23,7 @@ spec:
         release: {{ .Release.Name }}
         component: stolon-sentinel
         stolon-cluster: {{ template "stolon.clusterName" . }}
-        name: stolon-sentinel
+        name: {{ template "stolon.fullname" . }}-sentinel
         product: {{ template "stolon.name" . }}
     spec:
       serviceAccountName: {{ template "stolon.serviceAccountName" . }}
@@ -33,7 +33,7 @@ spec:
       {{- end }}
       initContainers:
         - name: fix-permissions
-          image: "{{ .Values.registry }}{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.registry }}{{ .Values.image.repository }}:{{ .Values.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/usr/bin/dumb-init", "--", "/usr/local/bin/init-container.sh"]
           securityContext:
@@ -45,7 +45,7 @@ spec:
       containers:
         {{- if eq .Values.store.backend "etcd" }}
         - name: etcd
-          image: "{{ .Values.registry }}{{ .Values.etcdImage.repository }}:{{ .Values.etcdImage.tag }}"
+          image: "{{ .Values.registry }}{{ .Values.etcdImage.repository }}:{{ .Values.tag }}"
           imagePullPolicy: {{ .Values.etcdImage.pullPolicy }}
           env:
             - name: NODE_NAME
@@ -66,7 +66,7 @@ spec:
           {{- end }}
         {{- end }}
         - name: sentinel
-          image: "{{ .Values.registry }}{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.registry }}{{ .Values.image.repository }}:{{ .Values.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: SENTINEL

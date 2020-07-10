@@ -55,6 +55,16 @@ Create chart name and version as used by the chart label.
 {{- if .Values.keeper.dataHostPath -}}{{ .Values.keeper.dataHostPath }}{{- else -}}/var/lib/data/stolon{{- end -}}
 {{- end -}}
 
+{{/* keepers selector */}}
+{{- define "stolon.keepersSelector" -}}
+{{- printf "name=%s-keeper,stolon-cluster=%s" (include "stolon.fullname" .) (include "stolon.clusterName" .) -}}
+{{- end -}}
+
+{{/* sentinels selector */}}
+{{- define "stolon.sentinelsSelector" -}}
+{{- printf "name=%s-sentinel,stolon-cluster=%s" (include "stolon.fullname" .) (include "stolon.clusterName" .) -}}
+{{- end -}}
+
 {{- define "stolon.clusterSpec" -}}
 {{- range $key, $value := .Values.clusterSpec }} {{ $key | quote }}: {{- $tp := typeOf $value }} {{- if eq $tp "string" }} {{ $value | quote }} {{- else if eq $tp "int" }} {{ $value | int64 }} {{- else if eq $tp "float64" }} {{ $value | int64 }} {{- else if eq $tp "[]interface {}" }} {{- $numOut := len $value }} {{- $numOut := sub $numOut 1 }} [{{- range $b, $val := $value }} {{- $i := int64 $b }} {{- if eq $i $numOut }} {{ $val | quote }} {{- else }} {{ $val | quote }}, {{- end }} {{- end }}] {{- else }} {{ $value }} {{- end }}, {{- end }} "pgParameters": {{ toJson .Values.pgParameters }}
 {{- end -}}
