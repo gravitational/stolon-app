@@ -37,6 +37,9 @@ properties([
     string(name: 'ROBOTEST_VERSION',
            defaultValue: 'stable-gce',
            description: 'Robotest tag to use.'),
+    booleanParam(name: 'ROBOTEST_RUN_UPGRADE',
+           defaultValue: false,
+           description: 'Run the upgrade suite as part of robotest')
     string(name: 'OPS_URL',
            defaultValue: 'https://ci-ops.gravitational.io',
            description: 'Ops Center URL to download dependencies from'),
@@ -135,7 +138,8 @@ node {
                   make robotest-run-suite \
                     AWS_KEYPAIR=ops \
                     AWS_REGION=us-east-1 \
-                    ROBOTEST_VERSION=$ROBOTEST_VERSION"""
+                    ROBOTEST_VERSION=$ROBOTEST_VERSION \
+                    RUN_UPGRADE=${params.ROBOTEST_RUN_UPGRADE ? 1 : 0}"""
                 }
             } )
           }
