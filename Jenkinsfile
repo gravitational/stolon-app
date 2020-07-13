@@ -39,7 +39,7 @@ properties([
            description: 'Robotest tag to use.'),
     booleanParam(name: 'ROBOTEST_RUN_UPGRADE',
            defaultValue: false,
-           description: 'Run the upgrade suite as part of robotest')
+           description: 'Run the upgrade suite as part of robotest'),
     string(name: 'OPS_URL',
            defaultValue: 'https://ci-ops.gravitational.io',
            description: 'Ops Center URL to download dependencies from'),
