@@ -7,6 +7,7 @@ readonly TOP_DIR=$(pwd)/../
 declare -A UPGRADE_MAP
 # gravity version -> list of OS releases to exercise on
 UPGRADE_MAP[1.10.59]="redhat:7"
+readonly RUN_UPGRADE=${RUN_UPGRADE:-0}
 
 readonly OPS_APIKEY=${API_KEY:?API key for distribution Ops Center required}
 readonly APP_BUILDDIR=$TOP_DIR/build
@@ -77,7 +78,9 @@ function build_volume_mounts {
 export EXTRA_VOLUME_MOUNTS=$(build_volume_mounts)
 
 suite="$(build_install_suite)"
-suite="$suite $(build_upgrade_suite)"
+if [ "$RUN_UPGRADE" == "1" ]; then
+  suite="$suite $(build_upgrade_suite)"
+fi
 
 echo $suite
 
