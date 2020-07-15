@@ -135,6 +135,8 @@ node {
                   sh """
                   export PATH=\$(pwd)/bin:\${PATH}
                   export EXTRA_GRAVITY_OPTIONS="--state-dir=${TELE_STATE_DIR}"
+                  echo \$(pwd)
+                  cat Makefile
                   make robotest-run-suite \
                     AWS_KEYPAIR=ops \
                     AWS_REGION=us-east-1 \
