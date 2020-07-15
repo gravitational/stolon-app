@@ -122,29 +122,24 @@ node {
     stage('test') {
       if (params.RUN_ROBOTEST == 'run') {
         throttle(['robotest']) {
-          node {
-              parallel (
-              robotest : {
-                withCredentials([
-                  [$class: 'FileBinding', credentialsId:'ROBOTEST_LOG_GOOGLE_APPLICATION_CREDENTIALS', variable: 'GOOGLE_APPLICATION_CREDENTIALS'],
-                  [$class: 'StringBinding', credentialsId: params.OPS_CENTER_CREDENTIALS, variable: 'API_KEY'],
-                  [$class: 'FileBinding', credentialsId:'OPS_SSH_KEY', variable: 'SSH_KEY'],
-                  [$class: 'FileBinding', credentialsId:'OPS_SSH_PUB', variable: 'SSH_PUB'],
-                ]) {
-                  def TELE_STATE_DIR = "${pwd()}/state/${APP_VERSION}"
-                  sh """
-                  export PATH=\$(pwd)/bin:\${PATH}
-                  export EXTRA_GRAVITY_OPTIONS="--state-dir=${TELE_STATE_DIR}"
-                  echo \$(pwd)
-                  cat Makefile
-                  make robotest-run-suite \
-                    AWS_KEYPAIR=ops \
-                    AWS_REGION=us-east-1 \
-                    ROBOTEST_VERSION=$ROBOTEST_VERSION \
-                    RUN_UPGRADE=${params.ROBOTEST_RUN_UPGRADE ? 1 : 0}"""
-                }
-            } )
-          }
+            withCredentials([
+              [$class: 'FileBinding', credentialsId:'ROBOTEST_LOG_GOOGLE_APPLICATION_CREDENTIALS', variable: 'GOOGLE_APPLICATION_CREDENTIALS'],
+              [$class: 'StringBinding', credentialsId: params.OPS_CENTER_CREDENTIALS, variable: 'API_KEY'],
+              [$class: 'FileBinding', credentialsId:'OPS_SSH_KEY', variable: 'SSH_KEY'],
+              [$class: 'FileBinding', credentialsId:'OPS_SSH_PUB', variable: 'SSH_PUB'],
+            ]) {
+              def TELE_STATE_DIR = "${pwd()}/state/${APP_VERSION}"
+              sh """
+              export PATH=\$(pwd)/bin:\${PATH}
+              export EXTRA_GRAVITY_OPTIONS="--state-dir=${TELE_STATE_DIR}"
+              echo \$(pwd)
+              cat Makefile
+              make robotest-run-suite \
+                AWS_KEYPAIR=ops \
+                AWS_REGION=us-east-1 \
+                ROBOTEST_VERSION=$ROBOTEST_VERSION \
+                RUN_UPGRADE=${params.ROBOTEST_RUN_UPGRADE ? 1 : 0}"""
+            }
         }
       } else {
         echo 'skipped system tests'
