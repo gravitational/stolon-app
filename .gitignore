@@ -4,3 +4,4 @@ gravity.log
 /registry/
 /bin/
 upgrade_from/
+resources/custom-build.yaml

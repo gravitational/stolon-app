@@ -6,7 +6,7 @@ TELE ?= $(shell which tele)
 GRAVITY ?= $(shell which gravity)
 RUNTIME_VERSION ?= $(shell $(TELE) version | awk '/^[vV]ersion:/ {print $$2}')
 INTERMEDIATE_RUNTIME_VERSION ?=
-GRAVITY_VERSION ?= 5.5.21
+GRAVITY_VERSION ?= 7.0.12
 CLUSTER_SSL_APP_VERSION ?= "0.0.0+latest"
 
 SRCDIR=/go/src/github.com/gravitational/stolon-app
