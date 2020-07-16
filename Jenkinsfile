@@ -50,10 +50,10 @@ properties([
            defaultValue: '7.0.12',
            description: 'gravity/tele binaries version'),
     string(name: 'CLUSTER_SSL_APP_VERSION',
-           defaultValue: '0.8.2-5.5.21',
+           defaultValue: '0.8.2-7.0.11',
            description: 'cluster-ssl-app version'),
     string(name: 'INTERMEDIATE_RUNTIME_VERSION',
-           defaultValue: '5.2.15',
+           defaultValue: '',
            description: 'Version of runtime to upgrade with'),
     string(name: 'EXTRA_GRAVITY_OPTIONS',
            defaultValue: '',
@@ -122,27 +122,22 @@ node {
     stage('test') {
       if (params.RUN_ROBOTEST == 'run') {
         throttle(['robotest']) {
-          node {
-              parallel (
-              robotest : {
-                withCredentials([
-                  [$class: 'FileBinding', credentialsId:'ROBOTEST_LOG_GOOGLE_APPLICATION_CREDENTIALS', variable: 'GOOGLE_APPLICATION_CREDENTIALS'],
-                  [$class: 'StringBinding', credentialsId: params.OPS_CENTER_CREDENTIALS, variable: 'API_KEY'],
-                  [$class: 'FileBinding', credentialsId:'OPS_SSH_KEY', variable: 'SSH_KEY'],
-                  [$class: 'FileBinding', credentialsId:'OPS_SSH_PUB', variable: 'SSH_PUB'],
-                ]) {
-                  def TELE_STATE_DIR = "${pwd()}/state/${APP_VERSION}"
-                  sh """
-                  export PATH=\$(pwd)/bin:\${PATH}
-                  export EXTRA_GRAVITY_OPTIONS="--state-dir=${TELE_STATE_DIR}"
-                  make robotest-run-suite \
-                    AWS_KEYPAIR=ops \
-                    AWS_REGION=us-east-1 \
-                    ROBOTEST_VERSION=$ROBOTEST_VERSION \
-                    RUN_UPGRADE=${params.ROBOTEST_RUN_UPGRADE ? 1 : 0}"""
-                }
-            } )
-          }
+            withCredentials([
+              [$class: 'FileBinding', credentialsId:'ROBOTEST_LOG_GOOGLE_APPLICATION_CREDENTIALS', variable: 'GOOGLE_APPLICATION_CREDENTIALS'],
+              [$class: 'StringBinding', credentialsId: params.OPS_CENTER_CREDENTIALS, variable: 'API_KEY'],
+              [$class: 'FileBinding', credentialsId:'OPS_SSH_KEY', variable: 'SSH_KEY'],
+              [$class: 'FileBinding', credentialsId:'OPS_SSH_PUB', variable: 'SSH_PUB'],
+            ]) {
+              def TELE_STATE_DIR = "${pwd()}/state/${APP_VERSION}"
+              sh """
+              export PATH=\$(pwd)/bin:\${PATH}
+              export EXTRA_GRAVITY_OPTIONS="--state-dir=${TELE_STATE_DIR}"
+              make robotest-run-suite \
+                AWS_KEYPAIR=ops \
+                AWS_REGION=us-east-1 \
+                ROBOTEST_VERSION=$ROBOTEST_VERSION \
+                RUN_UPGRADE=${params.ROBOTEST_RUN_UPGRADE ? 1 : 0}"""
+            }
         }
       } else {
         echo 'skipped system tests'

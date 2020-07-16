@@ -10,14 +10,14 @@ metadata:
     heritage: {{ .Release.Service }}
     stolon-keeper: "yes"
     stolon-proxy: "yes"
-    name: stolon-keeper
+    name: {{ template "stolon.fullname" . }}-keeper
 spec:
   selector:
     matchLabels:
       app: {{ template "stolon.name" . }}
       release: {{ .Release.Name }}
       component: stolon-keeper
-      name: stolon-keeper
+      name: {{ template "stolon.fullname" . }}-keeper
   template:
     metadata:
       labels:
@@ -27,7 +27,7 @@ spec:
         component: stolon-keeper
         stolon-cluster: {{ template "stolon.clusterName" . }}
         stolon-keeper: "yes"
-        name: stolon-keeper
+        name: {{ template "stolon.fullname" . }}-keeper
     spec:
       serviceAccountName: {{ template "stolon.serviceAccountName" . }}
       {{- with .Values.keeper.nodeSelector }}
@@ -37,7 +37,7 @@ spec:
       terminationGracePeriodSeconds: 15
       initContainers:
         - name: fix-permissions
-          image: "{{ .Values.registry }}{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.registry }}{{ .Values.image.repository }}:{{ .Values.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command: ["/usr/bin/dumb-init", "--", "/usr/local/bin/init-container.sh"]
           securityContext:
@@ -49,7 +49,7 @@ spec:
       containers:
         {{- if eq .Values.store.backend "etcd" }}
         - name: etcd
-          image: "{{ .Values.registry }}{{ .Values.etcdImage.repository }}:{{ .Values.etcdImage.tag }}"
+          image: "{{ .Values.registry }}{{ .Values.etcdImage.repository }}:{{ .Values.tag }}"
           imagePullPolicy: {{ .Values.etcdImage.pullPolicy }}
           env:
             - name: NODE_NAME
@@ -70,7 +70,7 @@ spec:
           {{- end }}
         {{- end }}
         - name: proxy
-          image: "{{ .Values.registry }}{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.registry }}{{ .Values.image.repository }}:{{ .Values.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.proxy.containerPort }}
@@ -116,7 +116,7 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
         - name: keeper
-          image: "{{ .Values.registry }}{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          image: "{{ .Values.registry }}{{ .Values.image.repository }}:{{ .Values.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: KEEPER
@@ -203,7 +203,10 @@ spec:
           volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-      {{- with .Values.keeper.volumes }}
       volumes:
+      {{- with .Values.keeper.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
+        - name: data
+          hostPath:
+            path: {{ template "stolon.keeperDataPath" . }}

@@ -7,7 +7,7 @@ set -o pipefail
 kubectl scale --replicas=1 deployment stolon-sentinel
 kubectl delete -f /var/lib/gravity/resources/preUpdate.yaml --ignore-not-found
 kubectl create -f /var/lib/gravity/resources/preUpdate.yaml
-kubectl wait --for=condition=complete --timeout=120s job/stolon-app-pre-update 
+kubectl wait --for=condition=complete --timeout=120s job/stolon-app-pre-update
 
 # check for existence of stolon helm release
 if [[ $(helm list stolon | wc -l) -eq 0 ]]
@@ -45,6 +45,7 @@ fi
 set +e
 helm upgrade --install stolon /var/lib/gravity/resources/charts/stolon \
      --values /var/lib/gravity/resources/custom-values.yaml \
+     --values /var/lib/gravity/resources/custom-build.yaml \
      --set existingSecret=stolon
 
 set -e

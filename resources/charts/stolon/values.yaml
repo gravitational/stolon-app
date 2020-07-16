@@ -3,30 +3,26 @@
 # Declare variables to be passed into your templates.
 
 registry: ""
+tag: latest
 
 image:
   repository: stolon
-  tag: latest
   pullPolicy: Always
 
 etcdImage:
   repository: stolon-etcd
-  tag: latest
   pullPolicy: Always
 
 telegrafImage:
   repository: stolon-telegraf
-  tag: latest
   pullPolicy: Always
 
 pgbouncerImage:
   repository: stolon-pgbouncer
-  tag: latest
   pullPolicy: Always
 
 stolonctlImage:
   repository: stolonctl
-  tag: latest
   pullPolicy: Always
 
 debug: false
@@ -150,9 +146,6 @@ keeper:
     - name: etcd-secrets
       hostPath:
         path: /var/state
-    - name: data
-      hostPath:
-        path: /var/lib/data/stolon
 
 proxy:
   containerPort: 5434

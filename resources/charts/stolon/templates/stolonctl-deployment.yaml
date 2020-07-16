@@ -21,7 +21,7 @@ spec:
         app: {{ template "stolon.name" . }}
         release: {{ .Release.Name }}
         component: stolonctl
-        stolon-cluster: {{ template "stolon.fullname" . }}
+        stolon-cluster: {{ template "stolon.clusterName" . }}
         name: {{ template "stolon.fullname" . }}-stolonctl
         product: {{ template "stolon.name" . }}
     spec:
@@ -32,7 +32,7 @@ spec:
         gravitational.io/k8s-role: master
       containers:
         - name: stolonctl
-          image: "{{ .Values.registry }}{{ .Values.stolonctlImage.repository }}:{{ .Values.stolonctlImage.tag }}"
+          image: "{{ .Values.registry }}{{ .Values.stolonctlImage.repository }}:{{ .Values.tag }}"
           imagePullPolicy: {{ .Values.stolonctlImage.pullPolicy }}
           env:
             - name: NODE_NAME
@@ -62,6 +62,12 @@ spec:
                   name: {{ template "stolon.fullname" . }}
                   {{- end }}
                   key: "password"
+            - name: KEEPERS_SELECTOR
+              value: {{ template "stolon.keepersSelector" . }}
+            - name: SENTINELS_SELECTOR
+              value: {{ template "stolon.sentinelsSelector" . }}
+            - name: CLUSTER_NAME
+              value: {{ template "stolon.clusterName" . }}
           volumeMounts:
             - name: etcd-secrets
               mountPath: /home/stolon/secrets/etcd
