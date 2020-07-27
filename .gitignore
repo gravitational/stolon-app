@@ -5,3 +5,4 @@ gravity.log
 /bin/
 upgrade_from/
 resources/custom-build.yaml
+test.sh
