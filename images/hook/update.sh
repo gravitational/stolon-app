@@ -42,10 +42,14 @@ then
     rig freeze
 fi
 
+export EXTRA_PARAMS=""
+if [ -f /var/lib/gravity/resources/custom-build.yaml ]
+then
+    export EXTRA_PARAMS="--values /var/lib/gravity/resources/custom-build.yaml"
+fi
 set +e
 helm upgrade --install stolon /var/lib/gravity/resources/charts/stolon \
-     --values /var/lib/gravity/resources/custom-values.yaml \
-     --values /var/lib/gravity/resources/custom-build.yaml \
+     --values /var/lib/gravity/resources/custom-values.yaml $EXTRA_PARAMS \
      --set existingSecret=stolon
 
 set -e
