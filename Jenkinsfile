@@ -50,7 +50,7 @@ properties([
            defaultValue: 'CI_OPS_API_KEY',
            description: 'Jenkins\' key containing the Ops Center Credentials'),
     string(name: 'GRAVITY_VERSION',
-           defaultValue: '7.0.12',
+           defaultValue: '5.5.50',
            description: 'gravity/tele binaries version'),
     string(name: 'CLUSTER_SSL_APP_VERSION',
            defaultValue: '0.8.2-7.0.11',

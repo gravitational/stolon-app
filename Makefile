@@ -58,14 +58,6 @@ TELE_BUILD_OPTIONS := --repository=$(OPS_URL) \
 		$(TELE_BUILD_EXTRA_OPTIONS) \
 		$(IMPORT_IMAGE_OPTIONS)
 
-TELE_BUILD_APP_OPTIONS := --insecure \
-		--hub=$(OPS_URL) \
-		--version=$(VERSION) \
-		--set registry="" \
-		--set tag=$(VERSION) \
-		--values resources/custom-values.yaml \
-		--values resources/custom-build.yaml
-
 BUILD_DIR := build
 BINARIES_DIR := bin
 
@@ -109,12 +101,6 @@ build-app: images
 	-$(TELE) build -f -o $(BUILD_DIR)/installer.tar $(TELE_BUILD_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) resources/app.yaml
 	sed -i "s#gravitational.io/cluster-ssl-app:$(CLUSTER_SSL_APP_VERSION)#gravitational.io/cluster-ssl-app:0.0.0+latest#" resources/app.yaml
 	sed -i "s/tag: $(VERSION)/tag: latest/g" resources/charts/stolon/values.yaml
-
-.PHONY: build-gravity-app
-build-gravity-app: images
-	sed -i "s/0.1.0/$(VERSION)/g" resources/charts/stolon/Chart.yaml
-	-$(TELE) build $(TELE_BUILD_APP_OPTIONS) -f -o $(BUILD_DIR)/application.tar resources/charts/stolon
-	sed -i "s/$(VERSION)/0.1.0/g" resources/charts/stolon/Chart.yaml
 
 .PHONY: build-stolonboot
 build-stolonboot: $(BUILD_DIR)
