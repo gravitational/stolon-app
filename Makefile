@@ -5,8 +5,8 @@ OPS_URL ?= https://opscenter.localhost.localdomain:33009
 TELE ?= $(shell which tele)
 GRAVITY ?= $(shell which gravity)
 RUNTIME_VERSION ?= $(shell $(TELE) version | awk '/^[vV]ersion:/ {print $$2}')
-INTERMEDIATE_RUNTIME_VERSION ?= 5.2.15
-GRAVITY_VERSION ?= 5.5.21
+INTERMEDIATE_RUNTIME_VERSION ?=
+GRAVITY_VERSION ?= 7.0.12
 CLUSTER_SSL_APP_VERSION ?= "0.0.0+latest"
 
 SRCDIR=/go/src/github.com/gravitational/stolon-app
@@ -14,6 +14,11 @@ DOCKERFLAGS=--rm=true -v $(PWD):$(SRCDIR) -w $(SRCDIR)
 BUILDBOX=stolon-app-buildbox:latest
 
 EXTRA_GRAVITY_OPTIONS ?=
+TELE_BUILD_EXTRA_OPTIONS ?=
+# if variable is not empty add an extra parameter to tele build
+ifneq ($(INTERMEDIATE_RUNTIME_VERSION),)
+	TELE_BUILD_EXTRA_OPTIONS +=  --upgrade-via=$(INTERMEDIATE_RUNTIME_VERSION)
+endif
 
 CONTAINERS := stolon-bootstrap:$(VERSION) \
 			  stolon-uninstall:$(VERSION) \
@@ -35,7 +40,6 @@ IMPORT_IMAGE_OPTIONS := --set-image=stolon-bootstrap:$(VERSION) \
 
 IMPORT_OPTIONS := --vendor \
 		--ops-url=$(OPS_URL) \
-		--insecure \
 		--repository=$(REPOSITORY) \
 		--name=$(NAME) \
 		--version=$(VERSION) \
@@ -47,13 +51,20 @@ IMPORT_OPTIONS := --vendor \
 		--registry-url=leader.telekube.local:5000 \
 		$(IMPORT_IMAGE_OPTIONS)
 
-TELE_BUILD_OPTIONS := --insecure \
-		--repository=$(OPS_URL) \
+TELE_BUILD_OPTIONS := --repository=$(OPS_URL) \
 		--name=$(NAME) \
 		--version=$(VERSION) \
 		--glob=**/*.yaml \
-		--upgrade-via=$(INTERMEDIATE_RUNTIME_VERSION) \
+		$(TELE_BUILD_EXTRA_OPTIONS) \
 		$(IMPORT_IMAGE_OPTIONS)
+
+TELE_BUILD_APP_OPTIONS := --insecure \
+		--hub=$(OPS_URL) \
+		--version=$(VERSION) \
+		--set registry="" \
+		--set tag=$(VERSION) \
+		--values resources/custom-values.yaml \
+		--values resources/custom-build.yaml
 
 BUILD_DIR := build
 BINARIES_DIR := bin
@@ -84,7 +95,7 @@ import: images
 	sed -i "s#gravitational.io/cluster-ssl-app:0.0.0+latest#gravitational.io/cluster-ssl-app:$(CLUSTER_SSL_APP_VERSION)#" resources/app.yaml
 	sed -i "s/tag: latest/tag: $(VERSION)/g" resources/charts/stolon/values.yaml
 	sed -i "s/0.1.0/$(VERSION)/g" resources/charts/stolon/Chart.yaml
-	-$(GRAVITY) app delete --ops-url=$(OPS_URL) $(REPOSITORY)/$(NAME):$(VERSION) --force --insecure $(EXTRA_GRAVITY_OPTIONS)
+	-$(GRAVITY) app delete --ops-url=$(OPS_URL) $(REPOSITORY)/$(NAME):$(VERSION) --force $(EXTRA_GRAVITY_OPTIONS)
 	$(GRAVITY) app import $(IMPORT_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) .
 	sed -i "s#gravitational.io/cluster-ssl-app:$(CLUSTER_SSL_APP_VERSION)#gravitational.io/cluster-ssl-app:0.0.0+latest#" resources/app.yaml
 	sed -i "s/tag: $(VERSION)/tag: latest/g" resources/charts/stolon/values.yaml
@@ -98,6 +109,11 @@ build-app: images
 	-$(TELE) build -f -o $(BUILD_DIR)/installer.tar $(TELE_BUILD_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) resources/app.yaml
 	sed -i "s#gravitational.io/cluster-ssl-app:$(CLUSTER_SSL_APP_VERSION)#gravitational.io/cluster-ssl-app:0.0.0+latest#" resources/app.yaml
 	sed -i "s/tag: $(VERSION)/tag: latest/g" resources/charts/stolon/values.yaml
+
+.PHONY: build-gravity-app
+build-gravity-app: images
+	sed -i "s/0.1.0/$(VERSION)/g" resources/charts/stolon/Chart.yaml
+	-$(TELE) build $(TELE_BUILD_APP_OPTIONS) -f -o $(BUILD_DIR)/application.tar resources/charts/stolon
 	sed -i "s/$(VERSION)/0.1.0/g" resources/charts/stolon/Chart.yaml
 
 .PHONY: build-stolonboot
@@ -142,3 +158,7 @@ fix-logrus:
 .PHONY: lint
 lint: buildbox
 	docker run $(DOCKERFLAGS) $(BUILDBOX) golangci-lint run --skip-dirs=vendor ./...
+
+.PHONY: push
+push:
+	$(TELE) push -f $(EXTRA_GRAVITY_OPTIONS) $(BUILD_DIR)/installer.tar
