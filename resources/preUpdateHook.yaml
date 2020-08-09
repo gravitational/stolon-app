@@ -16,6 +16,30 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: pre-update-hook
-          image: stolon-hook:latest
-          command: ["/usr/local/bin/kubectl", "scale", "--replicas=0", "deployment", "stolon-sentinel"]
-
+          image: stolonctl:latest
+          command: ["/pre-update.sh"]
+          env:
+            - name: ETCD_CACERT
+              value: "/etc/etcd/secrets/root.cert"
+            - name: ETCD_CERT
+              value: "/etc/etcd/secrets/etcd.cert"
+            - name: ETCD_KEY
+              value: "/etc/etcd/secrets/etcd.key"
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: ETCD_ENDPOINTS
+              value: "$(NODE_NAME):2379"
+          volumeMounts:
+            - name: etcd-secrets
+              mountPath: /etc/etcd/secrets
+            - name: kubectl
+              mountPath: /usr/bin/kubectl
+      volumes:
+        - name: etcd-secrets
+          hostPath:
+            path: /var/state
+        - name: kubectl
+          hostPath:
+            path: /usr/bin/kubectl
