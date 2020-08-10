@@ -17,7 +17,7 @@ spec:
       containers:
         - name: pre-update-hook
           image: stolonctl:latest
-          command: ["/pre-update.sh"]
+          command: ["/usr/bin/pre-update.sh"]
           env:
             - name: ETCD_CACERT
               value: "/etc/etcd/secrets/root.cert"

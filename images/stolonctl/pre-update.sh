@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -x
 
 # scale down sentinel replicas to avoid master failover during planet upgrade
 # and potentially having multi-master situation
