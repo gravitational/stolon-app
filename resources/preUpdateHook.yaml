@@ -34,12 +34,7 @@ spec:
           volumeMounts:
             - name: etcd-secrets
               mountPath: /etc/etcd/secrets
-            - name: kubectl
-              mountPath: /usr/bin/kubectl
       volumes:
         - name: etcd-secrets
           hostPath:
             path: /var/state
-        - name: kubectl
-          hostPath:
-            path: /usr/bin/kubectl
