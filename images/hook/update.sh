@@ -37,6 +37,12 @@ then
     rig freeze
 fi
 
+# delete jobs from previous run
+for name in stolon-bootstrap-auth-function stolon-copy-telegraf-influxdb-creds stolon-create-alerts stolon-postgres-hardening
+do
+    kubectl delete job $name --ignore-not-found
+done
+
 export EXTRA_PARAMS=""
 if [ -f /var/lib/gravity/resources/custom-build.yaml ]
 then
