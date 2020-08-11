@@ -38,7 +38,8 @@ then
 fi
 
 # delete jobs from previous run
-for name in stolon-bootstrap-auth-function stolon-copy-telegraf-influxdb-creds stolon-create-alerts stolon-postgres-hardening
+for name in stolon-bootstrap-auth-function stolon-copy-telegraf-influxdb-creds stolon-create-alerts \
+					   stolon-postgres-hardening stolon-copy-telegraf-influxdb-creds
 do
     kubectl delete job $name --ignore-not-found
 done
