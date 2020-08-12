@@ -63,15 +63,15 @@ then
     export EXTRA_PARAMS="$EXTRA_PARAMS --set replication.password=$PG_REPL_PASSWORD"
 fi
 
+set +e
+helm upgrade --install stolon /var/lib/gravity/resources/charts/stolon \
+     --values /var/lib/gravity/resources/custom-values.yaml $EXTRA_PARAMS
+
+set -e
 # scale up sentinel pods
 if [ $(kubectl get nodes -lstolon-keeper=yes --output=go-template --template="{{len .items}}") -gt 1 ]
 then
     kubectl scale deployment stolon-sentinel --replicas 3
 fi
 
-set +e
-helm upgrade --install stolon /var/lib/gravity/resources/charts/stolon \
-     --values /var/lib/gravity/resources/custom-values.yaml $EXTRA_PARAMS
-
-set -e
 kubectl wait --for=condition=complete --timeout=5m job/stolon-postgres-hardening
