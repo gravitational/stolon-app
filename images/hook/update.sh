@@ -18,7 +18,6 @@ then
     rig delete configmaps/stolon-telegraf --force
     rig delete configmaps/stolon-telegraf-node --force
     rig delete configmaps/stolon-pgbouncer --force
-    rig delete secrets/telegraf-influxdb-creds --force
     rig delete services/stolon-postgres --force
     rig delete services/stolonctl --force
     rig delete services/stolon-rpc --force
@@ -37,9 +36,11 @@ then
     rig freeze
 fi
 
+rig delete secrets/telegraf-influxdb-creds --force
+
 # delete jobs from previous run
-for name in stolon-bootstrap-auth-function stolon-copy-telegraf-influxdb-creds stolon-create-alerts \
-					   stolon-postgres-hardening stolon-copy-telegraf-influxdb-creds
+for name in stolon-bootstrap-auth-function stolon-copy-telegraf-influxdb-creds \
+					   stolon-create-alerts stolon-postgres-hardening
 do
     kubectl delete job $name --ignore-not-found
 done
@@ -49,10 +50,28 @@ if [ -f /var/lib/gravity/resources/custom-build.yaml ]
 then
     export EXTRA_PARAMS="--values /var/lib/gravity/resources/custom-build.yaml"
 fi
+
+export PASSWORD=$(kubectl get secrets stolon -o jsonpath='{.data.password}'|base64 -d)
+if [ -n $PASSWORD ]
+then
+    export EXTRA_PARAMS="$EXTRA_PARAMS --set superuser.password=$PASSWORD"
+fi
+
+export PG_REPL_PASSWORD=$(kubectl get secrets stolon -o jsonpath='{.data.pg_repl_password}'|base64 -d)
+if [ -n $PG_REPL_PASSWORD ]
+then
+    export EXTRA_PARAMS="$EXTRA_PARAMS --set replication.password=$PG_REPL_PASSWORD"
+fi
+
+# scale up sentinel pods
+if [ $(kubectl get nodes -lstolon-keeper=yes --output=go-template --template="{{len .items}}") -gt 1 ]
+then
+    kubectl scale deployment stolon-sentinel --replicas 3
+fi
+
 set +e
 helm upgrade --install stolon /var/lib/gravity/resources/charts/stolon \
-     --values /var/lib/gravity/resources/custom-values.yaml $EXTRA_PARAMS \
-     --set existingSecret=stolon
+     --values /var/lib/gravity/resources/custom-values.yaml $EXTRA_PARAMS
 
 set -e
 kubectl wait --for=condition=complete --timeout=5m job/stolon-postgres-hardening
