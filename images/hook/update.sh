@@ -45,6 +45,7 @@ do
     kubectl delete job $name --ignore-not-found
 done
 
+export EXTRA_PARAMS=""
 export PASSWORD=$(kubectl get secrets stolon -o jsonpath='{.data.password}'|base64 -d)
 if [ -n $PASSWORD ]
 then
