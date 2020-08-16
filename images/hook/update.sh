@@ -8,7 +8,6 @@ set -o pipefail
 if [[ $(helm list stolon | wc -l) -eq 0 ]]
 then
     echo "Saving pre-helm resources in changeset: $RIG_CHANGESET"
-    rig cs delete --force -c cs/$RIG_CHANGESET
     rig delete ds/stolon-keeper --force
     rig delete deployments/stolon-proxy --force
     rig delete deployments/stolon-rpc --force
@@ -33,10 +32,10 @@ then
     rig delete rolebindings/stolon-rpc --force
     rig delete rolebindings/stolon-sentinel --force
     rig delete rolebindings/stolon-utils --force
-    rig freeze
 fi
 
 rig delete secrets/telegraf-influxdb-creds --force
+rig freeze
 
 # delete jobs from previous run
 for name in stolon-bootstrap-auth-function stolon-copy-telegraf-influxdb-creds \
