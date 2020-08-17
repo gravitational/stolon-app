@@ -27,7 +27,7 @@ export GCE_VM=${GCE_VM:-custom-4-8192}
 # Parallelism & retry, tuned for GCE
 export PARALLEL_TESTS=${PARALLEL_TESTS:-4}
 export REPEAT_TESTS=${REPEAT_TESTS:-1}
-export RETRIES=${RETRIES:-0}
+export RETRIES=${RETRIES:-1}
 
 # set SUITE and UPGRADE_VERSIONS
 case $TARGET in
