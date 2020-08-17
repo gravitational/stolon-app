@@ -1,4 +1,4 @@
-GOLANGCI_LINT_VER ?= 1.19.0
+GOLANGCI_LINT_VER ?= 1.30.0
 
 .PHONY: all
 all: images
