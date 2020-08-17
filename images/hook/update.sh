@@ -4,6 +4,20 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
+
+export EXTRA_PARAMS=""
+export PASSWORD=$(kubectl get secrets stolon -o jsonpath='{.data.password}'|base64 -d)
+if [ -n $PASSWORD ]
+then
+    export EXTRA_PARAMS="$EXTRA_PARAMS --set superuser.password=$PASSWORD"
+fi
+
+export PG_REPL_PASSWORD=$(kubectl get secrets stolon -o jsonpath='{.data.pg_repl_password}'|base64 -d)
+if [ -n $PG_REPL_PASSWORD ]
+then
+    export EXTRA_PARAMS="$EXTRA_PARAMS --set replication.password=$PG_REPL_PASSWORD"
+fi
+
 # check for existence of stolon helm release
 if [[ $(helm list stolon | wc -l) -eq 0 ]]
 then
@@ -32,10 +46,10 @@ then
     rig delete rolebindings/stolon-rpc --force
     rig delete rolebindings/stolon-sentinel --force
     rig delete rolebindings/stolon-utils --force
+    rig delete secrets/stolon --force
 fi
 
 rig delete secrets/telegraf-influxdb-creds --force
-rig freeze
 
 # delete jobs from previous run
 for name in stolon-bootstrap-auth-function stolon-copy-telegraf-influxdb-creds \
@@ -44,26 +58,16 @@ do
     kubectl delete job $name --ignore-not-found
 done
 
-export EXTRA_PARAMS=""
-export PASSWORD=$(kubectl get secrets stolon -o jsonpath='{.data.password}'|base64 -d)
-if [ -n $PASSWORD ]
+if [[ $(helm list stolon | wc -l) -gt 0 ]]
 then
-    export EXTRA_PARAMS="$EXTRA_PARAMS --set superuser.password=$PASSWORD"
-fi
+    # scale up sentinel pods
+    if [ $(kubectl get nodes -lstolon-keeper=yes --output=go-template --template="{{len .items}}") -gt 1 ]
+    then
+	kubectl scale deployment stolon-sentinel --replicas 3
+    fi
 
-export PG_REPL_PASSWORD=$(kubectl get secrets stolon -o jsonpath='{.data.pg_repl_password}'|base64 -d)
-if [ -n $PG_REPL_PASSWORD ]
-then
-    export EXTRA_PARAMS="$EXTRA_PARAMS --set replication.password=$PG_REPL_PASSWORD"
+    kubectl patch daemonset stolon-keeper --type json -p='[{"op": "remove", "path": "/spec/template/spec/nodeSelector/non-existing"}]'
 fi
-
-# scale up sentinel pods
-if [ $(kubectl get nodes -lstolon-keeper=yes --output=go-template --template="{{len .items}}") -gt 1 ]
-then
-    kubectl scale deployment stolon-sentinel --replicas 3
-fi
-
-kubectl patch daemonset stolon-keeper --type json -p='[{"op": "remove", "path": "/spec/template/spec/nodeSelector/non-existing"}]'
 
 set +e
 helm upgrade --install stolon /var/lib/gravity/resources/charts/stolon \
@@ -72,3 +76,4 @@ helm upgrade --install stolon /var/lib/gravity/resources/charts/stolon \
 set -e
 
 kubectl wait --for=condition=complete --timeout=5m job/stolon-postgres-hardening
+rig freeze
