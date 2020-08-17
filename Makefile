@@ -126,7 +126,7 @@ build-stolonctl-docker:
 #
 .PHONY: robotest-run-suite
 robotest-run-suite:
-	./scripts/robotest_run_suite.sh $(shell pwd)/upgrade_from
+	./robotest/run.sh pr
 
 .PHONY: download-binaries
 download-binaries: $(BINARIES_DIR)
