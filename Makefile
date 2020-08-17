@@ -138,9 +138,9 @@ download-binaries: $(BINARIES_DIR)
 
 .PHONY: clean
 clean:
-	rm -rf $(BUILD_DIR)
+	-rm -rf $(BUILD_DIR)
 	cd images && $(MAKE) clean
-	rm -rf wd_suite
+	-rm -rf wd_suite
 
 .PHONY: fix-logrus
 fix-logrus:
