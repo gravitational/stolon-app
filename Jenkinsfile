@@ -101,12 +101,12 @@ make build-app OPS_URL=$OPS_URL"""
                 [$class: 'StringBinding', credentialsId:'CI_OPS_API_KEY', variable: 'API_KEY'],
                 [$class: 'FileBinding', credentialsId:'OPS_SSH_KEY', variable: 'SSH_KEY'],
                 [$class: 'FileBinding', credentialsId:'OPS_SSH_PUB', variable: 'SSH_PUB'],
-		[
-		  $class: 'UsernamePasswordMultiBinding',
-		  credentialsId: 'jenkins-aws-s3',
-		  usernameVariable: 'AWS_ACCESS_KEY_ID',
-		  passwordVariable: 'AWS_SECRET_ACCESS_KEY',
-		],
+                [
+                  $class: 'UsernamePasswordMultiBinding',
+                  credentialsId: 'jenkins-aws-s3',
+                  usernameVariable: 'AWS_ACCESS_KEY_ID',
+                  passwordVariable: 'AWS_SECRET_ACCESS_KEY',
+                ],
                 ]) {
                   def TELE_STATE_DIR = "${pwd()}/state/${APP_VERSION}"
                   sh """
