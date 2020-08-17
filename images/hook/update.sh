@@ -63,7 +63,7 @@ then
     # scale up sentinel pods
     if [ $(kubectl get nodes -lstolon-keeper=yes --output=go-template --template="{{len .items}}") -gt 1 ]
     then
-	kubectl scale deployment stolon-sentinel --replicas 3
+        kubectl scale deployment stolon-sentinel --replicas 3
     fi
 
     kubectl patch daemonset stolon-keeper --type json -p='[{"op": "remove", "path": "/spec/template/spec/nodeSelector/non-existing"}]'

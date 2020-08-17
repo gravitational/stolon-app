@@ -28,6 +28,7 @@ export GCE_VM=${GCE_VM:-custom-4-8192}
 export PARALLEL_TESTS=${PARALLEL_TESTS:-4}
 export REPEAT_TESTS=${REPEAT_TESTS:-1}
 export RETRIES=${RETRIES:-1}
+export DOCKER_RUN_FLAGS=${DOCKER_RUN_FLAGS:-"-u $(id -u)"}
 
 # set SUITE and UPGRADE_VERSIONS
 case $TARGET in
