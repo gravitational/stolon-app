@@ -55,7 +55,7 @@ EOF
 
 SUITE=$(build_install_suite)
 #SUITE="$SUITE $(build_resize_suite)"
-SUITE="$($SUITE build_upgrade_suite)"
+SUITE="$SUITE $(build_upgrade_suite)"
 
 echo "$SUITE" | tr ' ' '\n'
 
