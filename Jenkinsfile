@@ -13,6 +13,9 @@ properties([
     string(name: 'TAG',
            defaultValue: 'master',
            description: 'Git tag to build'),
+    string(name: 'VERSION',
+           defaultValue: '',
+           description: 'Override automatic versioning'),
     choice(choices: ["run", "skip"].join("\n"),
            description: 'Run or skip robotest system wide tests.',
            name: 'RUN_ROBOTEST'),
@@ -142,7 +145,8 @@ node {
                   export PATH=\$(pwd)/bin:\${PATH}
                   export EXTRA_GRAVITY_OPTIONS="--state-dir=${TELE_STATE_DIR}"
                   make robotest-run-suite \
-                    ROBOTEST_VERSION=$ROBOTEST_VERSION"""
+                    ROBOTEST_VERSION=$ROBOTEST_VERSION \
+                    RUN_UPGRADE=${params.ROBOTEST_RUN_UPGRADE ? 1 : 0}"""
             }
         }
       } else {
