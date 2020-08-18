@@ -40,7 +40,7 @@ properties([
            defaultValue: '0',
            description: 'How many times to retry each failed test'),
     string(name: 'ROBOTEST_VERSION',
-           defaultValue: '2.1.0',
+           defaultValue: 'stable-gce',
            description: 'Robotest tag to use.'),
     string(name: 'OPS_URL',
            defaultValue: 'https://ci-ops.gravitational.io',
