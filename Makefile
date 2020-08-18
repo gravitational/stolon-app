@@ -6,7 +6,7 @@ TELE ?= $(shell which tele)
 GRAVITY ?= $(shell which gravity)
 RUNTIME_VERSION ?= $(shell $(TELE) version | awk '/^[vV]ersion:/ {print $$2}')
 INTERMEDIATE_RUNTIME_VERSION ?=
-GRAVITY_VERSION ?= 5.5.21
+GRAVITY_VERSION ?= 5.5.51
 CLUSTER_SSL_APP_VERSION ?= "0.0.0+latest"
 
 SRCDIR=/go/src/github.com/gravitational/stolon-app
@@ -40,7 +40,6 @@ IMPORT_IMAGE_OPTIONS := --set-image=stolon-bootstrap:$(VERSION) \
 
 IMPORT_OPTIONS := --vendor \
 		--ops-url=$(OPS_URL) \
-		--insecure \
 		--repository=$(REPOSITORY) \
 		--name=$(NAME) \
 		--version=$(VERSION) \
@@ -52,8 +51,7 @@ IMPORT_OPTIONS := --vendor \
 		--registry-url=leader.telekube.local:5000 \
 		$(IMPORT_IMAGE_OPTIONS)
 
-TELE_BUILD_OPTIONS := --insecure \
-		--repository=$(OPS_URL) \
+TELE_BUILD_OPTIONS := --repository=$(OPS_URL) \
 		--name=$(NAME) \
 		--version=$(VERSION) \
 		--glob=**/*.yaml \
@@ -89,7 +87,7 @@ import: images
 	sed -i "s#gravitational.io/cluster-ssl-app:0.0.0+latest#gravitational.io/cluster-ssl-app:$(CLUSTER_SSL_APP_VERSION)#" resources/app.yaml
 	sed -i "s/tag: latest/tag: $(VERSION)/g" resources/charts/stolon/values.yaml
 	sed -i "s/0.1.0/$(VERSION)/g" resources/charts/stolon/Chart.yaml
-	-$(GRAVITY) app delete --ops-url=$(OPS_URL) $(REPOSITORY)/$(NAME):$(VERSION) --force --insecure $(EXTRA_GRAVITY_OPTIONS)
+	-$(GRAVITY) app delete --ops-url=$(OPS_URL) $(REPOSITORY)/$(NAME):$(VERSION) --force $(EXTRA_GRAVITY_OPTIONS)
 	$(GRAVITY) app import $(IMPORT_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) .
 	sed -i "s#gravitational.io/cluster-ssl-app:$(CLUSTER_SSL_APP_VERSION)#gravitational.io/cluster-ssl-app:0.0.0+latest#" resources/app.yaml
 	sed -i "s/tag: $(VERSION)/tag: latest/g" resources/charts/stolon/values.yaml
@@ -105,7 +103,6 @@ build-app: images
 	sed -i "s/version: \"$(RUNTIME_VERSION)\"/version: \"0.0.0+latest\"/" resources/app.yaml
 	sed -i "s#gravitational.io/cluster-ssl-app:$(CLUSTER_SSL_APP_VERSION)#gravitational.io/cluster-ssl-app:0.0.0+latest#" resources/app.yaml
 	sed -i "s/tag: $(VERSION)/tag: latest/g" resources/charts/stolon/values.yaml
-	sed -i "s/$(VERSION)/0.1.0/g" resources/charts/stolon/Chart.yaml
 
 .PHONY: build-stolonboot
 build-stolonboot: $(BUILD_DIR)
@@ -148,4 +145,8 @@ fix-logrus:
 
 .PHONY: lint
 lint: buildbox
-	docker run $(DOCKERFLAGS) $(BUILDBOX) golangci-lint run --skip-dirs=vendor ./...
+	docker run $(DOCKERFLAGS) $(BUILDBOX) golangci-lint run --timeout=5m --skip-dirs=vendor ./...
+
+.PHONY: push
+push:
+	$(TELE) push -f $(EXTRA_GRAVITY_OPTIONS) $(BUILD_DIR)/installer.tar
