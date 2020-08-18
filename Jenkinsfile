@@ -36,20 +36,23 @@ properties([
     string(name: 'REPEAT_TESTS',
            defaultValue: '1',
            description: 'How many times to repeat each test.'),
+    string(name: 'RETRIES',
+           defaultValue: '0',
+           description: 'How many times to retry each failed test'),
     string(name: 'ROBOTEST_VERSION',
-           defaultValue: 'stable-gce',
+           defaultValue: 'uid-gid',
            description: 'Robotest tag to use.'),
     string(name: 'OPS_URL',
            defaultValue: 'https://ci-ops.gravitational.io',
            description: 'Ops Center URL to download dependencies from'),
     string(name: 'GRAVITY_VERSION',
-           defaultValue: '5.5.21',
+           defaultValue: '5.5.51',
            description: 'gravity/tele binaries version'),
     string(name: 'CLUSTER_SSL_APP_VERSION',
-           defaultValue: '0.8.2-5.5.21',
+           defaultValue: '0.8.2-5.5.51',
            description: 'cluster-ssl-app version'),
     string(name: 'INTERMEDIATE_RUNTIME_VERSION',
-           defaultValue: '5.2.15',
+           defaultValue: '5.2.17',
            description: 'Version of runtime to upgrade with')
   ]),
 ])
@@ -98,14 +101,18 @@ make build-app OPS_URL=$OPS_URL"""
                 [$class: 'StringBinding', credentialsId:'CI_OPS_API_KEY', variable: 'API_KEY'],
                 [$class: 'FileBinding', credentialsId:'OPS_SSH_KEY', variable: 'SSH_KEY'],
                 [$class: 'FileBinding', credentialsId:'OPS_SSH_PUB', variable: 'SSH_PUB'],
+                [
+                  $class: 'UsernamePasswordMultiBinding',
+                  credentialsId: 'jenkins-aws-s3',
+                  usernameVariable: 'AWS_ACCESS_KEY_ID',
+                  passwordVariable: 'AWS_SECRET_ACCESS_KEY',
+                ],
                 ]) {
                   def TELE_STATE_DIR = "${pwd()}/state/${APP_VERSION}"
                   sh """
                   export PATH=\$(pwd)/bin:\${PATH}
                   export EXTRA_GRAVITY_OPTIONS="--state-dir=${TELE_STATE_DIR}"
                   make robotest-run-suite \
-                    AWS_KEYPAIR=ops \
-                    AWS_REGION=us-east-1 \
                     ROBOTEST_VERSION=$ROBOTEST_VERSION"""
             }
           }else {

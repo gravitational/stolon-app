@@ -23,10 +23,11 @@ RUN apt-get update && \
         /usr/share/man/ \
         /tmp/*
 
-ADD bin/stolonctl entrypoint.sh fix-permissions.sh /usr/bin/
+ADD bin/stolonctl entrypoint.sh fix-permissions.sh pre-update.sh /usr/bin/
 RUN chmod +x /usr/bin/stolonctl && \
     chmod +x /usr/bin/entrypoint.sh && \
     chmod +x /usr/bin/fix-permissions.sh && \
+    chmod +x /usr/bin/pre-update.sh && \
     useradd -ms /bin/bash stolon
 
 USER stolon
