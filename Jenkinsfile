@@ -34,8 +34,11 @@ properties([
     string(name: 'REPEAT_TESTS',
            defaultValue: '1',
            description: 'How many times to repeat each test.'),
+    string(name: 'RETRIES',
+           defaultValue: '0',
+           description: 'How many times to retry each failed test'),
     string(name: 'ROBOTEST_VERSION',
-           defaultValue: 'stable-gce',
+           defaultValue: 'uid-gid',
            description: 'Robotest tag to use.'),
     booleanParam(name: 'ROBOTEST_RUN_UPGRADE',
            defaultValue: false,
@@ -123,20 +126,23 @@ node {
       if (params.RUN_ROBOTEST == 'run') {
         throttle(['robotest']) {
             withCredentials([
-              [$class: 'FileBinding', credentialsId:'ROBOTEST_LOG_GOOGLE_APPLICATION_CREDENTIALS', variable: 'GOOGLE_APPLICATION_CREDENTIALS'],
-              [$class: 'StringBinding', credentialsId: params.OPS_CENTER_CREDENTIALS, variable: 'API_KEY'],
-              [$class: 'FileBinding', credentialsId:'OPS_SSH_KEY', variable: 'SSH_KEY'],
-              [$class: 'FileBinding', credentialsId:'OPS_SSH_PUB', variable: 'SSH_PUB'],
-            ]) {
-              def TELE_STATE_DIR = "${pwd()}/state/${APP_VERSION}"
-              sh """
-              export PATH=\$(pwd)/bin:\${PATH}
-              export EXTRA_GRAVITY_OPTIONS="--state-dir=${TELE_STATE_DIR}"
-              make robotest-run-suite \
-                AWS_KEYPAIR=ops \
-                AWS_REGION=us-east-1 \
-                ROBOTEST_VERSION=$ROBOTEST_VERSION \
-                RUN_UPGRADE=${params.ROBOTEST_RUN_UPGRADE ? 1 : 0}"""
+                [$class: 'FileBinding', credentialsId:'ROBOTEST_LOG_GOOGLE_APPLICATION_CREDENTIALS', variable: 'GOOGLE_APPLICATION_CREDENTIALS'],
+                [$class: 'StringBinding', credentialsId:'CI_OPS_API_KEY', variable: 'API_KEY'],
+                [$class: 'FileBinding', credentialsId:'OPS_SSH_KEY', variable: 'SSH_KEY'],
+                [$class: 'FileBinding', credentialsId:'OPS_SSH_PUB', variable: 'SSH_PUB'],
+                [
+                  $class: 'UsernamePasswordMultiBinding',
+                  credentialsId: 'jenkins-aws-s3',
+                  usernameVariable: 'AWS_ACCESS_KEY_ID',
+                  passwordVariable: 'AWS_SECRET_ACCESS_KEY',
+                ],
+                ]) {
+                  def TELE_STATE_DIR = "${pwd()}/state/${APP_VERSION}"
+                  sh """
+                  export PATH=\$(pwd)/bin:\${PATH}
+                  export EXTRA_GRAVITY_OPTIONS="--state-dir=${TELE_STATE_DIR}"
+                  make robotest-run-suite \
+                    ROBOTEST_VERSION=$ROBOTEST_VERSION"""
             }
         }
       } else {
