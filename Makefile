@@ -145,7 +145,7 @@ fix-logrus:
 
 .PHONY: lint
 lint: buildbox
-	docker run $(DOCKERFLAGS) $(BUILDBOX) golangci-lint run --skip-dirs=vendor ./...
+	docker run $(DOCKERFLAGS) $(BUILDBOX) golangci-lint run --timeout=5m --skip-dirs=vendor ./...
 
 .PHONY: push
 push:
