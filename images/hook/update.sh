@@ -6,6 +6,11 @@ set -o pipefail
 
 
 export EXTRA_PARAMS=""
+if [ -f /var/lib/gravity/resources/custom-build.yaml ]
+then
+    export EXTRA_PARAMS="--values /var/lib/gravity/resources/custom-build.yaml"
+fi
+
 export PASSWORD=$(kubectl get secrets stolon -o jsonpath='{.data.password}'|base64 -d)
 if [ -n $PASSWORD ]
 then
