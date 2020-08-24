@@ -27,7 +27,8 @@ spec:
         - name: copy
           image: "{{ .Values.registry }}{{ .Values.image.repository }}:{{ .Values.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["/usr/bin/dumb-init", "--", "/bin/bash", "-cex"]
+          # TODO(Sergei): delete `exit 0` after properly implementing Prometheus alert
+          command: ["/usr/bin/dumb-init", "--", "/bin/bash", "-cex", "exit", "0"]
           args:
             - |
               for file in /etc/alerts/*.yaml; do \
