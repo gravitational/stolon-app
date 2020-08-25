@@ -31,7 +31,7 @@ spec:
           command: ["/usr/bin/dumb-init", "--", "/bin/bash", "-cex"]
           args:
             - |
-              /usr/bin/gravity resource rm alert stolon-replication-lag && exit 0\
+              /usr/bin/gravity resource rm alert stolon-replication-lag && exit 0 && \
               for file in /etc/alerts/*.yaml; do \
                   /usr/bin/gravity resource create -f $file; \
               done
