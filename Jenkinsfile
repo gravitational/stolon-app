@@ -13,6 +13,9 @@ properties([
     string(name: 'TAG',
            defaultValue: 'master',
            description: 'Git tag to build'),
+    string(name: 'VERSION',
+           defaultValue: '',
+           description: 'Override automatic versioning'),
     choice(choices: ["run", "skip"].join("\n"),
            description: 'Run or skip robotest system wide tests.',
            name: 'RUN_ROBOTEST'),
@@ -34,8 +37,11 @@ properties([
     string(name: 'REPEAT_TESTS',
            defaultValue: '1',
            description: 'How many times to repeat each test.'),
+    string(name: 'RETRIES',
+           defaultValue: '0',
+           description: 'How many times to retry each failed test'),
     string(name: 'ROBOTEST_VERSION',
-           defaultValue: 'stable-gce',
+           defaultValue: 'uid-gid',
            description: 'Robotest tag to use.'),
     booleanParam(name: 'ROBOTEST_RUN_UPGRADE',
            defaultValue: false,
@@ -47,10 +53,10 @@ properties([
            defaultValue: 'CI_OPS_API_KEY',
            description: 'Jenkins\' key containing the Ops Center Credentials'),
     string(name: 'GRAVITY_VERSION',
-           defaultValue: '7.0.12',
+           defaultValue: '7.0.16',
            description: 'gravity/tele binaries version'),
     string(name: 'CLUSTER_SSL_APP_VERSION',
-           defaultValue: '0.8.2-7.0.11',
+           defaultValue: '0.8.3',
            description: 'cluster-ssl-app version'),
     string(name: 'INTERMEDIATE_RUNTIME_VERSION',
            defaultValue: '',
@@ -58,6 +64,9 @@ properties([
     string(name: 'EXTRA_GRAVITY_OPTIONS',
            defaultValue: '',
            description: 'Gravity options to add when calling tele'),
+    string(name: 'TELE_BUILD_EXTRA_OPTIONS',
+           defaultValue: '',
+           description: 'Extraoptions to add when calling tele build'),
     booleanParam(name: 'ADD_GRAVITY_VERSION',
                  defaultValue: false,
                  description: 'Appends "-${GRAVITY_VERSION}" to the tag to be published'),
@@ -123,20 +132,24 @@ node {
       if (params.RUN_ROBOTEST == 'run') {
         throttle(['robotest']) {
             withCredentials([
-              [$class: 'FileBinding', credentialsId:'ROBOTEST_LOG_GOOGLE_APPLICATION_CREDENTIALS', variable: 'GOOGLE_APPLICATION_CREDENTIALS'],
-              [$class: 'StringBinding', credentialsId: params.OPS_CENTER_CREDENTIALS, variable: 'API_KEY'],
-              [$class: 'FileBinding', credentialsId:'OPS_SSH_KEY', variable: 'SSH_KEY'],
-              [$class: 'FileBinding', credentialsId:'OPS_SSH_PUB', variable: 'SSH_PUB'],
-            ]) {
-              def TELE_STATE_DIR = "${pwd()}/state/${APP_VERSION}"
-              sh """
-              export PATH=\$(pwd)/bin:\${PATH}
-              export EXTRA_GRAVITY_OPTIONS="--state-dir=${TELE_STATE_DIR}"
-              make robotest-run-suite \
-                AWS_KEYPAIR=ops \
-                AWS_REGION=us-east-1 \
-                ROBOTEST_VERSION=$ROBOTEST_VERSION \
-                RUN_UPGRADE=${params.ROBOTEST_RUN_UPGRADE ? 1 : 0}"""
+                [$class: 'FileBinding', credentialsId:'ROBOTEST_LOG_GOOGLE_APPLICATION_CREDENTIALS', variable: 'GOOGLE_APPLICATION_CREDENTIALS'],
+                [$class: 'StringBinding', credentialsId:'CI_OPS_API_KEY', variable: 'API_KEY'],
+                [$class: 'FileBinding', credentialsId:'OPS_SSH_KEY', variable: 'SSH_KEY'],
+                [$class: 'FileBinding', credentialsId:'OPS_SSH_PUB', variable: 'SSH_PUB'],
+                [
+                  $class: 'UsernamePasswordMultiBinding',
+                  credentialsId: 'jenkins-aws-s3',
+                  usernameVariable: 'AWS_ACCESS_KEY_ID',
+                  passwordVariable: 'AWS_SECRET_ACCESS_KEY',
+                ],
+                ]) {
+                  def TELE_STATE_DIR = "${pwd()}/state/${APP_VERSION}"
+                  sh """
+                  export PATH=\$(pwd)/bin:\${PATH}
+                  export EXTRA_GRAVITY_OPTIONS="--state-dir=${TELE_STATE_DIR}"
+                  make robotest-run-suite \
+                    ROBOTEST_VERSION=$ROBOTEST_VERSION \
+                    RUN_UPGRADE=${params.ROBOTEST_RUN_UPGRADE ? 1 : 0}"""
             }
         }
       } else {
