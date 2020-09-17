@@ -162,7 +162,6 @@ node {
     stage('build gravity app') {
       if (params.BUILD_GRAVITY_APP) {
         withEnv(MAKE_ENV) {
-          writeFile file: 'resources/custom-build.yaml', text: ''
           sh 'make build-gravity-app'
           archiveArtifacts "build/application.tar"
         }
