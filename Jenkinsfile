@@ -53,10 +53,10 @@ properties([
            defaultValue: 'CI_OPS_API_KEY',
            description: 'Jenkins\' key containing the Ops Center Credentials'),
     string(name: 'GRAVITY_VERSION',
-           defaultValue: '7.0.16',
+           defaultValue: '7.0.12',
            description: 'gravity/tele binaries version'),
     string(name: 'CLUSTER_SSL_APP_VERSION',
-           defaultValue: '0.8.3',
+           defaultValue: '0.8.2-7.0.11',
            description: 'cluster-ssl-app version'),
     string(name: 'INTERMEDIATE_RUNTIME_VERSION',
            defaultValue: '',
@@ -72,8 +72,10 @@ properties([
                  description: 'Appends "-${GRAVITY_VERSION}" to the tag to be published'),
     booleanParam(name: 'IMPORT_APP',
                  defaultValue: false,
-                 description: 'Import application to ops center'
-    ),
+                 description: 'Import application to ops center'),
+    booleanParam(name: 'BUILD_GRAVITY_APP',
+                 defaultValue: false,
+                 description: 'Generate a Gravity App tarball')
   ]),
 ])
 
@@ -154,6 +156,18 @@ node {
         }
       } else {
         echo 'skipped system tests'
+      }
+    }
+
+    stage('build gravity app') {
+      if (params.BUILD_GRAVITY_APP) {
+        withEnv(MAKE_ENV) {
+          writeFile file: 'resources/custom-build.yaml', text: ''
+          sh 'make build-gravity-app'
+          archiveArtifacts "build/application.tar"
+        }
+      } else {
+        echo 'skipped build gravity app'
       }
     }
 
