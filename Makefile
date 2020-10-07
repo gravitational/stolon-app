@@ -51,7 +51,7 @@ IMPORT_OPTIONS := --vendor \
 		--registry-url=leader.telekube.local:5000 \
 		$(IMPORT_IMAGE_OPTIONS)
 
-TELE_BUILD_OPTIONS := --repository=$(OPS_URL) \
+TELE_BUILD_OPTIONS := --hub=$(OPS_URL) \
 		--name=$(NAME) \
 		--version=$(VERSION) \
 		--glob=**/*.yaml \
