@@ -22,6 +22,7 @@ clusterSpec:
   max_standbys_per_sender: 5
   max_replication_lag_bytes: 16777216
   max_replication_lag: 300
+  use_pg_rewind: true
   pg_parameters:
     idle_in_transaction_session_timeout: "10min"
     log_destination: "stderr"
