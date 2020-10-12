@@ -161,10 +161,18 @@ node {
 
     stage('build gravity app') {
       if (params.BUILD_GRAVITY_APP) {
-        withEnv(MAKE_ENV) {
-          writeFile file: 'resources/custom-build.yaml', text: ''
-          sh 'make build-gravity-app'
-          archiveArtifacts "build/application.tar"
+        withCredentials([
+          string(credentialsId: params.OPS_CENTER_CREDENTIALS, variable: 'API_KEY'),
+        ]) {
+          withEnv(MAKE_ENV) {
+            writeFile file: 'resources/custom-build.yaml', text: ''
+            sh """
+rm -rf ${TELE_STATE_DIR} && mkdir -p ${TELE_STATE_DIR}
+tele logout ${EXTRA_GRAVITY_OPTIONS}
+tele login ${EXTRA_GRAVITY_OPTIONS} -o ${OPS_URL} --token=${API_KEY}
+make build-gravity-app"""
+            archiveArtifacts "build/application.tar"
+          }
         }
       } else {
         echo 'skipped build gravity app'
