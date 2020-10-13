@@ -1,7 +1,7 @@
 ARG PGVERSION=9.6
 # base build image
 FROM quay.io/gravitational/debian-venti:go1.13.8-buster AS builder
-ARG STOLON_REVISION=bbc06336b011c9e7aa689eeda7a7d3d4c88840a4
+ARG STOLON_REVISION=a8d97fc8a94ae1639000d250b5bf8b79d616a375
 
 ENV REPO_PATH=/gopath/src/github.com/gravitational/stolon
 RUN set -eux; \
