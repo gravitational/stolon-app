@@ -103,6 +103,7 @@ build-app: images
 	sed -i "s/version: \"$(RUNTIME_VERSION)\"/version: \"0.0.0+latest\"/" resources/app.yaml
 	sed -i "s#gravitational.io/cluster-ssl-app:$(CLUSTER_SSL_APP_VERSION)#gravitational.io/cluster-ssl-app:0.0.0+latest#" resources/app.yaml
 	sed -i "s/tag: $(VERSION)/tag: latest/g" resources/charts/stolon/values.yaml
+	sed -i "s/$(VERSION)/0.1.0/g" resources/charts/stolon/Chart.yaml
 
 .PHONY: build-stolonboot
 build-stolonboot: $(BUILD_DIR)
