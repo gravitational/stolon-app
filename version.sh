@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # this versioning algo:
 # keeps tag as is in case if this version is an equal match
