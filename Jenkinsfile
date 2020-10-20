@@ -178,7 +178,9 @@ node {
         // Use Gravity 7.0.x version to build application image
         def GRAVITY_VERSION = '7.0.20'
         withEnv(MAKE_ENV) {
-          sh 'make build-gravity-app'
+          sh '''
+          make download-binaries
+          make build-gravity-app'''
         }
       } else {
         echo 'skipped build gravity app'
