@@ -59,12 +59,14 @@ TELE_BUILD_OPTIONS := --repository=$(OPS_URL) \
 		$(IMPORT_IMAGE_OPTIONS)
 
 TELE_BUILD_APP_OPTIONS := --insecure \
-#		--hub=$(OPS_URL) \#
 		--version=$(VERSION) \
 		--set registry="" \
 		--set tag=$(VERSION) \
-		--values resources/custom-values.yaml \
-		--values resources/custom-build.yaml
+		--values resources/custom-values.yaml
+
+ifneq (,$(wildcard resources/custom-build.yaml))
+	TELE_BUILD_APP_OPTIONS +=  --values resources/custom-build.yaml
+endif
 
 BUILD_DIR := build
 BINARIES_DIR := bin
