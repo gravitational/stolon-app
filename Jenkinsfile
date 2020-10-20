@@ -64,6 +64,12 @@ properties([
     string(name: 'EXTRA_GRAVITY_OPTIONS',
            defaultValue: '',
            description: 'Gravity options to add when calling tele'),
+    booleanParam(name: 'BUILD_GRAVITY_APP',
+                 defaultValue: false,
+                 description: 'Generate a Gravity App tarball'
+    string(name: 'S3_UPLOAD_BUCKET',
+           defaultValue: '',
+           description: 'S3 bucket to upload built application image'),
     booleanParam(name: 'ADD_GRAVITY_VERSION',
                  defaultValue: false,
                  description: 'Appends "-${GRAVITY_VERSION}" to the tag to be published'),
@@ -160,7 +166,32 @@ node {
           string(credentialsId: params.OPS_CENTER_CREDENTIALS, variable: 'API_KEY'),
         ]) {
           withEnv(MAKE_ENV) {
-            sh 'make push'
+            sh ''
+          }
+        }
+      } else {
+        echo 'skipped application import'
+      }
+    }
+
+    stage('build gravity app') {
+      if (params.BUILD_GRAVITY_APP) {
+        // Use Gravity 7.0.x version to build application image
+        def GRAVITY_VERSION = '7.0.20'
+        withEnv(MAKE_ENV) {
+          sh 'make build-gravity-app'
+        }
+      } else {
+        echo 'skipped build gravity app'
+      }
+    }
+
+    stage('upload application image to S3') {
+      if (params.IMPORT_APP_IMAGE) {
+        withCredentials([usernamePassword(credentialsId: "${AWS_CREDENTIALS}", usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+          withEnv(MAKE_ENV) {
+            def S3_URL = "s3://${S3_UPLOAD_BUCKET}/stolon-app-${APP_VERSION}.tar"
+            sh 'aws s3 cp --only-show-errors build/application.tar ${S3_URL}'
           }
         }
       } else {
