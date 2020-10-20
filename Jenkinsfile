@@ -66,7 +66,7 @@ properties([
            description: 'Gravity options to add when calling tele'),
     booleanParam(name: 'BUILD_GRAVITY_APP',
                  defaultValue: false,
-                 description: 'Generate a Gravity App tarball'
+                 description: 'Generate a Gravity App tarball'),
     string(name: 'S3_UPLOAD_BUCKET',
            defaultValue: '',
            description: 'S3 bucket to upload built application image'),
@@ -75,8 +75,7 @@ properties([
                  description: 'Appends "-${GRAVITY_VERSION}" to the tag to be published'),
     booleanParam(name: 'IMPORT_APP',
                  defaultValue: false,
-                 description: 'Import application to ops center'
-    ),
+                 description: 'Import application to ops center'),
   ]),
 ])
 
