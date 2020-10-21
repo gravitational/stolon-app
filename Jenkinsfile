@@ -179,7 +179,8 @@ node {
         def GRAVITY_VERSION = '7.0.20'
         def BUILD_ENV = [
         "PATH+GRAVITY=${BINARIES_DIR}",
-        "VERSION=${APP_VERSION}"
+        "VERSION=${APP_VERSION}",
+        "GRAVITY_VERSION=${GRAVITY_VERSION}"
         ]
         withEnv(BUILD_ENV + ["BINARIES_DIR=${BINARIES_DIR}"]) {
           sh '''
