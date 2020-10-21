@@ -179,7 +179,7 @@ node {
         def GRAVITY_VERSION = '7.0.20'
         withEnv(MAKE_ENV) {
           sh '''
-          echo $PATH
+          export GRAVITY_VERSION=$GRAVITY_VERSION
           make download-binaries
           make build-gravity-app'''
         }
