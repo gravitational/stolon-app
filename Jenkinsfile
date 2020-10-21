@@ -165,7 +165,7 @@ node {
           string(credentialsId: params.OPS_CENTER_CREDENTIALS, variable: 'API_KEY'),
         ]) {
           withEnv(MAKE_ENV) {
-            sh ''
+            sh 'make push'
           }
         }
       } else {
@@ -177,9 +177,12 @@ node {
       if (params.BUILD_GRAVITY_APP) {
         // Use Gravity 7.0.x version to build application image
         def GRAVITY_VERSION = '7.0.20'
-        withEnv(MAKE_ENV) {
+        def BUILD_ENV = [
+        "PATH+GRAVITY=${BINARIES_DIR}",
+        "VERSION=${APP_VERSION}"
+        ]
+        withEnv(BUILD_ENV + ["BINARIES_DIR=${BINARIES_DIR}"]) {
           sh '''
-          export GRAVITY_VERSION=$GRAVITY_VERSION
           make download-binaries
           make build-gravity-app'''
         }
