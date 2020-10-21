@@ -76,6 +76,9 @@ properties([
     booleanParam(name: 'IMPORT_APP',
                  defaultValue: false,
                  description: 'Import application to ops center'),
+    booleanParam(name: 'IMPORT_APP_IMAGE',
+                 defaultValue: false,
+                 description: 'Import application to S3 bucket'),
   ]),
 ])
 
