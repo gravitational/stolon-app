@@ -201,8 +201,8 @@ node {
     stage('upload application image to S3') {
       if (params.IMPORT_APP_IMAGE) {
         withCredentials([usernamePassword(credentialsId: "${AWS_CREDENTIALS}", usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-          withEnv(MAKE_ENV) {
-            def S3_URL = "s3://${S3_UPLOAD_PATH}/stolon-app-${APP_VERSION}.tar"
+          def S3_URL = "s3://${S3_UPLOAD_PATH}/stolon-app-${APP_VERSION}.tar"
+          withEnv(MAKE_ENV + ["S3_URL=${S3_URL}"]) {
             sh 'aws s3 cp --only-show-errors build/application.tar ${S3_URL}'
           }
         }
