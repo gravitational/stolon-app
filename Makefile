@@ -58,6 +58,16 @@ TELE_BUILD_OPTIONS := --repository=$(OPS_URL) \
 		$(TELE_BUILD_EXTRA_OPTIONS) \
 		$(IMPORT_IMAGE_OPTIONS)
 
+TELE_BUILD_APP_OPTIONS := --insecure \
+		--version=$(VERSION) \
+		--set registry="" \
+		--set image.tag=$(VERSION) \
+		--set etcdImage.tag=$(VERSION) \
+		--set telegrafImage.tag=$(VERSION) \
+		--set pgbouncerImage.tag=$(VERSION) \
+		--set stolonctlImage.tag=$(VERSION) \
+		--values resources/custom-values.yaml
+
 BUILD_DIR := build
 BINARIES_DIR := bin
 
@@ -103,6 +113,12 @@ build-app: images
 	sed -i "s/version: \"$(RUNTIME_VERSION)\"/version: \"0.0.0+latest\"/" resources/app.yaml
 	sed -i "s#gravitational.io/cluster-ssl-app:$(CLUSTER_SSL_APP_VERSION)#gravitational.io/cluster-ssl-app:0.0.0+latest#" resources/app.yaml
 	sed -i "s/tag: $(VERSION)/tag: latest/g" resources/charts/stolon/values.yaml
+	sed -i "s/$(VERSION)/0.1.0/g" resources/charts/stolon/Chart.yaml
+
+.PHONY: build-gravity-app
+build-gravity-app: images
+	sed -i "s/0.1.0/$(VERSION)/g" resources/charts/stolon/Chart.yaml
+	$(TELE) build $(TELE_BUILD_APP_OPTIONS) -f -o $(BUILD_DIR)/application.tar resources/charts/stolon
 	sed -i "s/$(VERSION)/0.1.0/g" resources/charts/stolon/Chart.yaml
 
 .PHONY: build-stolonboot
