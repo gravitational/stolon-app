@@ -116,7 +116,7 @@ node {
       "VERSION=${APP_VERSION}"
     ]
 
-    echo 'Using branch: ' + env.GIT_BRANCH
+    echo 'Using branch: ' + env.TAG
 
     stage('download gravity/tele binaries for login') {
       withEnv(MAKE_ENV + ["BINARIES_DIR=${BINARIES_DIR}"]) {
@@ -201,7 +201,7 @@ node {
     }
 
     stage('upload application image to S3') {
-      if (isProtectedBranch(env.BRANCH_NAME) && params.IMPORT_APP_IMAGE) {
+      if (isProtectedBranch(env.TAG) && params.IMPORT_APP_IMAGE) {
         withCredentials([usernamePassword(credentialsId: "${AWS_CREDENTIALS}", usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
           def S3_URL = "s3://${S3_UPLOAD_PATH}/stolon-app-${APP_VERSION}.tar"
           withEnv(MAKE_ENV + ["S3_URL=${S3_URL}"]) {
