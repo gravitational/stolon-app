@@ -199,7 +199,8 @@ node {
     }
 
     stage('upload application image to S3') {
-      if (isProtectedBranch(env.BRANCH_NAME) &&  params.IMPORT_APP_IMAGE) {
+      echo env.BRANCH_NAME
+      if (isProtectedBranch(env.BRANCH_NAME) && params.IMPORT_APP_IMAGE) {
         withCredentials([usernamePassword(credentialsId: "${AWS_CREDENTIALS}", usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
           def S3_URL = "s3://${S3_UPLOAD_PATH}/stolon-app-${APP_VERSION}.tar"
           withEnv(MAKE_ENV + ["S3_URL=${S3_URL}"]) {
