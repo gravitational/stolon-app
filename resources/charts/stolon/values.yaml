@@ -68,11 +68,12 @@ ports:
 
 telegraf:
   service:
-    port: 3000
+    name: stolon-metrics
+    port: 9273
     targetPort: 9273
   config:
     agent:
-      interval: "20s"
+      interval: "60s"
       round_interval: true
       metric_batch_size: 1000
       metric_buffer_limit: 10000

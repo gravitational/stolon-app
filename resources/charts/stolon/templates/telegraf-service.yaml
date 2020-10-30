@@ -7,10 +7,11 @@ metadata:
     chart: {{ include "stolon.chart" . }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
+    component: {{ template "stolon.fullname" . }}-telegraf
 spec:
   type: ClusterIP
   ports:
-    - name: stolon-metrics
+    - name: {{ .Values.telegraf.service.name }}
       port: {{ .Values.telegraf.service.port }}
       targetPort: {{ .Values.telegraf.service.targetPort }}
   selector:
