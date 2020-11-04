@@ -8,7 +8,7 @@ stolonctl status --short
 # and potentially having multi-master situation
 kubectl scale --replicas=0 deployment stolon-sentinel
 
-# delete alerts configmap
-kubectl --namespace=monitoring delete configmaps stolon-replication-lag --ignore-not-found
+# delete alerts resource to fix the issue with prometheus
+/usr/bin/gravity resource rm alert stolon-replication-lag || true
 
 kubectl patch daemonset stolon-keeper -p '{"spec": {"template": {"spec": {"nodeSelector": {"non-existing": "true"}}}}}'
