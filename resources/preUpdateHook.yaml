@@ -36,13 +36,10 @@ spec:
             - name: etcd-secrets
               mountPath: /etc/etcd/secrets
             - name: gravity
-              mountPath: /usr/bin/gravity
-            - name: gravity-local
               mountPath: /var/lib/gravity/local
+            - mountPath: /opt/bin
+              name: bin
       volumes:
         - name: etcd-secrets
           hostPath:
             path: /var/state
-        - name: gravity-local
-          hostPath:
-            path: /var/lib/gravity/local
