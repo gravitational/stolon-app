@@ -43,9 +43,6 @@ spec:
         - name: etcd-secrets
           hostPath:
             path: /var/state
-        - name: gravity
-          hostPath:
-            path: /usr/bin/gravity
         - name: gravity-local
           hostPath:
             path: /var/lib/gravity/local
