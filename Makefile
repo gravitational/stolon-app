@@ -10,7 +10,7 @@ GRAVITY_VERSION ?= 7.0.16
 CLUSTER_SSL_APP_VERSION ?= "0.0.0+latest"
 
 SRCDIR=/go/src/github.com/gravitational/stolon-app
-DOCKERFLAGS=--rm=true -v $(PWD):$(SRCDIR) -w $(SRCDIR)
+DOCKERFLAGS=--rm=true -u $$(id -u):$$(id -g) -e GOCACHE=/tmp/.cache -v $(PWD):$(SRCDIR) -v $(GOPATH)/pkg:/gopath/pkg -w $(SRCDIR)
 BUILDBOX=stolon-app-buildbox:latest
 
 EXTRA_GRAVITY_OPTIONS ?=
