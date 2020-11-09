@@ -32,6 +32,10 @@ spec:
                   fieldPath: spec.nodeName
             - name: ETCD_ENDPOINTS
               value: "$(NODE_NAME):2379"
+            - name: SENTINELS_SELECTOR
+              value: "name=stolon-sentinel,stolon-cluster=stolon"
+            - name: KEEPERS_SELECTOR
+              value: "name=stolon-keeper,stolon-cluster=kube-stolon"
           volumeMounts:
             - name: etcd-secrets
               mountPath: /etc/etcd/secrets
