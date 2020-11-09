@@ -3,7 +3,7 @@ set -o errexit
 set -o xtrace
 
 # check cluster health before starting an upgrade to eliminate any possible issue with that
-until stolonctl status --short >/dev/null 2>&1
+until stolonctl status --short
 do
 	sleep 10
 done
