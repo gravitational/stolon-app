@@ -13,6 +13,10 @@ etcdImage:
   repository: stolon-etcd
   pullPolicy: Always
 
+telegrafImage:
+  repository: stolon-telegraf
+  pullPolicy: Always
+
 pgbouncerImage:
   repository: stolon-pgbouncer
   pullPolicy: Always
@@ -61,6 +65,44 @@ ports:
     containerPort: 5432
   stolonrpc:
     containerPort: 5431
+
+telegraf:
+  service:
+    name: stolon-metrics
+    port: 9273
+    targetPort: 9273
+  config:
+    agent:
+      interval: "60s"
+      round_interval: true
+      metric_batch_size: 1000
+      metric_buffer_limit: 10000
+      collection_jitter: "0s"
+      flush_interval: "10s"
+      flush_jitter: "0s"
+      precision: ""
+      debug: false
+      quiet: false
+      logfile: ""
+      hostname: "$HOSTNAME"
+      omit_hostname: false
+    outputs:
+      - prometheus_client:
+          listen: ":9273"
+    inputs:
+      - postgresql:
+          address: "host=$STOLON_HOST user=$STOLON_USERNAME password=$STOLON_PASSWORD dbname=postgres sslmode=require"
+          ignored_databases:
+            - "template0"
+            - "template1"
+      - postgresql_extensible:
+          address: "host=$STOLON_HOST user=$STOLON_USERNAME password=$STOLON_PASSWORD dbname=postgres sslmode=require"
+          name_prefix: "pg_"
+          query:
+            sqlquery: "SELECT slot_name, active, client_addr, pg_xlog_location_diff(pg_current_xlog_insert_location(), restart_lsn) AS ret_bytes FROM pg_replication_slots JOIN pg_stat_replication ON pg_replication_slots.active_pid = pg_stat_replication.pid"
+            version: 901
+            withdbname: false
+            tagvalue: "slot_name"
 
 sentinel:
   containerPort: 6431

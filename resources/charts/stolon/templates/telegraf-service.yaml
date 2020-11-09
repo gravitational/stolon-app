@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "stolon.fullname" . }}-telegraf
+  labels:
+    app: {{ include "stolon.name" . }}
+    chart: {{ include "stolon.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: {{ template "stolon.fullname" . }}-telegraf
+spec:
+  type: ClusterIP
+  ports:
+    - name: {{ .Values.telegraf.service.name }}
+      port: {{ .Values.telegraf.service.port }}
+      targetPort: {{ .Values.telegraf.service.targetPort }}
+  selector:
+    component: {{ template "stolon.fullname" . }}-telegraf
