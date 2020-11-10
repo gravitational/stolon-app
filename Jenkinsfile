@@ -195,6 +195,7 @@ node {
           make download-binaries
           make build-gravity-app'''
         }
+        archiveArtifacts "build/application.tar"
       } else {
         echo 'skipped build gravity app'
       }
