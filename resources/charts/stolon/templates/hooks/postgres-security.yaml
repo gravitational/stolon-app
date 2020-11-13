@@ -25,6 +25,7 @@ spec:
       restartPolicy: OnFailure
       securityContext:
         runAsUser: 1000
+      serviceAccountName: {{ template "stolon.serviceAccountName" . }}
       containers:
         - name: postgres-hardening
           image: "{{ .Values.registry }}{{ .Values.image.repository }}:{{ .Values.tag }}"
