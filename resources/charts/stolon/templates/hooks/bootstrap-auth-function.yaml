@@ -26,6 +26,7 @@ spec:
       restartPolicy: OnFailure
       securityContext:
         runAsUser: 1000
+      serviceAccountName: {{ template "stolon.serviceAccountName" . }}
       containers:
         - name: bootstrap
           image: "{{ .Values.registry }}{{ .Values.pgbouncerImage.repository }}:{{ .Values.tag }}"
