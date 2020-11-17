@@ -5,6 +5,8 @@ set -o pipefail
 
 source $(dirname $0)/utils.sh
 
+readonly RUN_UPGRADE=${RUN_UPGRADE:-0}
+
 # UPGRADE_MAP maps gravity version -> list of linux distros to upgrade from
 declare -A UPGRADE_MAP
 
@@ -55,7 +57,9 @@ EOF
 
 SUITE=$(build_install_suite)
 #SUITE="$SUITE $(build_resize_suite)"
-SUITE="$SUITE $(build_upgrade_suite)"
+if [ "$RUN_UPGRADE" == "1" ]; then
+  SUITE="$SUITE $(build_upgrade_suite)"
+fi
 
 echo "$SUITE" | tr ' ' '\n'
 
