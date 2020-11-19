@@ -7,7 +7,6 @@
 # Description:
 
 # set -o xtrace
-set -o nounset
 set -o errexit
 set -o pipefail
 
