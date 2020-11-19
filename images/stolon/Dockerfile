@@ -45,7 +45,7 @@ RUN apt-get update && \
     chmod a+rx /usr/local/bin/run.sh && \
     chmod a+rx /usr/local/bin/stolon-security.sh && \
     chmod a+rx /usr/local/bin/update-secret.sh && \
-    useradd -ms /bin/bash stolon -u 65534
+    useradd -ms /bin/bash stolon -u 65533
 
 EXPOSE 5432
 

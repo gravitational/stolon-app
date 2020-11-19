@@ -24,7 +24,7 @@ RUN apt-get update && \
 ADD entrypoint.sh /usr/local/bin/entrypoint.sh
 ADD common_lib.sh /common_lib.sh
 
-RUN useradd -ms /bin/bash -u 65534 stolon && \
+RUN useradd -ms /bin/bash -u 65533 stolon && \
     chmod +x /usr/local/bin/entrypoint.sh
 
 ADD pgbouncer_auth.sql /home/stolon/pgbouncer_auth.sql

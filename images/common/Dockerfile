@@ -15,7 +15,7 @@ RUN apt-get update && \
         /tmp/*
 
 ADD init-container.sh /usr/local/bin/init-container.sh
-RUN useradd -ms /bin/bash -u 65534 stolon && \
+RUN useradd -ms /bin/bash -u 65533 stolon && \
     chmod +x /usr/local/bin/init-container.sh
 
 ENTRYPOINT ["dumb-init", "--", "/usr/local/bin/init-container.sh"]
