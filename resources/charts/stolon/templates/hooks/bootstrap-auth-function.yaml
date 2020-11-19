@@ -24,8 +24,6 @@ spec:
       stolon-cluster: {{ template "stolon.clusterName" . }}
     spec:
       restartPolicy: OnFailure
-      securityContext:
-        runAsUser: 1000
       serviceAccountName: {{ template "stolon.serviceAccountName" . }}
       containers:
         - name: bootstrap
