@@ -6,7 +6,7 @@
 # Copyright (C) 2018 Gravitational Inc.
 # Description:
 
-# set -o xtrace
+set -o xtrace
 set -o errexit
 set -o pipefail
 
