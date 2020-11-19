@@ -46,7 +46,7 @@ RUN apt-get update && \
     chmod a+rx /usr/local/bin/init-container.sh && \
     chmod a+rx /usr/local/bin/stolon-security.sh && \
     chmod a+rx /usr/local/bin/update-secret.sh && \
-    useradd -ms /bin/bash stolon
+    useradd -ms /bin/bash stolon -u 65534
 
 EXPOSE 5432
 

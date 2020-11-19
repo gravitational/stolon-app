@@ -32,8 +32,8 @@ spec:
       {{- end }}
       initContainers:
         - name: fix-secrets
-          image: "{{ .Values.registry }}{{ .Values.pgbouncerImage.repository }}:{{ .Values.tag }}"
-          imagePullPolicy: {{ .Values.pgbouncerImage.pullPolicy }}
+          image: "{{ .Values.registry }}{{ .Values.commonImage.repository }}:{{ .Values.tag }}"
+          imagePullPolicy: {{ .Values.commonImage.pullPolicy }}
           command: ["/usr/bin/dumb-init", "--", "/usr/local/bin/init-container.sh"]
           securityContext:
             runAsUser: 0
@@ -44,6 +44,9 @@ spec:
               mountPath: /etc/secrets/cluster-default
             - name: stolon-secrets
               mountPath: /home/stolon/secrets
+          env:
+            - name: INIT_PGBOUNCER
+              value: "true"
       containers:
         - name: pgbouncer
           image: "{{ .Values.registry }}{{ .Values.pgbouncerImage.repository }}:{{ .Values.tag }}"

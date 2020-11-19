@@ -25,6 +25,10 @@ stolonctlImage:
   repository: stolonctl
   pullPolicy: Always
 
+commonImage:
+  repository: stolon-common
+  pullPolicy: Always
+
 debug: false
 
 rbac:
