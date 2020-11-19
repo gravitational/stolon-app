@@ -29,7 +29,6 @@ spec:
       nodeSelector:
         gravitational.io/k8s-role: master
       initContainers:
-      initContainers:
         - name: fix-secrets
           image: "{{ .Values.registry }}{{ .Values.commonImage.repository }}:{{ .Values.tag }}"
           imagePullPolicy: {{ .Values.commonImage.pullPolicy }}
@@ -39,6 +38,8 @@ spec:
           volumeMounts:
             - name: stolon-secrets
               mountPath: /home/stolon/secrets
+            - name: etcd-secrets
+              mountPath: /var/state
       containers:
         - name: stolonctl
           image: "{{ .Values.registry }}{{ .Values.stolonctlImage.repository }}:{{ .Values.tag }}"
@@ -80,8 +81,6 @@ spec:
           volumeMounts:
             - name: stolon-secrets
               mountPath: /home/stolon/secrets
-            - name: etcd-secrets
-              mountPath: /home/stolon/secrets/etcd
       volumes:
         - name: stolon-secrets
           emptyDir: {}
