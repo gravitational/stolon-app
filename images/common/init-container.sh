@@ -37,7 +37,7 @@ if [ -d /stolon-data ]; then
   chown -R stolon:stolon /stolon-data
 fi
 
-if [ -n $INIT_PGBOUNCER ]
+if [ -n "$INIT_PGBOUNCER" ]
 then
 	# Generate client pgbouncer certificate for connection to PostgreSQL
 	openssl req -new -nodes -text -out /home/stolon/secrets/pgbouncer.csr -keyout /home/stolon/secrets/pgbouncer-key.pem -subj "/CN=pgbouncer"
