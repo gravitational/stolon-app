@@ -6,8 +6,7 @@
 # Copyright (C) 2018 Gravitational Inc.
 # Description:
 
-# set -o xtrace
-set -o nounset
+set -o xtrace
 set -o errexit
 set -o pipefail
 
@@ -38,3 +37,12 @@ if [ -d /stolon-data ]; then
   chown -R stolon:stolon /stolon-data
 fi
 
+if [ -n "$INIT_PGBOUNCER" ]
+then
+	# Generate client pgbouncer certificate for connection to PostgreSQL
+	openssl req -new -nodes -text -out /home/stolon/secrets/pgbouncer.csr -keyout /home/stolon/secrets/pgbouncer-key.pem -subj "/CN=pgbouncer"
+	openssl x509 -req -in /home/stolon/secrets/pgbouncer.csr -text -CA /home/stolon/secrets/cluster-ca/ca.pem -CAkey /home/stolon/secrets/cluster-ca/ca-key -CAcreateserial -out /home/stolon/secrets/pgbouncer.pem
+
+	chown stolon:stolon -R /home/stolon/secrets/pgbouncer*
+	chmod 0400 /home/stolon/secrets/pgbouncer-key.pem
+fi

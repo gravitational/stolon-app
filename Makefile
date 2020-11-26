@@ -27,7 +27,8 @@ CONTAINERS := stolon-bootstrap:$(VERSION) \
 			  stolon-telegraf:$(VERSION) \
 			  stolonctl:$(VERSION) \
 			  stolon-pgbouncer:$(VERSION) \
-			  stolon-etcd:$(VERSION)
+			  stolon-etcd:$(VERSION) \
+			  stolon-common:$(VERSION)
 
 IMPORT_IMAGE_OPTIONS := --set-image=stolon-bootstrap:$(VERSION) \
 	--set-image=stolon-uninstall:$(VERSION) \
@@ -36,7 +37,8 @@ IMPORT_IMAGE_OPTIONS := --set-image=stolon-bootstrap:$(VERSION) \
 	--set-image=stolon-telegraf:$(VERSION) \
 	--set-image=stolonctl:$(VERSION) \
 	--set-image=stolon-pgbouncer:$(VERSION) \
-	--set-image=stolon-etcd:$(VERSION)
+	--set-image=stolon-etcd:$(VERSION) \
+	--set-image=stolon-common:$(VERSION)
 
 IMPORT_OPTIONS := --vendor \
 		--ops-url=$(OPS_URL) \

@@ -26,10 +26,20 @@ spec:
         product: {{ template "stolon.name" . }}
     spec:
       serviceAccountName: {{ template "stolon.serviceAccountName" . }}
-      securityContext:
-        runAsUser: 0
       nodeSelector:
         gravitational.io/k8s-role: master
+      initContainers:
+        - name: fix-secrets
+          image: "{{ .Values.registry }}{{ .Values.commonImage.repository }}:{{ .Values.tag }}"
+          imagePullPolicy: {{ .Values.commonImage.pullPolicy }}
+          command: ["/usr/bin/dumb-init", "--", "/usr/local/bin/init-container.sh"]
+          securityContext:
+            runAsUser: 0
+          volumeMounts:
+            - name: stolon-secrets
+              mountPath: /home/stolon/secrets
+            - name: etcd-secrets
+              mountPath: /var/state
       containers:
         - name: stolonctl
           image: "{{ .Values.registry }}{{ .Values.stolonctlImage.repository }}:{{ .Values.tag }}"
@@ -69,9 +79,11 @@ spec:
             - name: CLUSTER_NAME
               value: {{ template "stolon.clusterName" . }}
           volumeMounts:
-            - name: etcd-secrets
-              mountPath: /home/stolon/secrets/etcd
+            - name: stolon-secrets
+              mountPath: /home/stolon/secrets
       volumes:
+        - name: stolon-secrets
+          emptyDir: {}
         - name: etcd-secrets
           hostPath:
             path: /var/state

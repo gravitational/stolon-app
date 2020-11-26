@@ -37,8 +37,8 @@ spec:
       terminationGracePeriodSeconds: 15
       initContainers:
         - name: fix-permissions
-          image: "{{ .Values.registry }}{{ .Values.image.repository }}:{{ .Values.tag }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: "{{ .Values.registry }}{{ .Values.commonImage.repository }}:{{ .Values.tag }}"
+          imagePullPolicy: {{ .Values.commonImage.pullPolicy }}
           command: ["/usr/bin/dumb-init", "--", "/usr/local/bin/init-container.sh"]
           securityContext:
             runAsUser: 0
