@@ -47,6 +47,9 @@ then
     rig delete rolebindings/stolon-sentinel --force
     rig delete rolebindings/stolon-utils --force
     rig delete secrets/stolon --force
+
+    # backward-compatible(upgrades from 1.10.x) replication password
+    export EXTRA_PARAMS="$EXTRA_PARAMS --set replication.password=replpassword"
 fi
 
 rig delete secrets/telegraf-influxdb-creds --force
