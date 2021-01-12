@@ -60,7 +60,7 @@ $(IMAGES_FOR_BUILD):
 
 .PHONY: hook
 hook:
-	$(eval CHANGESET = $(shell echo $$VERSION | sed -e 's/[\.]//g'))
+	$(eval CHANGESET = $(shell echo '$(VERSION)' | sed -e 's/[\.]//g'))
 	if [ -z "$(CHANGESET)" ]; then \
 		echo "CHANGESET is not set"; exit 1; \
 	fi;
