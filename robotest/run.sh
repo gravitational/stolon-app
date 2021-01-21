@@ -56,7 +56,9 @@ export EXTRA_VOLUME_MOUNTS=$(build_volume_mounts)
 mkdir -p $UPGRADE_FROM_DIR
 for release in ${!UPGRADE_MAP[@]}; do
   if [ ! -f $UPGRADE_FROM_DIR/$(tag_to_tarball ${release}) ]; then
-      aws s3 cp s3://builds.gravitational.io/stolon/$(tag_to_tarball ${release}) $UPGRADE_FROM_DIR/$(tag_to_tarball ${release})
+      # aws s3 cp has incredibly verbose progress, disable progress for the sake of concise CI logs
+      [[ -z ${CI:-} ]] || S3_FLAGS=--no-progress
+      aws s3 cp ${S3_FLAGS:-} s3://builds.gravitational.io/stolon/$(tag_to_tarball ${release}) $UPGRADE_FROM_DIR/$(tag_to_tarball ${release})
   fi
 done
 
