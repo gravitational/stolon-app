@@ -1,4 +1,7 @@
-export VERSION ?= $(shell ./version.sh)
+ifeq ($(origin VERSION), undefined)
+# avoid ?= lazily evaluating version.sh (and thus rerunning the shell command several times)
+VERSION := $(shell ./version.sh)
+endif
 REPOSITORY := gravitational.io
 NAME := stolon-app
 OPS_URL ?= https://opscenter.localhost.localdomain:33009
