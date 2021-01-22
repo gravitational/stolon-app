@@ -1,0 +1,103 @@
+---
+kind: pipeline
+type: kubernetes
+name: pr
+
+trigger:
+  event:
+  - pull_request
+
+environment:
+  STATEDIR: /drone/src/state
+
+steps:
+  - name: fetch tags
+    image: docker:git
+    commands:
+      - git fetch --tags
+  - name: wait for docker
+    image: docker
+    commands:
+      - timeout 15s /bin/sh -c 'while [ ! -S /var/run/docker.sock ]; do sleep 1; done'
+      - docker version
+    volumes:
+      - name: dockersock
+        path: /var/run
+  - name: download binaries
+    image: docker:git
+    commands:
+      - apk add --no-cache make curl
+      - make download-binaries
+  - name: login to opscenter
+    image: docker:git
+    environment:
+      OPS_URL:
+        from_secret: OPS_URL
+      API_KEY:
+        from_secret: OPS_API_KEY_RO
+    commands:
+      # tele is built against glibc. Alpine's musl libc is glibc compatible, but needs to be linked into place.
+      - apk add --no-cache libc6-compat
+      - ./bin/tele login --state-dir=$STATEDIR --ops $OPS_URL --token=$API_KEY
+  - name: build
+    image: docker:git
+    environment:
+      OPS_URL:
+        from_secret: OPS_URL
+    commands:
+      - apk add --no-cache make libc6-compat
+      # add binaries downloaded in "download binaries" step to path
+      - export PATH=$PATH:$(pwd)/bin
+      - export EXTRA_GRAVITY_OPTIONS=--state-dir=$STATEDIR
+      - export INTERMEDIATE_RUNTIME_VERSION=5.2.17
+      - make build-app
+    volumes:
+      - name: dockersock
+        path: /var/run
+  - name: robotest
+    image: docker:git
+    environment:
+      GCP_ROBOTEST_CREDENTIALS:
+        from_secret: GCP_ROBOTEST_CREDENTIALS
+      AWS_ACCESS_KEY_ID:
+        from_secret: AWS_S3_RO_ACCESS_KEY_ID
+      AWS_SECRET_ACCESS_KEY:
+        from_secret: AWS_S3_RO_SECRET_ACCESS_KEY
+      # These files need to be in a volume that the docker service has access to
+      # We choose /tmp to accommodate https://github.com/gravitational/robotest/blob/3774f8641439b19c4e0e598db8f87c52ea0e4817/docker/suite/run_suite.sh#L106
+      SSH_KEY: /tmp/secrets/robotest
+      SSH_PUB: /tmp/secrets/robotest.pub
+      GOOGLE_APPLICATION_CREDENTIALS: /tmp/secrets/gcp.json
+    commands:
+      - apk add --no-cache make bash aws-cli
+      - mkdir -p $(dirname $SSH_KEY)
+      - ssh-keygen -t ed25519 -N '' -f $SSH_KEY
+      - echo "$GCP_ROBOTEST_CREDENTIALS" > $GOOGLE_APPLICATION_CREDENTIALS
+      - make robotest-run-suite
+    volumes:
+      - name: dockersock
+        path: /var/run
+      - name: dockertmp
+        path: /tmp
+
+
+services:
+  - name: run docker daemon
+    image: docker:dind
+    privileged: true
+    volumes:
+      - name: dockersock
+        path: /var/run
+      - name: dockertmp
+        path: /tmp
+
+volumes:
+  - name: dockersock
+    temp: {}
+  - name: dockertmp
+    temp: {}
+---
+kind: signature
+hmac: 496b1500f1e1578a7782cdcef8356391f717a2274a193a255f4261e187a2009a
+
+...
