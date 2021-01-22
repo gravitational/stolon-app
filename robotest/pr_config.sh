@@ -11,7 +11,7 @@ readonly RUN_UPGRADE=${RUN_UPGRADE:-0}
 declare -A UPGRADE_MAP
 
 # TODO (Sergei): enable upgrades from recommended tags
-UPGRADE_MAP[$(recommended_upgrade_tag $(branch 1.12.x))]="ubuntu:18" # this branch
+UPGRADE_MAP[1.12.10]="ubuntu:18" # this branch
 
 # via intermediate upgrade
 UPGRADE_MAP[1.12.7]="centos:7"
