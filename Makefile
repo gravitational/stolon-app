@@ -106,17 +106,18 @@ import: images
 	sed -i "s/tag: $(VERSION)/tag: latest/g" resources/charts/stolon/values.yaml
 	sed -i "s/$(VERSION)/0.1.0/g" resources/charts/stolon/Chart.yaml
 
+# .PHONY because VERSION/RUNTIME_VERSION are dynamic
+.PHONY: $(BUILD_DIR)/resources/app.yaml
+$(BUILD_DIR)/resources/app.yaml: | $(BUILD_DIR)
+	cp --archive resources $(BUILD_DIR)
+	sed -i "s/version: \"0.0.0+latest\"/version: \"$(RUNTIME_VERSION)\"/" $(BUILD_DIR)/resources/app.yaml
+	sed -i "s#gravitational.io/cluster-ssl-app:0.0.0+latest#gravitational.io/cluster-ssl-app:$(CLUSTER_SSL_APP_VERSION)#" $(BUILD_DIR)/resources/app.yaml
+	sed -i "s/tag: latest/tag: $(VERSION)/g" $(BUILD_DIR)/resources/charts/stolon/values.yaml
+	sed -i "s/0.1.0/$(VERSION)/g" $(BUILD_DIR)/resources/charts/stolon/Chart.yaml
+
 .PHONY: build-app
-build-app: images
-	sed -i "s/version: \"0.0.0+latest\"/version: \"$(RUNTIME_VERSION)\"/" resources/app.yaml
-	sed -i "s#gravitational.io/cluster-ssl-app:0.0.0+latest#gravitational.io/cluster-ssl-app:$(CLUSTER_SSL_APP_VERSION)#" resources/app.yaml
-	sed -i "s/tag: latest/tag: $(VERSION)/g" resources/charts/stolon/values.yaml
-	sed -i "s/0.1.0/$(VERSION)/g" resources/charts/stolon/Chart.yaml
-	$(TELE) build -f -o $(BUILD_DIR)/installer.tar $(TELE_BUILD_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) resources/app.yaml
-	sed -i "s/version: \"$(RUNTIME_VERSION)\"/version: \"0.0.0+latest\"/" resources/app.yaml
-	sed -i "s#gravitational.io/cluster-ssl-app:$(CLUSTER_SSL_APP_VERSION)#gravitational.io/cluster-ssl-app:0.0.0+latest#" resources/app.yaml
-	sed -i "s/tag: $(VERSION)/tag: latest/g" resources/charts/stolon/values.yaml
-	sed -i "s/$(VERSION)/0.1.0/g" resources/charts/stolon/Chart.yaml
+build-app: images $(BUILD_DIR)/resources/app.yaml
+	$(TELE) build -f -o $(BUILD_DIR)/installer.tar $(TELE_BUILD_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) $(BUILD_DIR)/resources/app.yaml
 
 .PHONY: build-gravity-app
 build-gravity-app: images
