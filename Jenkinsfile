@@ -66,7 +66,7 @@ properties([
            description: 'Gravity options to add when calling tele'),
     string(name: 'TELE_BUILD_EXTRA_OPTIONS',
            defaultValue: '',
-           description: 'Extraoptions to add when calling tele build'),
+           description: 'Extra options to add when calling tele build'),
     booleanParam(name: 'ADD_GRAVITY_VERSION',
                  defaultValue: false,
                  description: 'Appends "-${GRAVITY_VERSION}" to the tag to be published'),
