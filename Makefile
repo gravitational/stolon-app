@@ -18,6 +18,11 @@ BUILDBOX=stolon-app-buildbox:latest
 
 EXTRA_GRAVITY_OPTIONS ?=
 TELE_BUILD_EXTRA_OPTIONS ?=
+
+# work around https://github.com/gravitational/gravity/issues/2060,
+# --parallel may no longer be needed if GRAVITY_VERSION >> 7.0.15 -- 2020-01 walt
+TELE_BUILD_EXTRA_OPTIONS += --parallel=1
+
 # if variable is not empty add an extra parameter to tele build
 ifneq ($(INTERMEDIATE_RUNTIME_VERSION),)
 	TELE_BUILD_EXTRA_OPTIONS +=  --upgrade-via=$(INTERMEDIATE_RUNTIME_VERSION)
