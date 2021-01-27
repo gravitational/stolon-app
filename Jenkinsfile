@@ -41,7 +41,7 @@ properties([
            defaultValue: '0',
            description: 'How many times to retry each failed test'),
     string(name: 'ROBOTEST_VERSION',
-           defaultValue: '2.2.0',
+           defaultValue: '2.2.1',
            description: 'Robotest tag to use.'),
     booleanParam(name: 'ROBOTEST_RUN_UPGRADE',
            defaultValue: false,
