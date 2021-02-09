@@ -34,7 +34,6 @@ steps:
       # tele is built against glibc. Alpine's musl libc is glibc compatible, but needs to be linked into place.
       - apk add --no-cache libc6-compat make curl tar
       - export PATH=$PATH:$(pwd)/bin
-      - export EXTRA_GRAVITY_OPTIONS=--state-dir=$STATEDIR
       - make install-dependent-packages
   - name: build
     image: docker:git
