@@ -37,9 +37,6 @@ steps:
       - make install-dependent-packages
   - name: build
     image: docker:git
-    environment:
-      OPS_URL:
-        from_secret: OPS_URL
     commands:
       - apk add --no-cache make libc6-compat
       # add binaries downloaded in "download binaries" step to path
