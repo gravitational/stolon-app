@@ -54,6 +54,12 @@ fi
 
 rig delete secrets/telegraf-influxdb-creds --force
 
+# check whether stolon secret was created not under helm release
+if [[ $(kubectl get secrets stolon -o jsonpath='{.metadata.labels.chart}' | wc -l) -eq 0 ]]
+then
+    rig delete secrets/stolon --force
+fi
+
 # delete jobs from previous run
 for name in stolon-bootstrap-auth-function stolon-copy-telegraf-influxdb-creds \
 					   stolon-create-alerts stolon-postgres-hardening
