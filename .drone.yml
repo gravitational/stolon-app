@@ -44,7 +44,6 @@ steps:
       - apk add --no-cache make libc6-compat
       # add binaries downloaded in "download binaries" step to path
       - export PATH=$PATH:$(pwd)/bin
-      - export EXTRA_GRAVITY_OPTIONS=--state-dir=$STATEDIR
       - export INTERMEDIATE_RUNTIME_VERSION=6.1.47
       - make build-app
     volumes:
