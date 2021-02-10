@@ -92,7 +92,7 @@ node {
     STATEDIR = "${pwd()}/state/${APP_VERSION}"
     BINARIES_DIR = "${pwd()}/bin"
     MAKE_ENV = [
-      "EXTRA_GRAVITY_OPTIONS=${params.EXTRA_GRAVITY_OPTIONS}",
+      "STATEDIR=${STATEDIR}",
       "PATH+GRAVITY=${BINARIES_DIR}",
       "VERSION=${APP_VERSION}"
     ]
