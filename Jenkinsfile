@@ -47,10 +47,10 @@ properties([
            defaultValue: false,
            description: 'Run the upgrade suite as part of robotest'),
     string(name: 'GRAVITY_VERSION',
-           defaultValue: '7.0.23',
+           defaultValue: '7.0.30',
            description: 'gravity/tele binaries version'),
     string(name: 'CLUSTER_SSL_APP_VERSION',
-           defaultValue: '0.8.3',
+           defaultValue: '0.8.4',
            description: 'cluster-ssl-app version'),
     string(name: 'EXTRA_GRAVITY_OPTIONS',
            defaultValue: '',
@@ -91,9 +91,8 @@ node {
     APP_VERSION = params.ADD_GRAVITY_VERSION ? "${APP_VERSION}-${GRAVITY_VERSION}" : APP_VERSION
     STATEDIR = "${pwd()}/state/${APP_VERSION}"
     BINARIES_DIR = "${pwd()}/bin"
-    EXTRA_GRAVITY_OPTIONS = "--state-dir=${STATEDIR} ${params.EXTRA_GRAVITY_OPTIONS}"
     MAKE_ENV = [
-      "EXTRA_GRAVITY_OPTIONS=${EXTRA_GRAVITY_OPTIONS}",
+      "EXTRA_GRAVITY_OPTIONS=${params.EXTRA_GRAVITY_OPTIONS}",
       "PATH+GRAVITY=${BINARIES_DIR}",
       "VERSION=${APP_VERSION}"
     ]
@@ -101,6 +100,12 @@ node {
     stage('download gravity/tele binaries') {
       withEnv(MAKE_ENV + ["BINARIES_DIR=${BINARIES_DIR}"]) {
         sh 'make download-binaries'
+      }
+    }
+
+    stage('populate state directory with gravity and cluster-ssl packages') {
+      withEnv(MAKE_ENV + ["BINARIES_DIR=${BINARIES_DIR}"]) {
+        sh 'make install-dependent-packages'
       }
     }
 
