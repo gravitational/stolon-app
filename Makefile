@@ -135,6 +135,7 @@ $(BUILD_DIR)/resources/app.yaml: | $(BUILD_DIR)
 
 .PHONY: build-app
 build-app: images $(BUILD_DIR)/resources/app.yaml
+	$(GRAVITY) $(EXTRA_GRAVITY_OPTIONS) package list
 	$(TELE) build -f -o $(BUILD_DIR)/installer.tar $(TELE_BUILD_OPTIONS) $(EXTRA_GRAVITY_OPTIONS) $(BUILD_DIR)/resources/app.yaml
 
 .PHONY: build-gravity-app
