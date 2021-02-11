@@ -111,10 +111,7 @@ node {
 
     stage('build-app') {
       withEnv(MAKE_ENV) {
-          sh """
-  rm -rf ${STATEDIR} && mkdir -p ${STATEDIR}
-  tele logout ${EXTRA_GRAVITY_OPTIONS}
-  make build-app"""
+          sh 'make build-app'
         }
       }
 
