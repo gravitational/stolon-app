@@ -28,7 +28,7 @@ steps:
     commands:
       - apk add --no-cache make curl
       - make download-binaries
-  - name: populate state directory with gravity and cluster ssl packages
+  - name: populate state directory
     image: docker:git
     commands:
       # tele is built against glibc. Alpine's musl libc is glibc compatible, but needs to be linked into place.
