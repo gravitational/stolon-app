@@ -27,7 +27,7 @@ $ make
 ### Building self-sufficient gravity image(a.k.a `Cluster Image`)
 Download gravity and tele binaries
 ```
-make download-binaries GRAVITY_VERSION=7.0.30
+make download-binaries
 ```
 
 Dowload and unpack dependent application packages into state directory(`./state` by default)
