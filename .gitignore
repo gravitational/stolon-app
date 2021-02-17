@@ -1,4 +1,5 @@
 *.swp
+/state
 gravity.log
 /build/
 /registry/
