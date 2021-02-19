@@ -16,7 +16,7 @@ properties([
     string(name: 'VERSION',
            defaultValue: '',
            description: 'Override automatic versioning'),
-    choice(choices: ["run", "skip"].join("\n"),
+    booleanParam(defaultValue: false,
            description: 'Run or skip robotest system wide tests.',
            name: 'RUN_ROBOTEST'),
     choice(choices: ["true", "false"].join("\n"),
@@ -43,9 +43,6 @@ properties([
     string(name: 'ROBOTEST_VERSION',
            defaultValue: '2.2.1',
            description: 'Robotest tag to use.'),
-    booleanParam(name: 'ROBOTEST_RUN_UPGRADE',
-           defaultValue: false,
-           description: 'Run the upgrade suite as part of robotest'),
     string(name: 'GRAVITY_VERSION',
            defaultValue: '7.0.30',
            description: 'gravity/tele binaries version'),
@@ -64,6 +61,9 @@ properties([
     booleanParam(name: 'BUILD_GRAVITY_APP',
                  defaultValue: false,
                  description: 'Generate a Gravity App tarball')
+    booleanParam(name: 'BUILD_CLUSTER_IMAGE',
+                 defaultValue: true,
+                 description: 'Generate a Gravity Cluster Image(Self-sufficient tarball)'),
   ]),
 ])
 
@@ -110,10 +110,14 @@ node {
     }
 
     stage('build-app') {
-      withEnv(MAKE_ENV) {
+      if (params.BUILD_CLUSTER_IMAGE) {
+        withEnv(MAKE_ENV) {
           sh 'make build-app'
         }
+      } else {
+        echo 'skipped build of gravity cluster image'
       }
+    }
 
     stage('build gravity app') {
       if (params.BUILD_GRAVITY_APP) {
