@@ -60,7 +60,7 @@ properties([
                  description: 'Appends "-${GRAVITY_VERSION}" to the tag to be published'),
     booleanParam(name: 'BUILD_GRAVITY_APP',
                  defaultValue: false,
-                 description: 'Generate a Gravity App tarball')
+                 description: 'Generate a Gravity App tarball'),
     booleanParam(name: 'BUILD_CLUSTER_IMAGE',
                  defaultValue: true,
                  description: 'Generate a Gravity Cluster Image(Self-sufficient tarball)'),
