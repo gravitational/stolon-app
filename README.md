@@ -18,30 +18,38 @@ $  kubectl describe svc/stolon-postgres
 
 
 ## Building
-
+### Building images
+Execute `all` make target(could be omiited as it is default target).
 ```sh
 $ make
+```
+
+### Building self-sufficient gravity image(a.k.a `Cluster Image`)
+Download gravity and tele binaries
+```
+make download-binaries
+```
+
+Dowload and unpack dependent application packages into state directory(`./state` by default)
+```
+make install-dependent-packages
+```
+
+Build cluster image
+```
+export PATH=$(pwd)/bin:$PATH
+make build-app
+```
+
+*Optional*: Build cluster image with intermediate runtime
+```
+export PATH=$(pwd)/bin:$PATH
+make build-app INTERMEDIATE_RUNTIME_VERSION=5.2.18
 ```
 
 ## Prerequisites
 
 * docker >=  1.8
-* golang 1.5.4
+* golang >= 1.13
 * GNU make
-* kubectl >= 1.3
-
-## Gravity app
-
-You can import it in the OpsCenter as a gravity app, by running the following:
-
-```sh
-$ make reimport
-```
-
-### Creating site
-
-```sh
-$ gravity site create --app="gravitational.io/stolon-app:0.0.5"`
-```
-
-**Note**: you might want to deploy it on kubernetes manually but it's not recommended.
+* kubectl >= 1.13

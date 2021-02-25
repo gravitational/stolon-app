@@ -1,5 +1,8 @@
 *.swp
+/state
 gravity.log
 /build/
 /registry/
 /bin/
+upgrade_from/
+test.sh

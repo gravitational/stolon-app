@@ -3,7 +3,7 @@
 set -o nounset
 set -o errexit
 set -o pipefail
-
+set -o xtrace
 
 export EXTRA_PARAMS=""
 export PASSWORD=$(kubectl get secrets stolon -o jsonpath='{.data.password}'|base64 -d)
@@ -84,5 +84,6 @@ helm upgrade --install stolon /var/lib/gravity/resources/charts/stolon \
 
 set -e
 
+timeout 5m bash -c "while ! kubectl get job stolon-postgres-hardening; do sleep 10; done"
 kubectl wait --for=condition=complete --timeout=5m job/stolon-postgres-hardening
 rig freeze
