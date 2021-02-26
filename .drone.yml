@@ -28,28 +28,20 @@ steps:
     commands:
       - apk add --no-cache make curl
       - make download-binaries
-  - name: login to opscenter
+  - name: populate state directory
     image: docker:git
-    environment:
-      OPS_URL:
-        from_secret: OPS_URL
-      API_KEY:
-        from_secret: OPS_API_KEY_RO
     commands:
       # tele is built against glibc. Alpine's musl libc is glibc compatible, but needs to be linked into place.
-      - apk add --no-cache libc6-compat
-      - ./bin/tele login --state-dir=$STATEDIR --ops $OPS_URL --token=$API_KEY
+      - apk add --no-cache libc6-compat make curl tar
+      - export PATH=$PATH:$(pwd)/bin
+      - make install-dependent-packages
   - name: build
     image: docker:git
-    environment:
-      OPS_URL:
-        from_secret: OPS_URL
     commands:
       - apk add --no-cache make libc6-compat
       # add binaries downloaded in "download binaries" step to path
       - export PATH=$PATH:$(pwd)/bin
-      - export EXTRA_GRAVITY_OPTIONS=--state-dir=$STATEDIR
-      - export INTERMEDIATE_RUNTIME_VERSION=5.2.17
+      - export INTERMEDIATE_RUNTIME_VERSION=5.2.18
       - make build-app
     volumes:
       - name: dockersock
@@ -98,6 +90,6 @@ volumes:
     temp: {}
 ---
 kind: signature
-hmac: 496b1500f1e1578a7782cdcef8356391f717a2274a193a255f4261e187a2009a
+hmac: 4faa0b5d34e9626eeb907a19a91ddd27cc74f2c5998a09faa7fc9d190de9afc7
 
 ...
