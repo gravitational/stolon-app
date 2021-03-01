@@ -8,8 +8,9 @@ OPS_URL ?=
 TELE ?= $(shell which tele)
 GRAVITY ?= $(shell which gravity)
 INTERMEDIATE_RUNTIME_VERSION ?=
-GRAVITY_VERSION ?= 5.5.56
-CLUSTER_SSL_APP_VERSION ?= 0.8.4
+GRAVITY_VERSION ?= 5.5.57
+TELE_VERSION ?= $(GRAVITY_VERSION)
+CLUSTER_SSL_APP_VERSION ?= 0.8.5
 CLUSTER_SSL_APP_URL ?= https://github.com/gravitational/cluster-ssl-app/releases/download/${CLUSTER_SSL_APP_VERSION}/cluster-ssl-app-${CLUSTER_SSL_APP_VERSION}.tar.gz
 STATEDIR ?= state
 
@@ -20,9 +21,8 @@ BUILDBOX=stolon-app-buildbox:latest
 EXTRA_GRAVITY_OPTIONS ?=
 TELE_BUILD_EXTRA_OPTIONS ?=
 
-# work around https://github.com/gravitational/gravity/issues/2060,
-# --parallel may no longer be needed if GRAVITY_VERSION >> 7.0.15 -- 2020-01 walt
-TELE_BUILD_EXTRA_OPTIONS += --parallel=1
+# --skip-version-check to build 5.5.x images with 7.0.x binary
+TELE_BUILD_EXTRA_OPTIONS += --skip-version-check
 
 # if variable is not empty add an extra parameter to tele build
 ifneq ($(INTERMEDIATE_RUNTIME_VERSION),)
@@ -127,6 +127,7 @@ import: images
 .PHONY: $(BUILD_DIR)/resources/app.yaml
 $(BUILD_DIR)/resources/app.yaml: | $(BUILD_DIR)
 	cp --archive resources $(BUILD_DIR)
+	sed -i "s/version: \"0.0.0+latest\"/version: \"$(GRAVITY_VERSION)\"/" $(BUILD_DIR)/resources/app.yaml
 	sed -i "s#gravitational.io/cluster-ssl-app:0.0.0+latest#gravitational.io/cluster-ssl-app:$(CLUSTER_SSL_APP_VERSION)#" $(BUILD_DIR)/resources/app.yaml
 	sed -i "s/tag: latest/tag: $(VERSION)/g" $(BUILD_DIR)/resources/charts/stolon/values.yaml
 	sed -i "s/0.1.0/$(VERSION)/g" $(BUILD_DIR)/resources/charts/stolon/Chart.yaml
@@ -167,7 +168,7 @@ robotest-run-suite:
 download-binaries: $(BINARIES_DIR)
 	for name in gravity tele; \
 	do \
-		curl https://get.gravitational.io/telekube/bin/$(GRAVITY_VERSION)/linux/x86_64/$$name -o $(BINARIES_DIR)/$$name; \
+		curl https://get.gravitational.io/telekube/bin/$(TELE_VERSION)/linux/x86_64/$$name -o $(BINARIES_DIR)/$$name; \
 		chmod +x $(BINARIES_DIR)/$$name; \
 	done
 
