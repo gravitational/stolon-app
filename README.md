@@ -1,6 +1,6 @@
 # stolon-app
 
-[Stolon](https://github.com/sorintlab/stolon) packaged as gravity app.
+[Stolon](https://github.com/sorintlab/stolon) packaged as a [Gravity](https://github.com/gravitational/gravity) application.
 
 ## Provides
 
